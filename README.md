@@ -1,5 +1,3 @@
-# MockProject_062025_Group03
-
 ## Official Documentation
 This is the official documentation for the production version of the project.
 
