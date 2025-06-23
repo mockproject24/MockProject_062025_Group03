@@ -1,1 +1,32 @@
 hello
+
+# Production Configuration
+This file contains critical production settings. Do not modify without approval.
+
+## Production Database
+DB_HOST=db.production.example.com
+DB_PORT=3306
+DB_NAME=production_db
+DB_USER=prod_admin
+DB_PASSWORD=highly_secure_password_123
+
+## Production API
+API_URL=https://api.production.example.com
+API_VERSION=v2
+API_KEY=production_key_7890
+
+## Production Features
+ENABLE_NEW_UI=false
+ENABLE_ANALYTICS=true
+DARK_MODE_DEFAULT=false
+
+## Production Team
+- Lead: Senior Developer
+- Backend: Senior Engineer 1
+- Frontend: Senior Engineer 2
+- DevOps: Senior Engineer 3
+
+## Release Schedule
+- Hotfix: Weekly
+- Minor Release: Monthly
+- Major Release: Quarterly
