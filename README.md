@@ -42,7 +42,7 @@ MockProject_062025_Group03/
 - Code review required for all changes
 - Documentation must be updated
 - Performance tests must pass
-
+Tien sua file readme
 ## Security Protocols
 1. All API endpoints must be authenticated
 2. Data must be encrypted in transit and at rest
