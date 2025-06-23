@@ -1,57 +1,50 @@
-# MockProject_062025_Group03
+## Official Documentation
+This is the official documentation for the production version of the project.
 
-## Project Overview
-This is a mock project for learning Git workflow and conflict resolution.
+## Production Team
+- Lead Developer
+- Senior Developer 1
+- Senior Developer 2
+- QA Engineer
 
-## Team Members
-- NgocNghia_2306 (Team Lead)
-- Member 1
-- Member 2
-- Member 3
-
-## Project Structure
+## Production Architecture
 ```
 MockProject_062025_Group03/
-  - src/
+  - backend/
+    - api/
+    - services/
+    - models/
+  - frontend/
     - components/
     - pages/
-    - utils/
-  - docs/
-  - tests/
+    - assets/
+  - infrastructure/
+    - docker/
+    - kubernetes/
 ```
 
-## Installation Instructions
-1. Clone the repository
+## Deployment Instructions
+1. Build the project
    ```bash
-   git clone https://github.com/your-org/MockProject_062025_Group03.git
+   npm run build
    ```
-2. Install dependencies
+2. Run tests
    ```bash
-   npm install
+   npm test
    ```
-3. Start development server
+3. Deploy to production
    ```bash
-   npm start
+   npm run deploy:prod
    ```
 
-## Branching Strategy
-- `main` - Production code
-- `develop` - Development branch
-- `feature/*` - Feature branches
-- `bugfix/*` - Bug fix branches
+## Production Guidelines
+- All code must pass all tests
+- Code review required for all changes
+- Documentation must be updated
+- Performance tests must pass
 
-## Pull Request Process
-1. Create a feature branch from `develop`
-2. Make your changes
-3. Submit a pull request to `develop`
-4. Resolve any conflicts
-5. Get approval from at least one team member
-6. Merge your changes
-
-## Conflict Resolution Steps
-1. Identify the conflicting files
-2. Compare changes carefully
-3. Decide which changes to keep
-4. Resolve conflicts manually
-5. Test your changes
-6. Commit the resolved conflicts
+## Security Protocols
+1. All API endpoints must be authenticated
+2. Data must be encrypted in transit and at rest
+3. Regular security audits required
+4. Vulnerability scanning on all dependencies

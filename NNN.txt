@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Conflict Demo File
 
 ## Important Project Information
@@ -24,13 +25,52 @@ This file contains critical project configuration that will likely conflict with
     "newUI": true,
     "betaFeatures": false,
     "experimentalMode": true
+=======
+# Main Branch Configuration
+
+## Project Settings
+This file contains the official project configuration for the main branch.
+
+### System Configuration
+```json
+{
+  "projectName": "MockProject_062025_Group03",
+  "version": "2.0.0",
+  "environment": "production",
+  "database": {
+    "host": "db.example.com",
+    "port": 5432,
+    "username": "production_user",
+    "password": "very_secure_password"
+  },
+  "apiEndpoints": [
+    "/api/v2/users",
+    "/api/v2/products",
+    "/api/v2/orders",
+    "/api/v2/analytics"
+  ],
+  "featureFlags": {
+    "newUI": false,
+    "betaFeatures": false,
+    "experimentalMode": false
+>>>>>>> main
   }
 }
 ```
 
+<<<<<<< HEAD
 ## Team Members
 - NgocNghia_2306
 - Other team members
 
 ## Important Notes
 This file will be modified by multiple people to demonstrate git conflict resolution. 
+=======
+## Approved Team Members
+- Main Developer 1
+- Main Developer 2
+- Main Developer 3
+
+## Production Notes
+This is the official production configuration. Any changes must be approved by the lead developer. 
+>>>>>>> main
