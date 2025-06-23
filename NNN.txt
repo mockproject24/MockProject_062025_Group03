@@ -1,31 +1,3 @@
-<<<<<<< HEAD
-# Conflict Demo File
-
-## Important Project Information
-This file contains critical project configuration that will likely conflict with other team members' changes.
-
-### Configuration Settings
-```json
-{
-  "projectName": "MockProject_062025_Group03",
-  "version": "1.0.0",
-  "environment": "development",
-  "database": {
-    "host": "localhost",
-    "port": 3306,
-    "username": "admin",
-    "password": "secure_password"
-  },
-  "apiEndpoints": [
-    "/api/users",
-    "/api/products",
-    "/api/orders"
-  ],
-  "featureFlags": {
-    "newUI": true,
-    "betaFeatures": false,
-    "experimentalMode": true
-=======
 # Main Branch Configuration
 
 ## Project Settings
@@ -53,19 +25,10 @@ This file contains the official project configuration for the main branch.
     "newUI": false,
     "betaFeatures": false,
     "experimentalMode": false
->>>>>>> main
   }
 }
 ```
 
-<<<<<<< HEAD
-## Team Members
-- NgocNghia_2306
-- Other team members
-
-## Important Notes
-This file will be modified by multiple people to demonstrate git conflict resolution. 
-=======
 ## Approved Team Members
 - Main Developer 1
 - Main Developer 2
@@ -73,4 +36,3 @@ This file will be modified by multiple people to demonstrate git conflict resolu
 
 ## Production Notes
 This is the official production configuration. Any changes must be approved by the lead developer. 
->>>>>>> main
