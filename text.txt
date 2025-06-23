@@ -1,1 +1,32 @@
 hello
+
+# Project Configuration
+This file contains important configuration settings that should not be changed without team approval.
+
+## Database Settings
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=project_db
+DB_USER=admin
+DB_PASSWORD=secret123
+
+## API Configuration
+API_URL=https://api.example.com
+API_VERSION=v1
+API_KEY=abcdef123456
+
+## Feature Flags
+ENABLE_NEW_UI=true
+ENABLE_ANALYTICS=false
+DARK_MODE_DEFAULT=true
+
+## Team Assignments
+- Frontend: NgocNghia_2306
+- Backend: Member 1
+- Database: Member 2
+- DevOps: Member 3
+
+## Important Deadlines
+- Phase 1: 2023-10-15
+- Phase 2: 2023-11-30
+- Final Release: 2023-12-31
