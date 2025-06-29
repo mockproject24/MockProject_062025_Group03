@@ -5,8 +5,8 @@ spring:
     name: MockProject062025Group3Application
   datasource:
     url: jdbc:postgresql://localhost:5432/mockproject_db
-    username: postgres
-    password: postgres
+    username: your_username
+    password: your_password
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -20,4 +20,4 @@ spring:
 # JWT Configuration
 jwt:
   secret: 1dc0331bf18edb9e6e1d212095d89c98fedef00e8d582339b88144d526325113
-  expiration: 86400000
+  expiration: 86400000 

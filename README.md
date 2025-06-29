@@ -1,28 +1,24 @@
 # Mock Project 062025 Group 03
 
-## Environment Configuration
+## Cấu hình môi trường
 
-This project uses environment variables for configuration. To set up your local environment:
+Dự án này sử dụng file `application.yml` để cấu hình. Để thiết lập môi trường local của bạn:
 
-1. Create a `.env` file in the project root by copying the example file:
+1. Sao chép file mẫu để tạo file cấu hình:
    ```
-   cp .env.example .env
-   ```
-
-2. Edit the `.env` file with your local settings:
-   ```
-   # Database Configuration
-   DB_URL=jdbc:postgresql://localhost:5432/your_db_name
-   DB_USERNAME=your_username
-   DB_PASSWORD=your_password
-   DB_DDL_AUTO=update
-   SHOW_SQL=true
-
-   # JWT Configuration
-   JWT_SECRET=your_secure_jwt_secret_key
-   JWT_EXPIRATION=86400000
+   cp src/main/resources/application.yml.template src/main/resources/application.yml
    ```
 
-3. The application will automatically use these environment variables.
+2. Chỉnh sửa file `application.yml` với cài đặt cá nhân của bạn:
+   ```yaml
+   spring:
+     datasource:
+       url: jdbc:postgresql://localhost:5432/your_db_name
+       username: your_username
+       password: your_password
+   
+   jwt:
+     secret: your_secure_jwt_secret_key
+   ```
 
-Note: The `.env` file is ignored by Git to avoid conflicts between developers and to keep sensitive information secure. 
+Lưu ý: File `application.yml` đã được thêm vào `.gitignore` để tránh xung đột giữa các developer và để bảo mật thông tin nhạy cảm. 

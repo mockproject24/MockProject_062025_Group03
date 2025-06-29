@@ -35,3 +35,4 @@ build/
 ### Application ###
 src/main/resources/application-local.yml
 .env
+src/main/resources/application.yml
