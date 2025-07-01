@@ -13,7 +13,7 @@ Dự án này sử dụng file `application.yml` để cấu hình. Để thiế
    ```yaml
    spring:
      datasource:
-       url: jdbc:postgresql://localhost:5432/your_db_name
+       url: jdbc:mysql://localhost:3306/your_db_name
        username: your_username
        password: your_password
    
