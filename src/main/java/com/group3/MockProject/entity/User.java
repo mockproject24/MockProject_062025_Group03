@@ -57,6 +57,7 @@ public class User {
 
     @NotNull
     @ColumnDefault("false")
+    @Column(name="is_deleted")
     private Boolean isDeleted;
 
     // foreign key to role
