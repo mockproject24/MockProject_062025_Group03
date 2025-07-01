@@ -44,7 +44,7 @@ public class Question {
     @NotNull
     @ColumnDefault("false")
     @Column(name="is_deleted")
-    private Boolean idDeleted;
+    private Boolean isDeleted;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
