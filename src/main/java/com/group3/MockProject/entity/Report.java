@@ -5,48 +5,70 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Table(name = "report")
 @Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "report")
 @Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class Report {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Report implements Serializable {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String reportId;
+    @Column(name = "report_id")
+    private String reportId;
 
-    String caseId; // Foreign key to Case
+    @Column(name = "case_id", nullable = false)
+    private String caseId;
 
-    String typeReport;
+    @Column(name = "type", nullable = false)
+    private String type;
 
-    @Column(columnDefinition = "TEXT")
-    String description;
+    @Column(name = "report", columnDefinition = "TEXT", nullable = false)
+    private String report;
 
-    String caseLocation;
+    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
+    private String description;
 
-    LocalDateTime reportedAt;
+    @Column(name = "case_location", nullable = false)
+    private String caseLocation;
 
-    String reporterFullname;
+    @Column(name = "reported_at", nullable = false)
+    private LocalDateTime reportedAt;
 
-    String reporterEmail;
+    @Column(name = "reporter_fullname", nullable = false)
+    private String reporterFullname;
 
-    String reporterPhonenumber;
+    @Column(name = "reporter_email", nullable = false)
+    private String reporterEmail;
 
-    String officerApproveId; // Foreign key to User/Officer
+    @Column(name = "reporter_phonenumber", nullable = false)
+    private String reporterPhonenumber;
 
-    Boolean isDeleted;
+    @Column(name = "officer_approve_id", nullable = false)
+    private String officerApproveId;
 
-    @PrePersist
-    protected void onCreate() {
-        this.isDeleted = false;
-        if (this.reportedAt == null) {
-            this.reportedAt = LocalDateTime.now();
-        }
+    @Column(name = "is_deleted", columnDefinition = "boolean default false")
+    private Boolean isDeleted;
+
+    @Override
+    public String toString() {
+        return "Report{" +
+                "reportId=" + reportId +
+                ", caseId=" + caseId +
+                ", type='" + type + '\'' +
+                ", report='" + report + '\'' +
+                ", description='" + description + '\'' +
+                ", caseLocation='" + caseLocation + '\'' +
+                ", reportedAt=" + reportedAt +
+                ", reporterFullname='" + reporterFullname + '\'' +
+                ", reporterEmail='" + reporterEmail + '\'' +
+                ", reporterPhonenumber='" + reporterPhonenumber + '\'' +
+                ", officerApproveId=" + officerApproveId +
+                ", isDeleted=" + isDeleted +
+                '}';
     }
 }
