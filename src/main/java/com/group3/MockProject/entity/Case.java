@@ -1,42 +1,53 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import org.hibernate.annotations.ColumnDefault;
-import org.springframework.web.bind.annotation.GetMapping;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Entity
-@Data
-public class Case{
+@Table(name = "case")
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+public class Case {
     @Id
+    @Column(name = "case_id", nullable = false)
     private String caseId;
 
-    @NotNull
+    @Column(name = "case_name", nullable = false)
     private String caseName;
 
-    @NotNull
+    @Column(name = "type_case", nullable = true)
     private String typeCase;
+    // nếu sau này muốn mapping enum hoặc lookup table:
+    // @Enumerated(EnumType.STRING)
+    // private CaseType typeCase;
 
-    @NotNull
-    private String severity;
+    @Column(name = "severity", nullable = false)
+    private Integer severity;
 
-    @NotNull
+    @Column(name = "status", nullable = false)
     private String status;
+    // tương tự có thể dùng enum:
+    // @Enumerated(EnumType.STRING)
+    // private CaseStatus status;
 
-    @NotNull
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(name = "summary", columnDefinition = "TEXT", nullable = true)
     private String summary;
 
-    @NotNull
-    private LocalDateTime create_at;
-    @NotNull
-    @ColumnDefault("false")
-    private Boolean is_deleted;
+    @Column(name = "create_at", nullable = false)
+    private LocalDateTime createAt;
 
-    @OneToMany
-    private Set<Warrant> warrants;
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
 }

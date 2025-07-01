@@ -1,44 +1,44 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Entity
-@Data
-@AllArgsConstructor
+@Table(name = "warrant")
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 public class Warrant {
     @Id
+    @Column(name = "warrant_id", nullable = false)
     private String warrantId;
 
-    @NotNull
+    // --- khóa ngoại sang CASE (nếu cần mapping quan hệ, bỏ comment @ManyToOne) ---
+    @Column(name = "case_id", nullable = false)
+    private Long caseId;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "case_id", insertable = false, updatable = false)
+    // private CaseEntity caseEntity;
+
+    @Column(name = "warrant_name", nullable = false)
     private String warrantName;
 
-
-    @NotNull
+    @Column(name = "attached_file", columnDefinition = "TEXT", nullable = true)
     private String attachedFile;
 
-
-    @NotNull
+    @Column(name = "time_publish", nullable = false)
     private LocalDateTime timePublish;
 
-    @NotNull
-    @ColumnDefault("false")
-    private Boolean is_deleted;
-
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="case_id", referencedColumnName = "case_id")
-    private Case caseId;
-
-    @OneToMany
-    private Set<WarrantResult> warrantResults;
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
 }
