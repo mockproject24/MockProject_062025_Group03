@@ -1,5 +1,6 @@
 package com.group3.MockProject.entity;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -11,7 +12,6 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Table(name = "warrant_result")
 @Getter
 @Setter
