@@ -4,6 +4,23 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+
+/**
+ * Question
+ *
+ * Question entity
+ *
+ * Version 1.0
+ * Date: 01/07/2025
+ *
+ * Copyright
+ *
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 01/07/2025     DQMinh      Create
+ */
 
 @Entity
 @Table(name = "question")
@@ -15,23 +32,24 @@ public class Question {
     @Column(name = "question_id")
     private String questionId;
 
-    @Column(name = "content", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name="content")
     private String content;
 
-    @Column(name = "answer", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "answer")
     private String answer;
 
-    @Column(name = "reliability")
+    @Column(name="reliability")
     private Float reliability;
 
-    @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    @Column(name="is_deleted")
+    private Boolean isDeleted = false;
 
-    @ManyToOne
-    @JoinColumn(name = "interview_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="interview_id", referencedColumnName = "interview_id")
     private Interview interview;
 
-    @ManyToOne
-    @JoinColumn(name = "created_by")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="created_by", referencedColumnName = "username")
     private User user;
 } 
