@@ -1,46 +1,38 @@
 package com.group3.MockProject.entity;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 
+@Entity
 @Table(name = "warrant_result")
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class WarrantResult {
     @Id
-    @Column(name = "warrant_result_id", nullable = false)
+    @Column(name = "warrant_result_id")
     private String warrantResultId;
 
-    // --- foreign key sang WARRANT (nếu cần mapping quan hệ, bỏ comment @ManyToOne) ---
-    @Column(name = "warrant_id", nullable = false)
-    private Long warrantId;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "warrant_id", insertable = false, updatable = false)
-    // private Warrant warrant;
-
-    @Column(name = "police_response", nullable = false)
+    @Column(name = "police_response")
     private String policeResponse;
 
-    @Column(name = "location", nullable = false)
+    @Column(name = "location")
     private String location;
 
-    @Column(name = "notes", columnDefinition = "TEXT", nullable = true)
+    @Column(name = "notes")
     private String notes;
 
-    @Column(name = "time_active", nullable = false)
+    @Column(name = "time_active")
     private LocalDateTime timeActive;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-}
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "warrant_id")
+    private Warrant warrant;
+} 

@@ -1,50 +1,49 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "case_result")
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class CaseResult {
+
     @Id
-    @Column(name = "case_result_id", nullable = false)
+    @Column(name = "case_result_id")
     private String caseResultId;
 
-    // --- foreign key sang CASE (nếu cần mapping quan hệ, sẽ dùng @ManyToOne) ---
-    @Column(name = "case_id", nullable = false)
-    private String caseId;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "case_id", insertable = false, updatable = false)
-    // private Case parentCase;
-
-    @Column(name = "report_time", nullable = false)
+    @Column(name = "report_time")
     private LocalDateTime reportTime;
 
-    @Column(name = "report_analyst", nullable = false)
+    @Column(name = "report_analyst")
     private String reportAnalyst;
 
-    @Column(name = "summary", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "summary")
     private String summary;
 
-    @Column(name = "identify_motive", nullable = true)
+    @Column(name = "identify_motive")
     private String identifyMotive;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private String status;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 
+    @OneToMany(mappedBy = "caseResult")
+    private List<Timeline> timelines;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
+
+    @OneToMany(mappedBy = "caseResult")
+    private List<Sentence> sentences;
 }

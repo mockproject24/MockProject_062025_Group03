@@ -1,42 +1,37 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.hibernate.annotations.ColumnDefault;
-
-import java.time.LocalDateTime;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "question")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Question {
     @Id
-
+    @Column(name = "question_id")
     private String questionId;
 
-    @NotNull
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @NotNull
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(name = "answer", columnDefinition = "TEXT")
     private String answer;
 
-    @NotNull
-    private String reliability;
+    @Column(name = "reliability")
+    private Float reliability;
 
-    @NotNull
-    @ColumnDefault("false")
-    private Boolean is_deleted;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 
-    // n-1
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="created_by", referencedColumnName = "username")
-    private User createdBy;
-
-    // n-1
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="interview_id", referencedColumnName = "interview_id")
+    @ManyToOne
+    @JoinColumn(name = "interview_id")
     private Interview interview;
 
-}
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User user;
+} 

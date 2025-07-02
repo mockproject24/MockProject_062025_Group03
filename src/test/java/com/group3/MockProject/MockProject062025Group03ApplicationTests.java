@@ -9,5 +9,4 @@ class MockProject062025Group03ApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

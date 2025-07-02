@@ -1,38 +1,60 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
+@Table(name = "users")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
+    @Column(name = "username")
     private String username;
 
-    @NotNull
+    @Column(name = "password_hash")
     private String passwordHash;
 
-    @NotNull
+    @Column(name = "fullname")
     private String fullname;
 
+    @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(name = "email")
     private String email;
-    @NotNull
-    private String phonenumber;
 
-    @NotNull
-    private LocalDateTime create_at;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
-    @NotNull
-    @ColumnDefault("false")
-    private Boolean is_deleted;
+    @Column(name = "create_at")
+    private LocalDateTime createAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="role_id", referencedColumnName = "role_id")
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "user")
+    private List<Report> reports;
+
+    @OneToMany(mappedBy = "interviewer")
+    private List<Interview> interviews;
+
+    @OneToMany(mappedBy = "createdOfficer")
+    private List<InvestigationPlan> investigationPlans;
+
+    @OneToMany(mappedBy = "user")
+    private List<Envidency> evidences;
+
+    @OneToMany(mappedBy = "user")
+    private List<Prosecution> prosecutions;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
     private Role role;
 }
