@@ -22,7 +22,7 @@ public class Warrant {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id", referencedColumnName = "case_id")
-    Case caseEntity;
+    Case case_id;
 
     @Column(name = "warrant_name", length = 255)
     String warrantName;

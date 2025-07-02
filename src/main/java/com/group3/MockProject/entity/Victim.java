@@ -20,7 +20,7 @@ public class Victim {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id", referencedColumnName = "id", nullable = false)
-    Case caseEntity; // Foreign key đến Case
+    Case case_id; // Foreign key đến Case
 
     @Column(name = "fullname", length = 255, nullable = false)
     String fullname;
