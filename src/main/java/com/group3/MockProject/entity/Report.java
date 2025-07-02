@@ -2,73 +2,69 @@ package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "report")
-@Builder
+@Table(name = "reports")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class Report implements Serializable {
-
+@AllArgsConstructor
+public class Report {
     @Id
     @Column(name = "report_id")
     private String reportId;
 
-    @Column(name = "case_id", nullable = false)
-    private String caseId;
+    @Column(name = "type_report")
+    private String typeReport;
 
-    @Column(name = "type", nullable = false)
-    private String type;
+    @Column(name = "severity")
+    private String severity;
 
-    @Column(name = "report", columnDefinition = "TEXT", nullable = false)
-    private String report;
+    @Column(name = "incident_date")
+    private LocalDateTime incidentDate;
 
-    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "description")
     private String description;
 
-    @Column(name = "case_location", nullable = false)
+    @Column(name = "case_location")
     private String caseLocation;
 
-    @Column(name = "reported_at", nullable = false)
+    @Column(name = "reported_at")
     private LocalDateTime reportedAt;
 
-    @Column(name = "reporter_fullname", nullable = false)
+    @Column(name = "reporter_location")
+    private String reporterLocation;
+
+    @Column(name = "reporter_fullname")
     private String reporterFullname;
 
-    @Column(name = "reporter_email", nullable = false)
+    @Column(name = "reporter_email")
     private String reporterEmail;
 
-    @Column(name = "reporter_phonenumber", nullable = false)
-    private String reporterPhonenumber;
+    @Column(name = "reporter_phone_number")
+    private String reporterPhoneNumber;
 
-    @Column(name = "officer_approve_id", nullable = false)
-    private String officerApproveId;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 
-    @Column(name = "is_deleted", columnDefinition = "boolean default false")
-    private Boolean isDeleted;
+    @Column(name = "status")
+    private String status;
 
-    @Override
-    public String toString() {
-        return "Report{" +
-                "reportId=" + reportId +
-                ", caseId=" + caseId +
-                ", type='" + type + '\'' +
-                ", report='" + report + '\'' +
-                ", description='" + description + '\'' +
-                ", caseLocation='" + caseLocation + '\'' +
-                ", reportedAt=" + reportedAt +
-                ", reporterFullname='" + reporterFullname + '\'' +
-                ", reporterEmail='" + reporterEmail + '\'' +
-                ", reporterPhonenumber='" + reporterPhonenumber + '\'' +
-                ", officerApproveId=" + officerApproveId +
-                ", isDeleted=" + isDeleted +
-                '}';
-    }
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
+
+    @OneToMany(mappedBy = "report")
+    private List<Envidency> evidences;
+
+    @OneToMany(mappedBy = "report")
+    private List<Suspect> suspects;
 }

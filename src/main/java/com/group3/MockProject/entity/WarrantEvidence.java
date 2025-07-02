@@ -11,23 +11,33 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "warrant_evident")
+@Table(name = "evidences_suspects")
 @Builder
 @IdClass(WarrantEnvidenceId.class)
 public class WarrantEvidence implements Serializable {
     @Id
-    @Column(name = "warrant_id")
-    String warrantId;
+    @Column(name = "evidence_id")
+    private String evidenceId;
 
     @Id
-    @Column(name = "evidence_id")
-    String evidenceId;
+    @Column(name = "suspect_id")
+    private String suspectId;
 
-    @Column(name = "is_deleted", columnDefinition = "boolean default false")
-    private Boolean isDeleted;
+    @ManyToOne
+    @JoinColumn(name = "evidence_id", insertable = false, updatable = false)
+    private Envidency evidence;
+
+    @ManyToOne
+    @JoinColumn(name = "suspect_id", insertable = false, updatable = false)
+    private Suspect suspect;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "case_result")
@@ -15,28 +16,34 @@ import java.time.LocalDateTime;
 public class CaseResult {
 
     @Id
-    @Column(name = "case_result_id", length = 36)
+    @Column(name = "case_result_id")
     private String caseResultId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", referencedColumnName = "case_id")
-    private Case case_id;
 
     @Column(name = "report_time")
     private LocalDateTime reportTime;
 
-    @Column(name = "report_analyst", length = 255)
+    @Column(name = "report_analyst")
     private String reportAnalyst;
 
-    @Column(name = "summary", columnDefinition = "TEXT")
+    @Column(name = "summary")
     private String summary;
 
-    @Column(name = "identify_motive", columnDefinition = "TEXT")
+    @Column(name = "identify_motive")
     private String identifyMotive;
 
-    @Column(name = "status", length = 50)
+    @Column(name = "status")
     private String status;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "caseResult")
+    private List<Timeline> timelines;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
+
+    @OneToMany(mappedBy = "caseResult")
+    private List<Sentence> sentences;
 }

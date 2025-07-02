@@ -1,28 +1,28 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "financial_invest")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FinancialInvest {
     @Id
-    @Column(name = "evidence_id", nullable = false)
+    @Column(name = "evidence_id")
     private String evidenceId;
 
-    @Column(name = "summary", columnDefinition = "TEXT")
+    @Column(name = "summary")
     private String summary;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "evidence_id")
-//    private Evidence evidence;
+    @OneToOne
+    @JoinColumn(name = "evidence_id")
+    @MapsId
+    private Envidency evidence;
 }

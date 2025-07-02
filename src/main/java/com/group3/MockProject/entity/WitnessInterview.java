@@ -1,31 +1,32 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
 @Entity
-@IdClass(WitnessInterviewId.class)
-@Table(name = "witness_interview")
+@Table(name = "witnesses_interviews")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class WitnessInterview {
     @Id
-    @Column(name = "witness_id", nullable = false)
-    private String witnessId;
-
-    @Id
-    @Column(name = "interview_id", nullable = false)
+    @Column(name = "interview_id")
     private String interviewId;
 
+    @Id
+    @Column(name = "witness_id")
+    private String witnessId;
+
+    @ManyToOne
+    @JoinColumn(name = "witness_id", insertable = false, updatable = false)
+    private Witness witness;
+
+    @ManyToOne
+    @JoinColumn(name = "interview_id", insertable = false, updatable = false)
+    private Interview interview;
+
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "witness_id")
-//    private Witness witness;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "interview_id")
-//    private Interview interview;
+    private boolean isDeleted = false;
 }

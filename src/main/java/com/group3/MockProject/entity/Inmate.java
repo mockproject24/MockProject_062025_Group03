@@ -1,22 +1,20 @@
 package com.group3.MockProject.entity;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "inmate")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Inmate {
     @Id
-    @Column(name = "inmate_id", nullable = false)
+    @Column(name = "inmate_id")
     private String inmateId;
 
 //    @ManyToOne(fetch = FetchType.LAZY)
@@ -24,7 +22,7 @@ public class Inmate {
 //    private Sentence sentence;
 
     @Column(name = "fullname")
-    private String fullName;
+    private String fullname;
 
     @Column(name = "assigned_facility")
     private String assignedFacility;
@@ -42,5 +40,5 @@ public class Inmate {
     private String status;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 }

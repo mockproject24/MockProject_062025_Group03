@@ -2,46 +2,59 @@ package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class User {
     @Id
-    String username;
+    @Column(name = "username")
+    private String username;
 
-    @Column(name = "password_hash", nullable = false)
-    String passwordHash;
+    @Column(name = "password_hash")
+    private String passwordHash;
 
-    String fullname;
+    @Column(name = "fullname")
+    private String fullname;
 
-    String avatarUrl;
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 
-    @Column(unique = true)
-    String email;
+    @Column(name = "email")
+    private String email;
 
-    String phonenumber;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
     @Column(name = "create_at")
-    LocalDateTime createAt;
-
-    String roleId; // Foreign key to Role
+    private LocalDateTime createAt;
 
     @Column(name = "is_deleted")
-    Boolean isDeleted;
+    private boolean isDeleted = false;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createAt = LocalDateTime.now();
-        this.isDeleted = false;
-    }
+    @OneToMany(mappedBy = "user")
+    private List<Report> reports;
+
+    @OneToMany(mappedBy = "interviewer")
+    private List<Interview> interviews;
+
+    @OneToMany(mappedBy = "createdOfficer")
+    private List<InvestigationPlan> investigationPlans;
+
+    @OneToMany(mappedBy = "user")
+    private List<Envidency> evidences;
+
+    @OneToMany(mappedBy = "user")
+    private List<Prosecution> prosecutions;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 }

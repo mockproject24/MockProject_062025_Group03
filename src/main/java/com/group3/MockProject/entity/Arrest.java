@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -25,31 +24,33 @@ import lombok.NoArgsConstructor;
  * 01/07/2025        Nguyễn Bảo Kha        Create
  */
 
+@Entity
+@Table(name = "arrest")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@Table(name = "arrest")
 public class Arrest {
     @Id
-    private String suspectId;
+    @Column(name = "arrest_id")
+    private String arrestId;
 
-    @Column(nullable = false)
-    private String caseId;
-
-    @Column(nullable = false)
-    private String officerId;
-
-    @Column(name = "suspect_miranda_signature",nullable = false)
+    @Column(name = "suspect_miranda_signature")
     private String suspectMirandaSignature;
 
     @Column(name = "arrest_start_time", nullable = false)
     private LocalDateTime arrestStartTime;
 
-    @Column(name = "arrest_end_time", nullable = false)
+    @Column(name = "arrest_end_time")
     private LocalDateTime arrestEndTime;
 
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "suspect_id")
+    private Suspect suspect;
 }

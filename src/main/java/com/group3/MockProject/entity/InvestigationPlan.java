@@ -21,11 +21,19 @@ public class InvestigationPlan implements Serializable {
     @Column(name = "investigation_plan_id")
     private String investigationPlanId;
 
-    @Column(name = "created_officer_id", nullable = false)
+    @Column(name = "created_officer_id", insertable = false, updatable = false)
     private String createdOfficerId;
 
-    @Column(name = "case_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "created_officer_id")
+    private User createdOfficer;
+
+    @Column(name = "case_id", insertable = false, updatable = false)
     private String caseId;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
 
     @Column(name = "deadline_date", nullable = false)
     private LocalDateTime deadlineDate;

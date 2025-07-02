@@ -1,11 +1,11 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "record_info")
@@ -13,28 +13,26 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RecordInfo {
-
     @Id
-    @Column(name = "record_info_id", length = 36)
+    @Column(name = "record_info_id")
     private String recordInfoId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "evidence_id", referencedColumnName = "evidence_id")
-    private Evidence evidenceId;
-
-    @Column(name = "type_name", length = 100)
+    @Column(name = "type_name")
     private String typeName;
 
-    @Column(name = "source", length = 255)
+    @Column(name = "source")
     private String source;
 
     @Column(name = "date_collected")
-    private LocalDate dateCollected; // Dùng LocalDate nếu chỉ cần ngày
+    private LocalDateTime dateCollected;
 
-    @Column(name = "summary", columnDefinition = "TEXT")
+    @Column(name = "summary")
     private String summary;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
+    @ManyToOne
+    @JoinColumn(name = "evidence_id")
+    private Envidency evidence;
 }

@@ -2,7 +2,6 @@ package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,21 +22,24 @@ import lombok.NoArgsConstructor;
  * 01/07/2025        Nguyễn Bảo Kha        Create
  */
 
+@Entity
+@Table(name = "physical_invest")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@Table(name = "physical_invest")
 public class PhysicalInvest {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "evidence_id")
     private String evidenceId;
 
-    @Column(name = "image_url",nullable = false)
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+    @OneToOne
+    @JoinColumn(name = "evidence_id")
+    @MapsId
+    private Envidency evidence;
 }

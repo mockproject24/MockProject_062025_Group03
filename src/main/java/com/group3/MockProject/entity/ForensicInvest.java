@@ -19,15 +19,17 @@ public class ForensicInvest {
     @Column(name = "lab_name")
     private String labName;
 
-    @Column(name = "report", columnDefinition = "TEXT")
+    @Column(name = "report")
     private String report;
-
-    @Column(name = "result_summary", columnDefinition = "TEXT")
-    private String resultSummary;
 
     @Column(name = "received_at")
     private LocalDateTime receivedAt;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
+
+    @OneToOne
+    @JoinColumn(name = "evidence_id")
+    @MapsId
+    private Envidency evidence;
 }

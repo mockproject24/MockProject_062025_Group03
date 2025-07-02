@@ -1,44 +1,38 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
-@Table(name = "victim")
+@Table(name = "victims")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Victim {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "victim_id", length = 36, updatable = false, nullable = false)
-    String victimId;
+    @Column(name = "victim_id")
+    private String victimId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", referencedColumnName = "id", nullable = false)
-    Case case_id; // Foreign key đến Case
+    @Column(name = "fullname")
+    private String fullname;
 
-    @Column(name = "fullname", length = 255, nullable = false)
-    String fullname;
+    @Column(name = "contact")
+    private String contact;
 
-    @Column(name = "contact", length = 100)
-    String contact;
+    @Column(name = "injuries")
+    private String injuries;
 
-    @Column(name = "injurie", columnDefinition = "TEXT")
-    String injurie;
+    @Column(name = "status")
+    private String status;
 
-    @Column(name = "status", length = 50)
-    String status;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 
-    @Column(name = "is_deleted", nullable = false)
-    Boolean isDeleted;
-
-    @PrePersist
-    protected void onCreate() {
-        this.isDeleted = false;
-    }
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
 }

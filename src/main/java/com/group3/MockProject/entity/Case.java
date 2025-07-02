@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "case")
@@ -15,27 +16,63 @@ import java.time.LocalDateTime;
 public class Case {
 
     @Id
-    @Column(name = "case_id", length = 36)
+    @Column(name = "case_id")
     private String caseId;
 
-    @Column(name = "case_number", length = 50, unique = true)
-    private String caseNumber;
+    @Column(name = "case_number")
+    private Integer caseNumber;
 
-    @Column(name = "type_case", length = 100)
+    @Column(name = "type_case")
     private String typeCase;
 
-    @Column(name = "severity", length = 50)
+    @Column(name = "severity")
     private String severity;
 
-    @Column(name = "status", length = 50)
+    @Column(name = "status")
     private String status;
 
-    @Column(name = "summary", columnDefinition = "TEXT")
+    @Column(name = "summary")
     private String summary;
 
     @Column(name = "create_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createAt;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<CaseResult> caseResults;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Warrant> warrants;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Report> reports;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Victim> victims;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Suspect> suspects;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Witness> witnesses;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<InvestigationPlan> investigationPlans;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Envidency> evidences;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Arrest> arrests;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Prosecution> prosecutions;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Sentence> sentences;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<CaseEnvidence> casesEvidences;
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "warrant")
@@ -16,29 +17,33 @@ import java.time.LocalDateTime;
 public class Warrant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "warrant_id", length = 36)
-    String warrantId;
+    @Column(name = "warrant_id")
+    private String warrantId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", referencedColumnName = "case_id")
-    Case case_id;
+    @Column(name = "warrant_name")
+    private String warrantName;
 
-    @Column(name = "warrant_name", length = 255)
-    String warrantName;
+    @Column(name = "attached_file", columnDefinition = "json")
+    private String[] attachedFile;
 
-    @Column(name = "attached_file", length = 255)
-    String attachedFile;
-
-    @Column(name = "time_pulish")
-    LocalDateTime timePulish;
+    @Column(name = "time_publish")
+    private LocalDateTime timePublish;
 
     @Column(name = "is_deleted")
-    Boolean isDeleted = false;
+    private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "warrant")
+    private List<WarrantResult> warrantResults;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
+
+    @OneToMany(mappedBy = "warrant")
+    private List<Envidency> evidences;
 
     @PrePersist
     protected void onCreate() {
-        if (this.isDeleted == null) this.isDeleted = false;
-        if (this.timePulish == null) this.timePulish = LocalDateTime.now();
+        if (this.timePublish == null) this.timePublish = LocalDateTime.now();
     }
 }

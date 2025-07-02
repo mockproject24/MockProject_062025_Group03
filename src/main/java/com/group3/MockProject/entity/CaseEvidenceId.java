@@ -1,43 +1,21 @@
 package com.group3.MockProject.entity;
 
-import java.io.Serializable;
-import java.util.Objects;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
+@Embeddable
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CaseEvidenceId implements Serializable {
+    @Column(name = "case_id")
+    private String caseId;
 
-    private Long caseId;
-    private Long evidenceId;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        CaseEvidenceId that = (CaseEvidenceId) o;
-
-        return Objects.equals(caseId, that.caseId) &&
-                Objects.equals(evidenceId, that.evidenceId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(caseId, evidenceId);
-    }
-
-    @Override
-    public String toString() {
-        return "CaseEvidenceId{" +
-                "caseId=" + caseId +
-                ", evidenceId=" + evidenceId +
-                '}';
-    }
+    @Column(name = "evidence_id")
+    private String evidenceId;
 }

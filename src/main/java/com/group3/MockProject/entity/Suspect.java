@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "suspect")
@@ -17,61 +17,62 @@ import java.time.LocalDateTime;
 public class Suspect {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "suspect_id", length = 36, updatable = false, nullable = false)
-    String suspectId;
+    @Column(name = "suspect_id")
+    private String suspectId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", referencedColumnName = "id", nullable = false)
-    Case case_id; // Foreign key đến Case
+    @Column(name = "fullname")
+    private String fullname;
 
-    @Column(name = "fullname", length = 255, nullable = false)
-    String fullname;
+    @Column(name = "national")
+    private String national;
 
-    @Column(name = "national", length = 100)
-    String national;
-
-    @Column(name = "gender", length = 10)
-    String gender;
+    @Column(name = "gender")
+    private String gender;
 
     @Column(name = "dob")
-    LocalDate dob;
+    private LocalDateTime dob;
 
-    @Column(name = "identification", length = 50)
-    String identification;
+    @Column(name = "identification")
+    private String identification;
 
-    @Column(name = "phonenumber", length = 20)
-    String phonenumber;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    String description;
+    @Column(name = "description")
+    private String description;
 
-    @Column(name = "address", length = 255)
-    String address;
+    @Column(name = "address")
+    private String address;
 
     @Column(name = "catch_time")
-    LocalDateTime catchTime;
+    private LocalDateTime catchTime;
 
-    @Column(name = "notes", columnDefinition = "TEXT")
-    String notes;
+    @Column(name = "notes")
+    private String notes;
 
-    @Column(name = "status", length = 50)
-    String status;
+    @Column(name = "status")
+    private String status;
 
-    @Column(name = "mugshot_url", length = 255)
-    String mugshotUrl;
+    @Column(name = "mugshot_url")
+    private String mugshotUrl;
 
-    @Column(name = "fingerprints_hash", length = 255)
-    String fingerprintsHash;
+    @Column(name = "fingerprints_hash")
+    private String fingerprintsHash;
 
-    @Column(name = "health_status", length = 100)
-    String healthStatus;
+    @Column(name = "health_status")
+    private String healthStatus;
 
-    @Column(name = "is_deleted", nullable = false)
-    Boolean isDeleted;
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
 
-    @PrePersist
-    protected void onCreate() {
-        this.isDeleted = false;
-    }
+    @OneToMany(mappedBy = "suspect")
+    private List<Arrest> arrests;
+
+    @ManyToOne
+    @JoinColumn(name = "report_id")
+    private Report report;
+
+    @OneToMany(mappedBy = "suspect")
+    private List<WarrantEvidence> evidencesSuspects;
 }

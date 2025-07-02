@@ -1,31 +1,27 @@
 package com.group3.MockProject.entity;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "event")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Event {
     @Id
-    @Column(name = "event_id", nullable = false)
+    @Column(name = "event_id")
     private String eventId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "suspect_id")
-//    private Suspect suspect;
+    @Column(name = "suspect_id")
+    private String suspectId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "case_id");
-//    private Case caseEntity;
+    @Column(name = "case_id")
+    private String caseId;
 
     @Column(name = "time_start")
     private LocalDateTime timeStart;
@@ -36,9 +32,9 @@ public class Event {
     @Column(name = "event_name")
     private String eventName;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description")
     private String description;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 }

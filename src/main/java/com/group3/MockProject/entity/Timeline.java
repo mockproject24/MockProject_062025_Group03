@@ -1,10 +1,10 @@
 package com.group3.MockProject.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -25,31 +25,38 @@ import lombok.NoArgsConstructor;
  * 01/07/2025        Nguyễn Bảo Kha        Create
  */
 
+@Entity
+@Table(name = "timelines")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@Table(name = "timeline")
 public class Timeline {
     @Id
-    private String timeline_id;
+    @Column(name = "timeline_id")
+    private String timelineId;
 
-    @Column(name = "start_time",nullable = false)
+    @Column(name = "case_result_id")
+    private String caseResultId;
+
+    @Column(name = "start_time")
     private LocalDateTime startTime;
 
-    @Column(name = "end_time",nullable = false)
+    @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    @Column(name = "attached_file",nullable = false)
-    private String attachedFile;
+    @Column(name = "attached_file", columnDefinition = "json")
+    private String[] attachedFile;
 
-    @Column(nullable = false)
+    @Column(name = "notes")
     private String notes;
 
-    @Column(nullable = false)
+    @Column(name = "activity")
     private String activity;
 
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "case_result_id", insertable = false, updatable = false)
+    private CaseResult caseResult;
 }

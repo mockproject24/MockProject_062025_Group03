@@ -5,31 +5,31 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "witness")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Witness {
-
     @Id
-    @Column(name = "witness_id", length = 36)
+    @Column(name = "witness_id")
     private String witnessId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", referencedColumnName = "case_id")
-    private Case case_id;
-
-    @Column(name = "fullname", length = 255)
+    @Column(name = "fullname")
     private String fullname;
 
-    @Column(name = "contact", length = 255)
+    @Column(name = "contact")
     private String contact;
 
-    @Column(name = "statement", columnDefinition = "TEXT")
+    @Column(name = "statement")
     private String statement;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
 }
