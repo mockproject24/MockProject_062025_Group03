@@ -2,44 +2,40 @@ package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 
-@Table(name = "cases")
 @Entity
+@Table(name = "case")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class Case {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
+    @Column(name = "case_id", length = 36)
+    private String caseId;
 
-    @Column(unique = true)
-    String caseNumber;
+    @Column(name = "case_number", length = 50, unique = true)
+    private String caseNumber;
 
-    String typeCase;
+    @Column(name = "type_case", length = 100)
+    private String typeCase;
 
-    String severity;
+    @Column(name = "severity", length = 50)
+    private String severity;
 
-    String status;
+    @Column(name = "status", length = 50)
+    private String status;
 
-    @Column(columnDefinition = "TEXT")
-    String summary;
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
 
-    Boolean isDeleted;
+    @Column(name = "create_at")
+    private LocalDateTime createdAt;
 
-    LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.isDeleted = false;
-    }
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 }

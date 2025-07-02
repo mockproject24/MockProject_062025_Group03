@@ -1,41 +1,44 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 
-@Table(name = "warrant")
 @Entity
+@Table(name = "warrant")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Warrant {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "warrant_id", length = 36)
     String warrantId;
 
-    String caseId; // Foreign key to Case
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id", referencedColumnName = "case_id")
+    Case case_id;
 
+    @Column(name = "warrant_name", length = 255)
     String warrantName;
 
+    @Column(name = "attached_file", length = 255)
     String attachedFile;
 
-    LocalDateTime timePublish;
+    @Column(name = "time_pulish")
+    LocalDateTime timePulish;
 
-    Boolean isDeleted;
+    @Column(name = "is_deleted")
+    Boolean isDeleted = false;
 
     @PrePersist
     protected void onCreate() {
-        this.isDeleted = false;
-        if (this.timePublish == null) {
-            this.timePublish = LocalDateTime.now();
-        }
+        if (this.isDeleted == null) this.isDeleted = false;
+        if (this.timePulish == null) this.timePulish = LocalDateTime.now();
     }
 }

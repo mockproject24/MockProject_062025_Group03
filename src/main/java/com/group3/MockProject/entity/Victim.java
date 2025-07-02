@@ -1,35 +1,40 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Table(name = "victim")
 @Entity
+@Table(name = "victim")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Victim {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "victim_id", length = 36, updatable = false, nullable = false)
     String victimId;
 
-    String caseId; // Foreign key to Case
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id", referencedColumnName = "id", nullable = false)
+    Case case_id; // Foreign key đến Case
 
+    @Column(name = "fullname", length = 255, nullable = false)
     String fullname;
 
+    @Column(name = "contact", length = 100)
     String contact;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "injurie", columnDefinition = "TEXT")
     String injurie;
 
+    @Column(name = "status", length = 50)
     String status;
 
+    @Column(name = "is_deleted", nullable = false)
     Boolean isDeleted;
 
     @PrePersist
@@ -37,4 +42,3 @@ public class Victim {
         this.isDeleted = false;
     }
 }
-
