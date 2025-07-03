@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "sentence")
+@Table(name = "sentences")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,8 +23,8 @@ public class Sentence {
     @Column(name = "duration")
     private String duration;
 
-    @Column(name = "condition")
-    private String condition;
+    @Column(name = "sentence_condition")
+    private String sentenceCondition;
 
     @Column(name = "sentencing_date")
     private LocalDateTime sentencingDate;

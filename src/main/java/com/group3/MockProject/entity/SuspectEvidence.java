@@ -35,12 +35,12 @@ public class SuspectEvidence {
 
     @ManyToOne
     @JoinColumn(name = "evidence_id")
-    @MapsId("evidence_id")
+    @MapsId("suspectId")
     private Evidence evidence;
 
     @ManyToOne
     @JoinColumn(name = "suspect_id")
-    @MapsId("suspect_id")
+    @MapsId("suspectId")
     private Suspect suspect;
 
     @Column(name = "is_deleted")

@@ -22,6 +22,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * SuspectEvidenceId
  *
@@ -41,7 +43,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SuspectEvidenceId {
+public class SuspectEvidenceId  implements Serializable {
     @Column(name="evidence_id")
     private String evidenceId;
     @Column(name="suspect_id")

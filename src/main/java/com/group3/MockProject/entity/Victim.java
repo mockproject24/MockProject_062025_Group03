@@ -41,6 +41,6 @@ public class Victim {
     @OneToMany(mappedBy = "victim")
     private List<VictimInterview> victimInterviews;
 
-    @OneToMany(mappedBy = "report")
+    @OneToMany(mappedBy = "victim")
     private List<ReportsVictims> reportsVictims;
 }

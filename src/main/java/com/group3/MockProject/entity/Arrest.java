@@ -32,7 +32,6 @@ import lombok.NoArgsConstructor;
 public class Arrest {
     @Id
     @Column(name = "arrest_id")
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String arrestId;
 
     @Column(name = "suspect_miranda_signature")

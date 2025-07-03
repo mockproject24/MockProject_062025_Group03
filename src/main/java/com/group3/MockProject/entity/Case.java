@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "case")
+@Table(name = "cases")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +17,6 @@ public class Case {
 
     @Id
     @Column(name = "case_id")
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String caseId;
 
     @Column(name = "case_number")
@@ -63,7 +62,7 @@ public class Case {
     private List<InvestigationPlan> investigationPlans;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Envidency> evidences;
+    private List<Evidence> evidences;
 
     @OneToMany(mappedBy = "caseEntity")
     private List<Arrest> arrests;

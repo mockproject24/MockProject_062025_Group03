@@ -16,12 +16,12 @@ public class WitnessInterview {
 
     @ManyToOne
     @JoinColumn(name = "witness_id")
-    @MapsId("witness_id")
+    @MapsId("witnessId")
     private Witness witness;
 
     @ManyToOne
     @JoinColumn(name = "interview_id")
-    @MapsId("interview_id")
+    @MapsId("interviewId")
     private Interview interview;
 
     @Column(name = "is_deleted")

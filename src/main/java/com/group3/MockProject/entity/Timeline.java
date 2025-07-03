@@ -35,9 +35,6 @@ public class Timeline {
     @Column(name = "timeline_id")
     private String timelineId;
 
-    @Column(name = "case_result_id")
-    private String caseResultId;
-
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
