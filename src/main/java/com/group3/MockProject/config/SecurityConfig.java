@@ -3,6 +3,8 @@ package com.group3.MockProject.config;
 import com.group3.MockProject.security.JwtAuthenticationEntryPoint;
 import com.group3.MockProject.security.JwtAuthenticationFilter;
 import com.group3.MockProject.service.impl.UserDetailsServiceImpl;
+import com.group3.MockProject.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,19 +24,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
+
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Autowired
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService, 
-                         JwtAuthenticationEntryPoint unauthorizedHandler,
-                         JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.userDetailsService = userDetailsService;
-        this.unauthorizedHandler = unauthorizedHandler;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    @Bean
+    public JwtAuthenticationFilter authenticationJwtTokenFilter() {
+        return this.jwtAuthenticationFilter;
     }
 
     @Bean
@@ -69,7 +70,7 @@ public class SecurityConfig {
             );
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

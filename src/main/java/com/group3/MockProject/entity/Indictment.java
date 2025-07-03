@@ -1,32 +1,38 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "indictment")
+@Table(name = "indictments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Indictment {
     @Id
     @Column(name = "indictment_id")
-    private String indictmentId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String indictmentId;
 
     @Column(name = "content", columnDefinition = "MEDIUMTEXT")
-    private String content;
+    String content;
 
     @Column(name = "issued_at")
-    private LocalDateTime issuedAt;
+    LocalDateTime issuedAt;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @ManyToOne
     @JoinColumn(name = "prosecution_id")
-    private Prosecution prosecution;
+    Prosecution prosecution;
 }

@@ -1,76 +1,84 @@
 package com.group3.MockProject.entity;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "evidence")
+@Table(name = "evidences")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Evidence {
     @Id
     @Column(name = "evidence_id")
-    private String evidenceId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String evidenceId;
 
     @Column(name = "description", columnDefinition = "MEDIUMTEXT")
-    private String description;
+    String description;
 
     @Column(name = "collected_at")
-    private LocalDateTime collectedAt;
+    LocalDateTime collectedAt;
 
     @Column(name = "current_location")
-    private String currentLocation;
+    String currentLocation;
 
     @Column(name = "attach_file")
-    private String attachFile;
+    String attachFile;
 
     @Column(name = "status")
-    private String status;
+    String status;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @OneToOne(mappedBy = "evidence")
-    private PhysicalInvest physicalInvest;
+    DigitalInvest digitalInvest;
+
+    @OneToOne(mappedBy = "evidence")
+    FinancialInvest financialInvest;
+
+    @OneToOne(mappedBy = "evidence")
+    PhysicalInvest physicalInvest;
 
     @OneToMany(mappedBy = "evidence")
-    private List<RecordInfo> recordInfos;
+    List<RecordInfo> recordInfos;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
-    private Case caseEntity;
+    Case caseEntity;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    User user;
 
     @OneToOne(mappedBy = "evidence")
-    private ForensicInvest forensicInvest;
+    ForensicInvest forensicInvest;
 
     @OneToMany(mappedBy = "evidence")
-    private List<CaseEnvidence> casesEvidences;
+    List<CaseEvidence> casesEvidences;
 
     @ManyToOne
     @JoinColumn(name = "report_id")
-    private Report report;
+    Report report;
 
     @OneToMany(mappedBy = "evidence")
-    private List<SuspectEvidence> evidencesSuspects;
+    List<SuspectEvidence> evidencesSuspects;
+
+    @OneToMany(mappedBy = "evidence")
+    List<MeasureSurvey> measureSurveys;
 
     @ManyToOne
     @JoinColumn(name = "warrant_id")
-    private Warrant warrant;
+    Warrant warrant;
 }

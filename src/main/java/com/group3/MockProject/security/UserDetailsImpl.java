@@ -2,6 +2,7 @@ package com.group3.MockProject.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group3.MockProject.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,11 +16,13 @@ public class UserDetailsImpl implements UserDetails {
 
     private String username;
 
+    @Getter
     private String email;
 
     @JsonIgnore
     private String password;
 
+    @Getter
     private String fullname;
 
     private Collection<? extends GrantedAuthority> authorities;
@@ -47,14 +50,6 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getFullname() {
-        return fullname;
     }
 
     @Override
