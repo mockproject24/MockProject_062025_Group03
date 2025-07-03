@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 
@@ -23,13 +24,17 @@ public class Witness {
     @Column(name = "contact")
     private String contact;
 
-    @Column(name = "statement")
+    @Column(name = "statement", columnDefinition = "TEXT")
     private String statement;
 
     @Column(name = "is_deleted")
+    @ColumnDefault("false")
     private boolean isDeleted = false;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
     private Case caseEntity;
+
+    @OneToMany(mappedBy = "witness")
+    private List<WitnessInterview> interviews;
 }

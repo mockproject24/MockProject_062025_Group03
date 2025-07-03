@@ -25,7 +25,7 @@ public class CaseResult {
     @Column(name = "report_analyst")
     private String reportAnalyst;
 
-    @Column(name = "summary")
+    @Column(name = "summary", columnDefinition = "MEDIUMTEXT")
     private String summary;
 
     @Column(name = "identify_motive")

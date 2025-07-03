@@ -38,8 +38,7 @@ public class PhysicalInvest {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "evidence_id")
-    @MapsId
-    private Envidency evidence;
+    private Evidence evidence;
 }

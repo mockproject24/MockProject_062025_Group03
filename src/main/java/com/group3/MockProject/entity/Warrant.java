@@ -24,7 +24,7 @@ public class Warrant {
     private String warrantName;
 
     @Column(name = "attached_file", columnDefinition = "json")
-    private String[] attachedFile;
+    private List<String> attachedFile;
 
     @Column(name = "time_publish")
     private LocalDateTime timePublish;
@@ -40,7 +40,7 @@ public class Warrant {
     private Case caseEntity;
 
     @OneToMany(mappedBy = "warrant")
-    private List<Envidency> evidences;
+    private List<Evidence> evidences;
 
     @PrePersist
     protected void onCreate() {

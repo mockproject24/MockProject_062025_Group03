@@ -17,6 +17,7 @@ public class Case {
 
     @Id
     @Column(name = "case_id")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String caseId;
 
     @Column(name = "case_number")
@@ -31,7 +32,7 @@ public class Case {
     @Column(name = "status")
     private String status;
 
-    @Column(name = "summary")
+    @Column(name = "summary", columnDefinition = "MEDIUMTEXT")
     private String summary;
 
     @Column(name = "create_at")

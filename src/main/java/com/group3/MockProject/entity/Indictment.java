@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "indictments")
+@Table(name = "indictment")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +17,7 @@ public class Indictment {
     @Column(name = "indictment_id")
     private String indictmentId;
 
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
     private String content;
 
     @Column(name = "issued_at")

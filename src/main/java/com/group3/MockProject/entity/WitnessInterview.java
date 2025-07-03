@@ -11,20 +11,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WitnessInterview {
-    @Id
-    @Column(name = "interview_id")
-    private String interviewId;
-
-    @Id
-    @Column(name = "witness_id")
-    private String witnessId;
+    @EmbeddedId
+    private WitnessInterviewId id;
 
     @ManyToOne
-    @JoinColumn(name = "witness_id", insertable = false, updatable = false)
+    @JoinColumn(name = "witness_id")
+    @MapsId("witness_id")
     private Witness witness;
 
     @ManyToOne
-    @JoinColumn(name = "interview_id", insertable = false, updatable = false)
+    @JoinColumn(name = "interview_id")
+    @MapsId("interview_id")
     private Interview interview;
 
     @Column(name = "is_deleted")

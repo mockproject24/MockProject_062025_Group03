@@ -45,11 +45,11 @@ public class Question {
     @Column(name="is_deleted")
     private Boolean isDeleted = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name="interview_id", referencedColumnName = "interview_id")
     private Interview interview;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name="created_by", referencedColumnName = "username")
     private User user;
 } 

@@ -48,7 +48,7 @@ public class Role {
     @Column(name = "role_id")
     private String roleId;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
     private String description;
 
     @Column(name = "is_deleted")

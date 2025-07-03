@@ -38,7 +38,7 @@ public class Suspect {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
     private String description;
 
     @Column(name = "address")
@@ -47,7 +47,7 @@ public class Suspect {
     @Column(name = "catch_time")
     private LocalDateTime catchTime;
 
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
     private String notes;
 
     @Column(name = "status")
@@ -74,5 +74,5 @@ public class Suspect {
     private Report report;
 
     @OneToMany(mappedBy = "suspect")
-    private List<WarrantEvidence> evidencesSuspects;
+    private List<SuspectEvidence> suspectEvidences;
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "investigation_plan")
@@ -53,18 +54,6 @@ public class InvestigationPlan implements Serializable {
     @Column(name = "is_deleted", columnDefinition = "boolean default false")
     private Boolean isDeleted;
 
-    @Override
-    public String toString() {
-        return "InvestigationPlan{" +
-                "investigationPlanId=" + investigationPlanId +
-                ", createdOfficerId=" + createdOfficerId +
-                ", caseId=" + caseId +
-                ", deadlineDate=" + deadlineDate +
-                ", result='" + result + '\'' +
-                ", status='" + status + '\'' +
-                ", createdAt=" + createdAt +
-                ", planContent='" + planContent + '\'' +
-                ", isDeleted=" + isDeleted +
-                '}';
-    }
+    @OneToMany(mappedBy = "investigationPlan")
+    private List<Interview> interviews;
 }

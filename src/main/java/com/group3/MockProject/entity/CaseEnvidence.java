@@ -22,7 +22,7 @@ public class CaseEnvidence {
     @ManyToOne
     @MapsId("evidenceId")
     @JoinColumn(name = "evidence_id")
-    private Envidency evidence;
+    private Evidence evidence;
 
     @Column(name = "is_deleted")
     private boolean isDeleted = false;

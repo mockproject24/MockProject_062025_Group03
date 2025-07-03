@@ -45,9 +45,9 @@ public class Timeline {
     private LocalDateTime endTime;
 
     @Column(name = "attached_file", columnDefinition = "json")
-    private String[] attachedFile;
+    private List<String> attachedFile;
 
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
     private String notes;
 
     @Column(name = "activity")
@@ -57,6 +57,6 @@ public class Timeline {
     private boolean isDeleted = false;
 
     @ManyToOne
-    @JoinColumn(name = "case_result_id", insertable = false, updatable = false)
+    @JoinColumn(name = "case_result_id")
     private CaseResult caseResult;
 }

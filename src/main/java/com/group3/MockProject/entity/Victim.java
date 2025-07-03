@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 
@@ -30,9 +31,16 @@ public class Victim {
     private String status;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    private boolean isDeleted;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
     private Case caseEntity;
+
+    @OneToMany(mappedBy = "victim")
+    private List<VictimInterview> victimInterviews;
+
+    @OneToMany(mappedBy = "report")
+    private List<ReportsVictims> reportsVictims;
 }

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "reports")
+@Table(name = "report")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +27,7 @@ public class Report {
     @Column(name = "incident_date")
     private LocalDateTime incidentDate;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
     private String description;
 
     @Column(name = "case_location")
@@ -63,8 +63,11 @@ public class Report {
     private Case caseEntity;
 
     @OneToMany(mappedBy = "report")
-    private List<Envidency> evidences;
+    private List<Evidence> evidences;
 
     @OneToMany(mappedBy = "report")
     private List<Suspect> suspects;
+
+    @OneToMany(mappedBy = "report")
+    private List<ReportsVictims> reportsVictims;
 }

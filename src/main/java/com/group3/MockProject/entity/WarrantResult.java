@@ -23,7 +23,7 @@ public class WarrantResult {
     @Column(name = "location")
     private String location;
 
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
     private String notes;
 
     @Column(name = "time_active")

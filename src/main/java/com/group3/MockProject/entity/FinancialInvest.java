@@ -23,6 +23,5 @@ public class FinancialInvest {
 
     @OneToOne
     @JoinColumn(name = "evidence_id")
-    @MapsId
-    private Envidency evidence;
+    private Evidence evidence;
 }

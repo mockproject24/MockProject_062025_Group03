@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "measure_surveys")
+@Table(name = "measure_survey")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,5 +29,5 @@ public class MeasureSurvey {
 
     @ManyToOne
     @JoinColumn(name = "evidence_id")
-    private Envidency evidence;
+    private Evidence evidence;
 } 

@@ -1,67 +1,76 @@
 package com.group3.MockProject.entity;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "evidence")
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Evidence {
     @Id
-    @Column(name = "evidence_id", nullable = false)
+    @Column(name = "evidence_id")
     private String evidenceId;
 
-    // --- FK sang các bảng khác (khi cần mapping quan hệ, bỏ comment @ManyToOne) ---
-    @Column(name = "measure_survey_id", nullable = false)
-    private Long measureSurveyId;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "measure_survey_id", insertable = false, updatable = false)
-    // private MeasureSurvey measureSurvey;
-
-    @Column(name = "warrant_result_id", nullable = false)
-    private Long warrantResultId;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "warrant_result_id", insertable = false, updatable = false)
-    // private WarrantResult warrantResult;
-
-    @Column(name = "report_id", nullable = false)
-    private Long reportId;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "report_id", insertable = false, updatable = false)
-    // private Report report;
-
-    @Column(name = "collected_by", nullable = false)
-    private Long collectedBy;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "collected_by", insertable = false, updatable = false)
-    // private User collector;
-
-    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
     private String description;
 
-    @Column(name = "collected_at", nullable = false)
+    @Column(name = "collected_at")
     private LocalDateTime collectedAt;
 
-    @Column(name = "current_location", nullable = false)
+    @Column(name = "current_location")
     private String currentLocation;
 
-    @Column(name = "attached_file", columnDefinition = "TEXT", nullable = true)
-    private String attachedFile;
+    @Column(name = "attach_file")
+    private String attachFile;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private String status;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    @OneToOne(mappedBy = "evidence")
+    private PhysicalInvest physicalInvest;
+
+    @OneToMany(mappedBy = "evidence")
+    private List<RecordInfo> recordInfos;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case caseEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToOne(mappedBy = "evidence")
+    private ForensicInvest forensicInvest;
+
+    @OneToMany(mappedBy = "evidence")
+    private List<CaseEnvidence> casesEvidences;
+
+    @ManyToOne
+    @JoinColumn(name = "report_id")
+    private Report report;
+
+    @OneToMany(mappedBy = "evidence")
+    private List<SuspectEvidence> evidencesSuspects;
+
+    @ManyToOne
+    @JoinColumn(name = "warrant_id")
+    private Warrant warrant;
 }

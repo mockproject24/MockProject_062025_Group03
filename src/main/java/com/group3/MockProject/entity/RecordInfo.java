@@ -34,5 +34,5 @@ public class RecordInfo {
 
     @ManyToOne
     @JoinColumn(name = "evidence_id")
-    private Envidency evidence;
+    private Evidence evidence;
 }

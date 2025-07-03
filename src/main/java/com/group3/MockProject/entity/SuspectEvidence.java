@@ -1,9 +1,6 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,9 +30,18 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "suspect_evidence")
 public class SuspectEvidence {
-    @Id
-    private String evidenceId;
-    private String suspectId;
+    @EmbeddedId
+    private SuspectEvidenceId id;
+
+    @ManyToOne
+    @JoinColumn(name = "evidence_id")
+    @MapsId("evidence_id")
+    private Evidence evidence;
+
+    @ManyToOne
+    @JoinColumn(name = "suspect_id")
+    @MapsId("suspect_id")
+    private Suspect suspect;
 
     @Column(name = "is_deleted")
     private boolean isDeleted = false;

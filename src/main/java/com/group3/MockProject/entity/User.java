@@ -55,7 +55,7 @@ public class User {
 
     @ColumnDefault("false")
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private Boolean isDeleted;
 
     @OneToMany(mappedBy = "user")
     private List<Report> reports;
@@ -67,7 +67,7 @@ public class User {
     private List<InvestigationPlan> investigationPlans;
 
     @OneToMany(mappedBy = "user")
-    private List<Envidency> evidences;
+    private List<Evidence> evidences;
 
     @OneToMany(mappedBy = "user")
     private List<Prosecution> prosecutions;
@@ -75,4 +75,10 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @OneToMany(mappedBy = "user")
+    private List<UsersCases> usersCases;
+
+    @OneToMany(mappedBy = "user")
+    private List<Question> questions;
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "digital_inverts")
+@Table(name = "digital_invert")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,6 +29,5 @@ public class DigitalInvest {
 
     @OneToOne
     @JoinColumn(name = "evidence_id")
-    @MapsId
-    private Envidency evidence;
+    private Evidence evidence;
 }
