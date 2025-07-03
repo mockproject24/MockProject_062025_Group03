@@ -1,35 +1,45 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+
+/**
+ * PhysicalInvest class
+ * <p>
+ * Provides business logic for managing details.
+ * <p>
+ * Version 1.0
+ * <p>
+ * Date: 01/07/2025
+ * <p>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE        AUTHOR        DESCRIPTION
+ * -------------------------------------------------------------
+ * 01/07/2025        Nguyễn Bảo Kha        Create
+ */
 
 @Entity
 @Table(name = "physical_invest")
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class PhysicalInvest {
     @Id
-    @Column(name = "evidence_id", nullable = false)
+    @Column(name = "evidence_id")
     private String evidenceId;
 
-    // --- foreign key sang bảng khác (nếu cần mapping quan hệ, bỏ comment @ManyToOne) ---
-    // @Column(name = "case_id", nullable = false)
-    // private Long caseId;     // FK
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "case_id", insertable = false, updatable = false)
-    // private CaseEntity caseEntity;
-
-    @Column(name = "image_url", columnDefinition = "TEXT", nullable = true)
+    @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    @OneToOne
+    @JoinColumn(name = "evidence_id")
+    @MapsId
+    private Envidency evidence;
 }

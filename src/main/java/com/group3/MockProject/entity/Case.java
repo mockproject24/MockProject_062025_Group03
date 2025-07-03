@@ -1,53 +1,78 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "case")
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Case {
+
     @Id
-    @Column(name = "case_id", nullable = false)
+    @Column(name = "case_id")
     private String caseId;
 
-    @Column(name = "case_name", nullable = false)
-    private String caseName;
+    @Column(name = "case_number")
+    private Integer caseNumber;
 
-    @Column(name = "type_case", nullable = true)
+    @Column(name = "type_case")
     private String typeCase;
-    // nếu sau này muốn mapping enum hoặc lookup table:
-    // @Enumerated(EnumType.STRING)
-    // private CaseType typeCase;
 
-    @Column(name = "severity", nullable = false)
-    private Integer severity;
+    @Column(name = "severity")
+    private String severity;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private String status;
-    // tương tự có thể dùng enum:
-    // @Enumerated(EnumType.STRING)
-    // private CaseStatus status;
 
-    @Column(name = "summary", columnDefinition = "TEXT", nullable = true)
+    @Column(name = "summary")
     private String summary;
 
-    @Column(name = "create_at", nullable = false)
+    @Column(name = "create_at")
     private LocalDateTime createAt;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 
+    @OneToMany(mappedBy = "caseEntity")
+    private List<CaseResult> caseResults;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Warrant> warrants;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Report> reports;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Victim> victims;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Suspect> suspects;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Witness> witnesses;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<InvestigationPlan> investigationPlans;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Envidency> evidences;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Arrest> arrests;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Prosecution> prosecutions;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<Sentence> sentences;
+
+    @OneToMany(mappedBy = "caseEntity")
+    private List<CaseEnvidence> casesEvidences;
 }

@@ -1,49 +1,62 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
 import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * Timeline class
+ * <p>
+ * Provides business logic for managing details.
+ * <p>
+ * Version 1.0
+ * <p>
+ * Date: 01/07/2025
+ * <p>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE        AUTHOR        DESCRIPTION
+ * -------------------------------------------------------------
+ * 01/07/2025        Nguyễn Bảo Kha        Create
+ */
 
 @Entity
-@Table(name = "timeline")
-@Getter
-@Setter
-@ToString
+@Table(name = "timelines")
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Timeline {
     @Id
-    @Column(name = "timeline_id", nullable = false)
+    @Column(name = "timeline_id")
     private String timelineId;
 
-    // --- foreign key sang CASE_RESULT (nếu cần mapping quan hệ, sẽ dùng @ManyToOne) ---
-    @Column(name = "case_result_id", nullable = false)
-    private Long caseResultId;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "case_result_id", insertable = false, updatable = false)
-    // private CaseResult caseResult;
+    @Column(name = "case_result_id")
+    private String caseResultId;
 
-    @Column(name = "start_time", nullable = false)
+    @Column(name = "start_time")
     private LocalDateTime startTime;
 
-    @Column(name = "end_time", nullable = true)
+    @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    @Column(name = "attached_file", columnDefinition = "TEXT", nullable = true)
-    private String attachedFile;
+    @Column(name = "attached_file", columnDefinition = "json")
+    private String[] attachedFile;
 
-    @Column(name = "notes", columnDefinition = "TEXT", nullable = true)
+    @Column(name = "notes")
     private String notes;
 
-    @Column(name = "activity", nullable = false)
+    @Column(name = "activity")
     private String activity;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "case_result_id", insertable = false, updatable = false)
+    private CaseResult caseResult;
 }
