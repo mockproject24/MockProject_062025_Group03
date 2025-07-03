@@ -1,55 +1,61 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "interview")
+@Table(name = "interviews")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Interview {
     @Id
     @Column(name = "interview_id")
-    private String interviewId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String interviewId;
 
     @Column(name = "type_interviewee")
-    private String typeInterviewee;
+    String typeInterviewee;
 
     @Column(name = "location")
-    private String location;
+    String location;
 
-    @Column(name = "attached_file")
-    private String attachedFile;
+    @Column(name = "attached_file", columnDefinition = "MEDIUMTEXT")
+    String attachedFile;
 
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    LocalDateTime startTime;
 
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    LocalDateTime endTime;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @ManyToOne
     @JoinColumn(name = "interviewer_id")
-    private User interviewer;
+    User interviewer;
 
     @ManyToOne
     @JoinColumn(name = "investigation_plan_id")
-    private InvestigationPlan investigationPlan;
+    InvestigationPlan investigationPlan;
 
     @OneToMany(mappedBy = "interview")
-    private List<Question> questions;
+    List<Question> questions;
 
     @OneToMany(mappedBy = "interview")
-    private List<WitnessInterview> witnessesInterviews;
+    List<WitnessInterview> witnessesInterviews;
 
     @OneToMany(mappedBy = "interview")
-    private List<VictimInterview> victimsInterviews;
+    List<VictimInterview> victimsInterviews;
 } 

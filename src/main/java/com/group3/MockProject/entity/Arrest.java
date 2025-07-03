@@ -1,11 +1,15 @@
 package com.group3.MockProject.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Arrest class
@@ -23,35 +27,36 @@ import lombok.NoArgsConstructor;
  * -------------------------------------------------------------
  * 01/07/2025        Nguyễn Bảo Kha        Create
  */
-
-@Entity
-@Table(name = "arrest")
 @Data
+@Entity
+@Table(name = "arrests")
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Arrest {
-    @Id
-    @Column(name = "arrest_id")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String arrestId;
+    @EmbeddedId
+    ArrestId id;
+
+    @ManyToOne
+    @MapsId("caseId")
+    @JoinColumn(name = "case_id")
+    Case cases;
+
+    @ManyToOne
+    @MapsId("suspectId")
+    @JoinColumn(name = "suspect_id")
+    Suspect suspect;
 
     @Column(name = "suspect_miranda_signature")
-    private String suspectMirandaSignature;
+    String suspectMirandaSignature;
 
     @Column(name = "arrest_start_time", nullable = false)
-    private LocalDateTime arrestStartTime;
+    LocalDateTime arrestStartTime;
 
     @Column(name = "arrest_end_time")
-    private LocalDateTime arrestEndTime;
+    LocalDateTime arrestEndTime;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
-
-    @ManyToOne
-    @JoinColumn(name = "case_id")
-    private Case caseEntity;
-
-    @ManyToOne
-    @JoinColumn(name = "suspect_id")
-    private Suspect suspect;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 }

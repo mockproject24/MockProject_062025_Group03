@@ -1,44 +1,50 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "inmate")
+@Table(name = "inmates")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Inmate {
     @Id
     @Column(name = "inmate_id")
-    private String inmateId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String inmateId;
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "sentence_id")
 //    private Sentence sentence;
 
     @Column(name = "fullname")
-    private String fullname;
+    String fullname;
 
     @Column(name = "assigned_facility")
-    private String assignedFacility;
+    String assignedFacility;
 
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    LocalDateTime startDate;
 
     @Column(name = "expected_release")
-    private LocalDateTime expectedRelease;
+    LocalDateTime expectedRelease;
 
     @Column(name = "health_status")
-    private String healthStatus;
+    String healthStatus;
 
     @Column(name = "status")
-    private String status;
+    String status;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 }

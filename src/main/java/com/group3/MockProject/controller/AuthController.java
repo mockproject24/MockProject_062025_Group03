@@ -78,7 +78,7 @@ public class AuthController {
         user.setEmail(registerRequest.getEmail());
         user.setPhoneNumber(registerRequest.getPhoneNumber());
         user.setCreateAt(LocalDateTime.now());
-        user.setIsDeleted(false);
+        user.setDeleted(false);
 
         String roleId = registerRequest.getRoleId();
         if (roleId == null || roleId.isEmpty()) {
