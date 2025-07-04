@@ -25,7 +25,7 @@ public class Case {
     String caseId;
 
     @Column(name = "case_number")
-    Integer caseNumber;
+    String caseNumber;
 
     @Column(name = "type_case")
     String typeCase;
