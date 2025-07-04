@@ -1,79 +1,87 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "case")
+@Table(name = "cases")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Case {
 
     @Id
     @Column(name = "case_id")
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String caseId;
+    String caseId;
 
     @Column(name = "case_number")
-    private Integer caseNumber;
+    Integer caseNumber;
 
     @Column(name = "type_case")
-    private String typeCase;
+    String typeCase;
 
     @Column(name = "severity")
-    private String severity;
+    String severity;
 
     @Column(name = "status")
-    private String status;
+    String status;
 
-    @Column(name = "summary", columnDefinition = "MEDIUMTEXT")
-    private String summary;
+    @Column(name = "summary", columnDefinition = "TEXT")
+    String summary;
 
     @Column(name = "create_at")
-    private LocalDateTime createAt;
+    LocalDateTime createAt;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<CaseResult> caseResults;
+    List<CaseResult> caseResults;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Warrant> warrants;
+    List<Warrant> warrants;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Report> reports;
+    List<Report> reports;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Victim> victims;
+    List<Victim> victims;
+
+//    @OneToMany(mappedBy = "caseEntity")
+//    List<Suspect> suspects;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Suspect> suspects;
+    List<Witness> witnesses;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Witness> witnesses;
+    List<InvestigationPlan> investigationPlans;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<InvestigationPlan> investigationPlans;
+    List<Evidence> evidences;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Envidency> evidences;
+    List<Arrest> arrests;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Arrest> arrests;
+    List<Prosecution> prosecutions;
+
+//    @OneToMany(mappedBy = "caseEntity")
+//    List<Sentence> sentences;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Prosecution> prosecutions;
+    List<UsersCases> usersCases;
 
     @OneToMany(mappedBy = "caseEntity")
-    private List<Sentence> sentences;
-
-    @OneToMany(mappedBy = "caseEntity")
-    private List<CaseEnvidence> casesEvidences;
+    List<CaseEvidence> casesEvidences;
 }

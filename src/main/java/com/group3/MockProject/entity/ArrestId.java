@@ -1,21 +1,5 @@
 package com.group3.MockProject.entity;
 
-/**
- * SuspectEvidenceId
- * <p>
- * Provides business logic for managing employment details.
- * <p>
- * Version 1.0
- * Date: 7/3/2025
- * <p>
- * Copyright
- * <p>
- * Modification Logs:
- * DATE         AUTHOR       DESCRIPTION
- * -------------------------------------
- * 7/3/2025      Ngoc Nghia      Create
- */
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -24,29 +8,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
+
 /**
- * SuspectEvidenceId
+ * ArrestId
  * <p>
  * Provides business logic for managing employment details.
  * <p>
  * Version 1.0
- * Date: 7/3/2025
+ * Date: 03/07/2025
  * <p>
  * Copyright
  * <p>
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 7/3/2025      Ngoc Nghia      Create
+ * 03/07/2025      ASUS      Create
  */
-@Embeddable
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Embeddable
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SuspectEvidenceId {
-    @Column(name = "evidence_id")
-    String evidenceId;
+public class ArrestId implements Serializable {
+    @Column(name = "case_id")
+    String caseId;
     @Column(name = "suspect_id")
     String suspectId;
 }

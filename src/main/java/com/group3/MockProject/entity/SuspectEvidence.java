@@ -1,10 +1,9 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 /**
  * SuspectEvidence class
@@ -28,21 +27,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "suspect_evidence")
+@Table(name = "suspects_evidences")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SuspectEvidence {
     @EmbeddedId
-    private SuspectEvidenceId id;
+    SuspectEvidenceId id;
 
     @ManyToOne
     @JoinColumn(name = "evidence_id")
-    @MapsId("evidence_id")
-    private Evidence evidence;
+    @MapsId("evidenceId")
+    Evidence evidence;
 
     @ManyToOne
     @JoinColumn(name = "suspect_id")
-    @MapsId("suspect_id")
-    private Suspect suspect;
+    @MapsId("suspectId")
+    Suspect suspect;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 }
