@@ -28,6 +28,9 @@ public class UsersCases {
     @JoinColumn(name = "case_id")
     Case caseEntity;
 
+    @Column(name = "responsible", columnDefinition = "TEXT")
+    String responsible;
+
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
