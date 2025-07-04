@@ -7,6 +7,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EvidentMapper {
 
+    /**
+     * Converts an Evidence entity to an EvidentDto.
+     *
+     * @param entity the Evidence entity to convert
+     * @return the converted EvidentDto
+     */
     public EvidentDto toDto(Evidence entity) {
         if (entity == null) {
             return null;
@@ -28,6 +34,13 @@ public class EvidentMapper {
                 null
         );
     }
+
+    /**
+     * Converts a DigitalInvest entity to a DigitalInvestDto.
+     *
+     * @param entity the DigitalInvest entity to convert
+     * @return the converted DigitalInvestDto
+     */
     public DigitalInvestDto toDto(DigitalInvest entity) {
         if (entity == null) {
             return null;
@@ -38,6 +51,13 @@ public class EvidentMapper {
                 entity.getResult()
         );
     }
+
+    /**
+     * Converts a FinancialInvest entity to a FinancialInvestDto.
+     *
+     * @param entity the FinancialInvest entity to convert
+     * @return the converted FinancialInvestDto
+     */
     public FinancialInvestDto toDto(FinancialInvest entity) {
         if (entity == null) {
             return null;
@@ -46,6 +66,13 @@ public class EvidentMapper {
                 entity.getSummary()
         );
     }
+
+    /**
+     * Converts a ForensicInvest entity to a ForensicInvestDto.
+     *
+     * @param entity the ForensicInvest entity to convert
+     * @return the converted ForensicInvestDto
+     */
     public ForensicInvestDto toDto(ForensicInvest entity) {
         if (entity == null) {
             return null;
@@ -56,6 +83,13 @@ public class EvidentMapper {
                 entity.getReceivedAt()
         );
     }
+
+    /**
+     * Converts a PhysicalInvest entity to a PhysicalInvestDto.
+     *
+     * @param entity the PhysicalInvest entity to convert
+     * @return the converted PhysicalInvestDto
+     */
     public PhysicalInvestDto toDto(PhysicalInvest entity) {
         if (entity == null) {
             return null;
@@ -64,6 +98,13 @@ public class EvidentMapper {
                 entity.getImageUrl()
         );
     }
+
+    /**
+     * Converts a MeasureSurvey entity to a MeasureSurveyDto.
+     *
+     * @param entity the MeasureSurvey entity to convert
+     * @return the converted MeasureSurveyDto
+     */
     public MeasureSurveyDto toDto(MeasureSurvey entity) {
         if (entity == null) {
             return null;
@@ -75,6 +116,13 @@ public class EvidentMapper {
                 entity.getResult()
         );
     }
+
+    /**
+     * Converts a RecordInfo entity to a RecordInfoDto.
+     *
+     * @param entity the RecordInfo entity to convert
+     * @return the converted RecordInfoDto
+     */
     public RecordInfoDto toDto(RecordInfo entity) {
         if (entity == null) {
             return null;

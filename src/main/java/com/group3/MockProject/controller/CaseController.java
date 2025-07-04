@@ -16,6 +16,14 @@ import java.util.List;
 public class CaseController {
     private final ICaseService caseService;
 
+    /**
+     * Retrieves a paginated list of cases with optional search functionality.
+     *
+     * @param page     the page number, starting from 0 (must be >= 0)
+     * @param pageSize the number of items per page (must be > 0)
+     * @param search   an optional search keyword to filter cases
+     * @return a ResponseEntity containing a ResponseDto with the list of cases
+     */
     @GetMapping("")
     public ResponseEntity<ResponseDto<CaseListDto>> getCaseLists(@RequestParam(defaultValue = "0") int page,
                                                                   @RequestParam(defaultValue = "10") int pageSize,
@@ -27,6 +35,13 @@ public class CaseController {
         return ResponseEntity.ok(ResponseDto.success(caseListDtos));
     }
 
+    /**
+     * Retrieves a list of evidences associated with a specific case.
+     *
+     * @param caseId the unique identifier of the case
+     * @return a ResponseEntity containing a ResponseDto with the list of evidences,
+     *         or a no-content response if no evidences are found
+     */
     @GetMapping("{caseId}/evidences")
     public ResponseEntity<ResponseDto<List<EvidentDto<?>>>> getEvidences(@PathVariable String caseId) {
         List<EvidentDto<?>> evidences = caseService.getEvidences(caseId);
@@ -36,3 +51,4 @@ public class CaseController {
         return ResponseEntity.ok(ResponseDto.success(evidences));
     }
 }
+

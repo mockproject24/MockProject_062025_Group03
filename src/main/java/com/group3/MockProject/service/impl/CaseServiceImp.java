@@ -30,7 +30,13 @@ public class CaseServiceImp implements ICaseService {
     private final EvidentMapper mapper;
     private final CaseMapper caseMapper;
 
-
+    /**
+     * Retrieves a list of evidences associated with a specific case.
+     *
+     * @param caseId the unique identifier of the case
+     * @return a list of EvidentDto objects containing evidence details
+     * @throws MockProjectException if the case is not found
+     */
     @Override
     public List<EvidentDto<?>> getEvidences(String caseId) {
         Case caseEntity = caseRepository.findById(caseId)
@@ -73,6 +79,14 @@ public class CaseServiceImp implements ICaseService {
         return evidentDtos;
     }
 
+    /**
+     * Retrieves a paginated list of cases with optional search functionality.
+     *
+     * @param page     the page number, starting from 0 (must be >= 0)
+     * @param pageSize the number of items per page (must be > 0)
+     * @param search   an optional search keyword to filter cases
+     * @return a CaseListDto containing the paginated list of cases
+     */
     @Override
     public CaseListDto getListCase(int page, int pageSize, String search) {
         Pageable pageable = PageRequest.of(page, pageSize);

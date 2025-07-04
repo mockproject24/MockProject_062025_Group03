@@ -12,6 +12,13 @@ import java.util.stream.Collectors;
 @Service
 public class CaseMapper {
 
+    /**
+     * Converts a Case entity to a CaseDto.
+     *
+     * @param entity   the Case entity to convert
+     * @param location the location associated with the case
+     * @return the converted CaseDto
+     */
     public CaseDto toDto(Case entity, String location) {
         if (entity == null) {
             return null;
@@ -27,6 +34,13 @@ public class CaseMapper {
                 location
         );
     }
+
+    /**
+     * Converts a paginated list of Case entities to a CaseListDto.
+     *
+     * @param casePage the paginated list of Case entities
+     * @return the converted CaseListDto
+     */
     public CaseListDto toDto(Page<Case> casePage) {
         if (casePage == null) {
             return null;
