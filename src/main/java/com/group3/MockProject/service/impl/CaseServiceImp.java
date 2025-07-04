@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -63,8 +64,8 @@ public class CaseServiceImp implements ICaseService {
                 ));
             }
 
-            evidenceDto.setRecordInfo(evidence.getRecordInfos().stream().map(mapper::toDto).toList());
-            evidenceDto.setMeasureSurvey(evidence.getMeasureSurveys().stream().map(mapper::toDto).toList());
+            evidenceDto.setRecordInfo(evidence.getRecordInfos().stream().map(mapper::toDto).collect(Collectors.toSet()));
+            evidenceDto.setMeasureSurvey(evidence.getMeasureSurveys().stream().map(mapper::toDto).collect(Collectors.toSet()));
 
             evidentDtos.add(evidenceDto);
         }

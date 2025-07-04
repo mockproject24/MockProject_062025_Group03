@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +23,7 @@ public class EvidentDto<T> {
     private String userId;
     private String reportId;
     private String warrantId;
-    private List<RecordInfoDto> recordInfo;
-    private List<MeasureSurveyDto> measureSurvey;
+    private Set<RecordInfoDto> recordInfo;
+    private Set<MeasureSurveyDto> measureSurvey;
     private InvestigationDetailDto<T> investigationDetail;
 }
