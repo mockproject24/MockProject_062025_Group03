@@ -13,6 +13,21 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+/**
+ * JwtUtil
+ *
+ * Provides business logic for managing employment details.
+ *
+ * Version 1.0
+ * Date: 7/4/2025
+ *
+ * Copyright
+ *
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 7/4/2025      NGUYEN NGOC SY      Create
+ */
 
 @Component
 public class JwtUtil {

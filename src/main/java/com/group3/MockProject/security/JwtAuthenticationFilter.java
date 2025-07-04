@@ -18,6 +18,21 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+/**
+ * JwtAuthenticationFilter
+ * <p>
+ * Provides business logic for managing employment details.
+ * <p>
+ * Version 1.0
+ * Date: 7/4/2025
+ * <p>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 7/4/2025      NGUYEN NGOC SY      Create
+ */
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -27,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsServiceImpl userDetailsService;
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-    
+
     @Autowired
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
         this.jwtUtil = jwtUtil;
@@ -68,4 +83,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return null;
     }
-} 
+}
