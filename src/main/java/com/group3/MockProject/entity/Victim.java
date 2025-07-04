@@ -1,9 +1,11 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
@@ -13,34 +15,45 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Victim {
     @Id
     @Column(name = "victim_id")
-    private String victimId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String victimId;
 
     @Column(name = "fullname")
-    private String fullname;
+    String fullname;
 
     @Column(name = "contact")
-    private String contact;
+    String contact;
 
-    @Column(name = "injuries")
-    private String injuries;
+    @Column(name = "injuries",columnDefinition = "MEDIUMTEXT")
+    String injuries;
+
+    @Column(name="national")
+    String national;
+
+    @Column(name="gender")
+    String gender;
+
+    @Column(name="description", columnDefinition = "MEDIUMTEXT")
+    String description;
 
     @Column(name = "status")
-    private String status;
+    String status;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
-    private boolean isDeleted;
+    boolean isDeleted;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
-    private Case caseEntity;
+    Case caseEntity;
 
     @OneToMany(mappedBy = "victim")
-    private List<VictimInterview> victimInterviews;
+    List<VictimInterview> victimInterviews;
 
-    @OneToMany(mappedBy = "report")
-    private List<ReportsVictims> reportsVictims;
+    @OneToMany(mappedBy = "victim")
+    List<ReportsVictims> reportsVictims;
 }

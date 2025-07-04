@@ -1,28 +1,34 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 
 @Entity
-@Table(name = "permission")
+@Table(name = "permissions")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Permission {
     @Id
     @Column(name = "permission_id")
-    private String permissionId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String permissionId;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
+    String description;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @OneToMany(mappedBy = "permission")
-    private List<RolesPermissions> rolesPermissions;
+    List<RolesPermissions> rolesPermissions;
 } 

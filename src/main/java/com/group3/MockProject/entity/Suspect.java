@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "suspect")
+@Table(name = "suspects")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,61 +18,62 @@ public class Suspect {
 
     @Id
     @Column(name = "suspect_id")
-    private String suspectId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String suspectId;
 
     @Column(name = "fullname")
-    private String fullname;
+    String fullname;
 
     @Column(name = "national")
-    private String national;
+    String national;
 
     @Column(name = "gender")
-    private String gender;
+    String gender;
 
     @Column(name = "dob")
-    private LocalDateTime dob;
+    LocalDateTime dob;
 
     @Column(name = "identification")
-    private String identification;
+    String identification;
 
     @Column(name = "phone_number")
-    private String phoneNumber;
+    String phoneNumber;
 
     @Column(name = "description", columnDefinition = "MEDIUMTEXT")
-    private String description;
+    String description;
 
     @Column(name = "address")
-    private String address;
+    String address;
 
     @Column(name = "catch_time")
-    private LocalDateTime catchTime;
+    LocalDateTime catchTime;
 
     @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
-    private String notes;
+    String notes;
 
     @Column(name = "status")
-    private String status;
+    String status;
 
     @Column(name = "mugshot_url")
-    private String mugshotUrl;
+    String mugshotUrl;
 
     @Column(name = "fingerprints_hash")
-    private String fingerprintsHash;
+    String fingerprintsHash;
 
     @Column(name = "health_status")
-    private String healthStatus;
+    String healthStatus;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
-    private Case caseEntity;
+    Case caseEntity;
 
     @OneToMany(mappedBy = "suspect")
-    private List<Arrest> arrests;
+    List<Arrest> arrests;
 
     @ManyToOne
     @JoinColumn(name = "report_id")
-    private Report report;
+    Report report;
 
     @OneToMany(mappedBy = "suspect")
-    private List<SuspectEvidence> suspectEvidences;
+    List<SuspectEvidence> suspectEvidences;
 }

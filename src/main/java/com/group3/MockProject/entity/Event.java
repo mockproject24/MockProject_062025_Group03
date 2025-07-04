@@ -1,40 +1,46 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "event")
+@Table(name = "events")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Event {
     @Id
     @Column(name = "event_id")
-    private String eventId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String eventId;
 
     @Column(name = "suspect_id")
-    private String suspectId;
+    String suspectId;
 
     @Column(name = "case_id")
-    private String caseId;
+    String caseId;
 
     @Column(name = "time_start")
-    private LocalDateTime timeStart;
+    LocalDateTime timeStart;
 
     @Column(name = "time_end")
-    private LocalDateTime timeEnd;
+    LocalDateTime timeEnd;
 
     @Column(name = "event_name")
-    private String eventName;
+    String eventName;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
+    String description;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 }

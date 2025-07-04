@@ -1,5 +1,4 @@
 package com.group3.MockProject.entity;
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,51 +8,42 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
 /**
- * Question
+ * ReportsWitnesses
  * <p>
- * Question entity
+ * Provides business logic for managing employment details.
  * <p>
  * Version 1.0
- * Date: 01/07/2025
+ * Date: 03/07/2025
  * <p>
  * Copyright
  * <p>
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 01/07/2025     DQMinh      Create
+ * 03/07/2025      ASUS      Create
  */
-
 @Entity
-@Table(name = "question")
+@Table(name = "reports_witnesses")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Question {
-    @Id
-    @Column(name = "question_id")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String questionId;
+public class ReportsWitnesses {
 
-    @Column(columnDefinition = "MEDIUMTEXT")
-    String content;
+    @EmbeddedId
+    ReportsWitnessesId id;
 
-    @Column(columnDefinition = "MEDIUMTEXT")
-    String answer;
+    @ManyToOne
+    @MapsId("reportId")
+    @JoinColumn(name = "report_id")
+    Report report;
 
-    @Column(name = "reliability")
-    Float reliability;
+    @ManyToOne
+    @MapsId("witnessId")
+    @JoinColumn(name = "witness_id")
+    Witness witness;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
-
-    @ManyToOne
-    @JoinColumn(name = "interview_id")
-    Interview interview;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    User user;
-} 
+}

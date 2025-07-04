@@ -1,12 +1,15 @@
 package com.group3.MockProject.entity;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Timeline class
@@ -30,33 +33,33 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Timeline {
     @Id
     @Column(name = "timeline_id")
-    private String timelineId;
-
-    @Column(name = "case_result_id")
-    private String caseResultId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String timelineId;
 
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    LocalDateTime startTime;
 
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    LocalDateTime endTime;
 
     @Column(name = "attached_file", columnDefinition = "json")
-    private List<String> attachedFile;
+    List<String> attachedFile;
 
     @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
-    private String notes;
+    String notes;
 
     @Column(name = "activity")
-    private String activity;
+    String activity;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @ManyToOne
     @JoinColumn(name = "case_result_id")
-    private CaseResult caseResult;
+    CaseResult caseResult;
 }

@@ -1,24 +1,26 @@
 package com.group3.MockProject.entity;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * User
- *
+ * <p>
  * User entity
- *
+ * <p>
  * Version 1.0
  * Date: 01/07/2025
- *
+ * <p>
  * Copyright
- *
+ * <p>
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
@@ -30,55 +32,56 @@ import org.hibernate.annotations.ColumnDefault;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
     @Column(name = "username")
-    private String username;
+    String username;
 
-    @Column(name = "password_hash")
-    private String passwordHash;
+    @Column(name = "password_hash", nullable = false)
+    String passwordHash;
 
-    @Column(name = "fullname")
-    private String fullname;
+    @Column(name = "fullname", nullable = false)
+    String fullname;
 
-    @Column(name = "avatar_url", nullable = true)
-    private String avatarUrl;
+    @Column(name = "avatar_url")
+    String avatarUrl;
 
     @Column(name = "email")
-    private String email;
+    String email;
 
     @Column(name = "phone_number")
-    private String phoneNumber;
+    String phoneNumber;
 
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
+    @Column(name = "create_at", nullable=false)
+    LocalDateTime createAt;
 
-    @ColumnDefault("false")
     @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @OneToMany(mappedBy = "user")
-    private List<Report> reports;
+    List<Report> reports;
 
     @OneToMany(mappedBy = "interviewer")
-    private List<Interview> interviews;
+    List<Interview> interviews;
 
     @OneToMany(mappedBy = "createdOfficer")
-    private List<InvestigationPlan> investigationPlans;
+    List<InvestigationPlan> investigationPlans;
 
     @OneToMany(mappedBy = "user")
-    private List<Evidence> evidences;
+    List<Evidence> evidences;
 
     @OneToMany(mappedBy = "user")
-    private List<Prosecution> prosecutions;
+    List<ProsecutionsUser> prosecutionsUsers;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
-    private Role role;
+    Role role;
 
     @OneToMany(mappedBy = "user")
-    private List<UsersCases> usersCases;
+    List<UsersCases> usersCases;
 
     @OneToMany(mappedBy = "user")
-    private List<Question> questions;
+    List<Question> questions;
 }
