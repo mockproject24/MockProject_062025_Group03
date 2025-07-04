@@ -1,14 +1,12 @@
 package com.group3.MockProject.controller;
 
 import com.group3.MockProject.dto.ResponseDto;
+import com.group3.MockProject.dto.response.CaseListDto;
 import com.group3.MockProject.dto.response.EvidentDto;
 import com.group3.MockProject.service.ICaseService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,6 +15,18 @@ import java.util.List;
 @RequestMapping("/api/cases")
 public class CaseController {
     private final ICaseService caseService;
+
+    @GetMapping("")
+    public ResponseEntity<ResponseDto<CaseListDto>> getCaseLists(@RequestParam(defaultValue = "0") int page,
+                                                                  @RequestParam(defaultValue = "10") int pageSize,
+                                                                  @RequestParam(required = false) String search){
+        if(page < 0 || pageSize <= 0) {
+            return ResponseEntity.badRequest().body(ResponseDto.error("Page and pageSize must be greater than 0"));
+        }
+        CaseListDto caseListDtos = caseService.getListCase(page, pageSize, search);
+        return ResponseEntity.ok(ResponseDto.success(caseListDtos));
+    }
+
     @GetMapping("{caseId}/evidences")
     public ResponseEntity<ResponseDto<List<EvidentDto<?>>>> getEvidences(@PathVariable String caseId) {
         List<EvidentDto<?>> evidences = caseService.getEvidences(caseId);
