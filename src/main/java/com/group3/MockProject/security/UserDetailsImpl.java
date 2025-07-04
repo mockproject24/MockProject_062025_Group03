@@ -2,6 +2,7 @@ package com.group3.MockProject.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group3.MockProject.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,17 +10,34 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+/**
+ * UserDetailsImpl
+ * <p>
+ * Provides business logic for managing employment details.
+ * <p>
+ * Version 1.0
+ * Date: 7/4/2025
+ * <p>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 7/4/2025      NGUYEN NGOC SY      Create
+ */
 
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     private String username;
 
+    @Getter
     private String email;
 
     @JsonIgnore
     private String password;
 
+    @Getter
     private String fullname;
 
     private Collection<? extends GrantedAuthority> authorities;
@@ -47,14 +65,6 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getFullname() {
-        return fullname;
     }
 
     @Override
@@ -96,4 +106,4 @@ public class UserDetailsImpl implements UserDetails {
         UserDetailsImpl user = (UserDetailsImpl) o;
         return Objects.equals(username, user.username);
     }
-} 
+}

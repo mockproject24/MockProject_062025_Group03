@@ -1,49 +1,55 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "case_result")
+@Table(name = "cases_results")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CaseResult {
 
     @Id
     @Column(name = "case_result_id")
-    private String caseResultId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String caseResultId;
 
     @Column(name = "report_time")
-    private LocalDateTime reportTime;
+    LocalDateTime reportTime;
 
     @Column(name = "report_analyst")
-    private String reportAnalyst;
+    String reportAnalyst;
 
-    @Column(name = "summary")
-    private String summary;
+    @Column(name = "summary", columnDefinition = "TEXT")
+    String summary;
 
     @Column(name = "identify_motive")
-    private String identifyMotive;
+    String identifyMotive;
 
     @Column(name = "status")
-    private String status;
+    String status;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @OneToMany(mappedBy = "caseResult")
-    private List<Timeline> timelines;
+    List<Timeline> timelines;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
-    private Case caseEntity;
+    Case caseEntity;
 
     @OneToMany(mappedBy = "caseResult")
-    private List<Sentence> sentences;
+    List<Sentence> sentences;
 }

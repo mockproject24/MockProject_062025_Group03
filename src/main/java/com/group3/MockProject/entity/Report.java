@@ -1,9 +1,12 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,58 +16,67 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Report {
     @Id
     @Column(name = "report_id")
-    private String reportId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String reportId;
 
     @Column(name = "type_report")
-    private String typeReport;
+    String typeReport;
 
     @Column(name = "severity")
-    private String severity;
+    String severity;
 
     @Column(name = "incident_date")
-    private LocalDateTime incidentDate;
+    LocalDateTime incidentDate;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
+    String description;
 
     @Column(name = "case_location")
-    private String caseLocation;
+    String caseLocation;
 
     @Column(name = "reported_at")
-    private LocalDateTime reportedAt;
+    LocalDateTime reportedAt;
 
     @Column(name = "reporter_location")
-    private String reporterLocation;
+    String reporterLocation;
 
     @Column(name = "reporter_fullname")
-    private String reporterFullname;
+    String reporterFullname;
 
     @Column(name = "reporter_email")
-    private String reporterEmail;
+    String reporterEmail;
 
     @Column(name = "reporter_phone_number")
-    private String reporterPhoneNumber;
+    String reporterPhoneNumber;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @Column(name = "status")
-    private String status;
+    String status;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    User user;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
-    private Case caseEntity;
+    Case caseEntity;
 
     @OneToMany(mappedBy = "report")
-    private List<Envidency> evidences;
+    List<Evidence> evidences;
 
     @OneToMany(mappedBy = "report")
-    private List<Suspect> suspects;
+    List<Suspect> suspects;
+
+    @OneToMany(mappedBy = "report")
+    List<ReportsVictims> reportsVictims;
+
+    @OneToMany(mappedBy = "report")
+    List<ReportsVictims> reportsWitnesses;
 }

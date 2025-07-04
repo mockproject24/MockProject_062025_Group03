@@ -3,12 +3,13 @@ package com.group3.MockProject.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "warrant")
+@Table(name = "warrants")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,29 +19,31 @@ public class Warrant {
 
     @Id
     @Column(name = "warrant_id")
-    private String warrantId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String warrantId;
 
     @Column(name = "warrant_name")
-    private String warrantName;
+    String warrantName;
 
     @Column(name = "attached_file", columnDefinition = "json")
-    private String[] attachedFile;
+    List<String> attachedFile;
 
     @Column(name = "time_publish")
-    private LocalDateTime timePublish;
+    LocalDateTime timePublish;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @OneToMany(mappedBy = "warrant")
-    private List<WarrantResult> warrantResults;
+    List<WarrantResult> warrantResults;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
-    private Case caseEntity;
+    Case caseEntity;
 
     @OneToMany(mappedBy = "warrant")
-    private List<Envidency> evidences;
+    List<Evidence> evidences;
 
     @PrePersist
     protected void onCreate() {

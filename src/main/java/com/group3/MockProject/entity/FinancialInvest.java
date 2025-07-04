@@ -1,28 +1,32 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
-@Table(name = "financial_invest")
+@Table(name = "financials_invests")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FinancialInvest {
     @Id
     @Column(name = "evidence_id")
-    private String evidenceId;
+    String evidenceId;
 
-    @Column(name = "summary")
-    private String summary;
+    @Column(name = "summary", columnDefinition = "TEXT")
+    String summary;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @OneToOne
     @JoinColumn(name = "evidence_id")
-    @MapsId
-    private Envidency evidence;
+    Evidence evidence;
 }

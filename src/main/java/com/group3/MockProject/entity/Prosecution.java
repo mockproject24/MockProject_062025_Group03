@@ -1,43 +1,52 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "prosecution")
+@Table(name = "prosecutions")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Prosecution {
     @Id
     @Column(name = "prosecution_id")
-    private String prosecutionId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String prosecutionId;
 
     @Column(name = "decision")
-    private String decision;
+    String decision;
 
     @Column(name = "decision_date")
-    private LocalDateTime decisionDate;
+    LocalDateTime decisionDate;
 
     @Column(name = "reason")
-    private String reason;
+    String reason;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
-    private Case caseEntity;
+    Case caseEntity;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    User user;
 
     @OneToMany(mappedBy = "prosecution")
-    private List<Indictment> indictments;
+    List<Indictment> indictments;
+
+    @OneToMany(mappedBy = "prosecution")
+    List<ProsecutionsUser> prosecutionsUsers;
 }

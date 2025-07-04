@@ -1,32 +1,24 @@
 package com.group3.MockProject.repository;
 
-import com.group3.MockProject.entity.User;
+import com.group3.MockProject.entity.Case;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
-
 
 /**
- * UserRepository
- *
+ * CaseRepository
+ * <p>
  * Provides business logic for managing employment details.
- *
+ * <p>
  * Version 1.0
  * Date: 7/4/2025
- *
+ * <p>
  * Copyright
- *
+ * <p>
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
  * 7/4/2025      NGUYEN NGOC SY      Create
  */
-
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
-    Optional<User> findByUsername(String username);
-
-    Boolean existsByUsername(String username);
-
-    Boolean existsByEmail(String email);
+public interface CaseRepository extends JpaRepository<Case, String> {
 }

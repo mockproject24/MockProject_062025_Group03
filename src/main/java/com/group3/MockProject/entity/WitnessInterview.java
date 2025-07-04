@@ -1,32 +1,34 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "witnesses_interviews")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class WitnessInterview {
-    @Id
-    @Column(name = "interview_id")
-    private String interviewId;
-
-    @Id
-    @Column(name = "witness_id")
-    private String witnessId;
+    @EmbeddedId
+    WitnessInterviewId id;
 
     @ManyToOne
-    @JoinColumn(name = "witness_id", insertable = false, updatable = false)
-    private Witness witness;
+    @JoinColumn(name = "witness_id")
+    @MapsId("witnessId")
+    Witness witness;
 
     @ManyToOne
-    @JoinColumn(name = "interview_id", insertable = false, updatable = false)
-    private Interview interview;
+    @JoinColumn(name = "interview_id")
+    @MapsId("interviewId")
+    Interview interview;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 }

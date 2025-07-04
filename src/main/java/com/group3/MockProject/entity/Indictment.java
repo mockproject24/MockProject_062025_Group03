@@ -1,9 +1,12 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -12,21 +15,24 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Indictment {
     @Id
     @Column(name = "indictment_id")
-    private String indictmentId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String indictmentId;
 
-    @Column(name = "content")
-    private String content;
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
+    String content;
 
     @Column(name = "issued_at")
-    private LocalDateTime issuedAt;
+    LocalDateTime issuedAt;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @ManyToOne
     @JoinColumn(name = "prosecution_id")
-    private Prosecution prosecution;
+    Prosecution prosecution;
 }

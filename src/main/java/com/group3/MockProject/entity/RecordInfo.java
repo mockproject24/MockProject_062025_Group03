@@ -1,38 +1,44 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "record_info")
+@Table(name = "records_infos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class RecordInfo {
     @Id
     @Column(name = "record_info_id")
-    private String recordInfoId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String recordInfoId;
 
     @Column(name = "type_name")
-    private String typeName;
+    String typeName;
 
     @Column(name = "source")
-    private String source;
+    String source;
 
     @Column(name = "date_collected")
-    private LocalDateTime dateCollected;
+    LocalDateTime dateCollected;
 
     @Column(name = "summary")
-    private String summary;
+    String summary;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
     @ManyToOne
     @JoinColumn(name = "evidence_id")
-    private Envidency evidence;
+    Evidence evidence;
 }
