@@ -10,7 +10,9 @@ import com.group3.MockProject.entity.User;
 import com.group3.MockProject.service.CaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,17 +46,19 @@ public class CaseController {
     @GetMapping("/{caseId}/assigned-officers")
     public ResponseEntity<Map<String, Object>> getAssignedOfficers(
             @PathVariable String caseId,
-            @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        Page<UserResponseDto> page = caseService.getAssignedOfficers(caseId, pageable);
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserResponseDto> pageResult = caseService.getAssignedOfficers(caseId, pageable);
         Map<String, Object> response = new HashMap<>();
         response.put("code", 200);
         response.put("message", "Success");
         response.put("result", new HashMap<String, Object>() {{
-            put("content", page.getContent());
-            put("totalElements", page.getTotalElements());
-            put("totalPages", page.getTotalPages());
-            put("size", page.getSize());
-            put("number", page.getNumber());
+            put("content", pageResult.getContent());
+            put("totalElements", pageResult.getTotalElements());
+            put("totalPages", pageResult.getTotalPages());
+            put("size", pageResult.getSize());
+            put("number", pageResult.getNumber());
         }});
         return ResponseEntity.ok(response);
     }

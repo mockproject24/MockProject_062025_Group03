@@ -21,6 +21,4 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("SELECT u FROM User u JOIN u.role r JOIN u.usersCases uc JOIN uc.caseEntity c WHERE r.roleId = 'OFFICER' AND c.caseId = :caseId AND uc.isDeleted = false")
     Page<User> findOfficersByCaseId(@Param("caseId") String caseId, Pageable pageable);
-
-
-} 
+}
