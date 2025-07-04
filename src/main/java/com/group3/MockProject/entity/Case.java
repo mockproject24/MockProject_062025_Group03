@@ -58,8 +58,8 @@ public class Case {
     @OneToMany(mappedBy = "caseEntity")
     List<Victim> victims;
 
-//    @OneToMany(mappedBy = "caseEntity")
-//    List<Suspect> suspects;
+    @OneToMany(mappedBy = "caseEntity")
+    List<Suspect> suspects;
 
     @OneToMany(mappedBy = "caseEntity")
     List<Witness> witnesses;
