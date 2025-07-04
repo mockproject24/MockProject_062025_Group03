@@ -17,12 +17,12 @@ public class MockProject062025Group03Application {
 	@Bean
 	CommandLineRunner initRoles(RoleRepository roleRepository) {
 		return args -> {
-			if (roleRepository.count() == 0) {
-				roleRepository.save(new Role("ADMIN", "System Administrator", false, null, null));
-				roleRepository.save(new Role("OFFICER", "Investigation Officer", false, null, null));
-				roleRepository.save(new Role("USER", "Regular User", false, null, null));
-				System.out.println("Role data initialized.");
-			}
+//			if (roleRepository.count() == 0) {
+//				roleRepository.save(new Role("ADMIN", "System Administrator", false, null, null));
+//				roleRepository.save(new Role("OFFICER", "Investigation Officer", false, null, null));
+//				roleRepository.save(new Role("USER", "Regular User", false, null, null));
+//				System.out.println("Role data initialized.");
+//			}
 		};
 	}
 }
