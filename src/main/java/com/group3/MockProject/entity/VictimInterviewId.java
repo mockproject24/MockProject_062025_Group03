@@ -15,10 +15,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CaseEvidenceId implements Serializable {
-    @Column(name = "case_id")
-    String caseId;
+public class VictimInterviewId implements Serializable {
+    @Column(name = "victim_id")
+    String victimId;
 
-    @Column(name = "evidence_id")
-    String evidenceId;
-}
+    @Column(name = "interview_id")
+    String interviewId;
+} 

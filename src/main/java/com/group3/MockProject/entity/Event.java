@@ -1,44 +1,46 @@
 package com.group3.MockProject.entity;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
 @Entity
-@Table(name = "event")
+@Table(name = "events")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Event {
     @Id
-    @Column(name = "event_id", nullable = false)
-    private String eventId;
+    @Column(name = "event_id")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String eventId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "suspect_id")
-//    private Suspect suspect;
+    @Column(name = "suspect_id")
+    String suspectId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "case_id");
-//    private Case caseEntity;
+    @Column(name = "case_id")
+    String caseId;
 
     @Column(name = "time_start")
-    private LocalDateTime timeStart;
+    LocalDateTime timeStart;
 
     @Column(name = "time_end")
-    private LocalDateTime timeEnd;
+    LocalDateTime timeEnd;
 
     @Column(name = "event_name")
-    private String eventName;
+    String eventName;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
+    String description;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 }

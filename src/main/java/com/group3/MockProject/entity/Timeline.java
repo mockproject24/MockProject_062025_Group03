@@ -1,12 +1,15 @@
 package com.group3.MockProject.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Timeline class
@@ -25,31 +28,38 @@ import lombok.NoArgsConstructor;
  * 01/07/2025        Nguyễn Bảo Kha        Create
  */
 
+@Entity
+@Table(name = "timelines")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@Table(name = "timeline")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Timeline {
     @Id
-    private String timeline_id;
+    @Column(name = "timeline_id")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String timelineId;
 
-    @Column(name = "start_time",nullable = false)
-    private LocalDateTime startTime;
+    @Column(name = "start_time")
+    LocalDateTime startTime;
 
-    @Column(name = "end_time",nullable = false)
-    private LocalDateTime endTime;
+    @Column(name = "end_time")
+    LocalDateTime endTime;
 
-    @Column(name = "attached_file",nullable = false)
-    private String attachedFile;
+    @Column(name = "attached_file", columnDefinition = "json")
+    List<String> attachedFile;
 
-    @Column(nullable = false)
-    private String notes;
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
+    String notes;
 
-    @Column(nullable = false)
-    private String activity;
+    @Column(name = "activity")
+    String activity;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "case_result_id")
+    CaseResult caseResult;
 }

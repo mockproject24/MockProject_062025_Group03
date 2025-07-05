@@ -8,33 +8,27 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "forensics_invests")
+@Table(name = "roles_permissions")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ForensicInvest {
-    @Id
-    @Column(name = "evidence_id")
-    String evidenceId;
+public class RolesPermissions {
+    @EmbeddedId
+    RolesPermissionsId id;
 
-    @Column(name = "lab_name")
-    String labName;
+    @ManyToOne
+    @MapsId("roleId")
+    @JoinColumn(name = "role_id")
+    Role role;
 
-    @Column(name = "report")
-    String report;
-
-    @Column(name = "received_at")
-    LocalDateTime receivedAt;
+    @ManyToOne
+    @MapsId("permissionId")
+    @JoinColumn(name = "permission_id")
+    Permission permission;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
-
-    @OneToOne
-    @JoinColumn(name = "evidence_id")
-    Evidence evidence;
-}
+} 

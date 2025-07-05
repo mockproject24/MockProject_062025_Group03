@@ -1,47 +1,87 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+/**
+ * User
+ * <p>
+ * User entity
+ * <p>
+ * Version 1.0
+ * Date: 01/07/2025
+ * <p>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 01/07/2025     DQMinh      Create
+ */
+
+@Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
+    @Column(name = "username")
     String username;
 
     @Column(name = "password_hash", nullable = false)
     String passwordHash;
 
+    @Column(name = "fullname", nullable = false)
     String fullname;
 
+    @Column(name = "avatar_url")
     String avatarUrl;
 
-    @Column(unique = true)
+    @Column(name = "email")
     String email;
 
-    String phonenumber;
+    @Column(name = "phone_number")
+    String phoneNumber;
 
-    @Column(name = "create_at")
+    @Column(name = "create_at", nullable=false)
     LocalDateTime createAt;
 
-    String roleId; // Foreign key to Role
-
     @Column(name = "is_deleted")
-    Boolean isDeleted;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createAt = LocalDateTime.now();
-        this.isDeleted = false;
-    }
+    @OneToMany(mappedBy = "user")
+    List<Report> reports;
+
+    @OneToMany(mappedBy = "interviewer")
+    List<Interview> interviews;
+
+    @OneToMany(mappedBy = "createdOfficer")
+    List<InvestigationPlan> investigationPlans;
+
+    @OneToMany(mappedBy = "user")
+    List<Evidence> evidences;
+
+    @OneToMany(mappedBy = "user")
+    List<ProsecutionsUser> prosecutionsUsers;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    Role role;
+
+    @OneToMany(mappedBy = "user")
+    List<UsersCases> usersCases;
+
+    @OneToMany(mappedBy = "user")
+    List<Question> questions;
 }

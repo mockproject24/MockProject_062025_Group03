@@ -1,12 +1,15 @@
 package com.group3.MockProject.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Arrest class
@@ -24,32 +27,36 @@ import lombok.NoArgsConstructor;
  * -------------------------------------------------------------
  * 01/07/2025        Nguyễn Bảo Kha        Create
  */
-
 @Data
+@Entity
+@Table(name = "arrests")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@Table(name = "arrest")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Arrest {
-    @Id
-    private String suspectId;
+    @EmbeddedId
+    ArrestId id;
 
-    @Column(nullable = false)
-    private String caseId;
+    @ManyToOne
+    @MapsId("caseId")
+    @JoinColumn(name = "case_id")
+    Case caseEntity;
 
-    @Column(nullable = false)
-    private String officerId;
+    @ManyToOne
+    @MapsId("suspectId")
+    @JoinColumn(name = "suspect_id")
+    Suspect suspect;
 
-    @Column(name = "suspect_miranda_signature",nullable = false)
-    private String suspectMirandaSignature;
+    @Column(name = "suspect_miranda_signature")
+    String suspectMirandaSignature;
 
     @Column(name = "arrest_start_time", nullable = false)
-    private LocalDateTime arrestStartTime;
+    LocalDateTime arrestStartTime;
 
-    @Column(name = "arrest_end_time", nullable = false)
-    private LocalDateTime arrestEndTime;
+    @Column(name = "arrest_end_time")
+    LocalDateTime arrestEndTime;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
 }

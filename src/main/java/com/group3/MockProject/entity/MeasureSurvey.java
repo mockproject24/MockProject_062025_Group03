@@ -8,41 +8,32 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "sentences")
+@Table(name = "measures_surveys")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Sentence {
+public class MeasureSurvey {
     @Id
-    @Column(name = "sentence_id")
+    @Column(name = "measure_survey_id")
     @GeneratedValue(strategy = GenerationType.UUID)
-    String sentenceId;
+    String measureSurveyId;
 
-    @Column(name = "sentence_type")
-    String sentenceType;
+    @Column(name = "type_name")
+    String typeName;
 
-    @Column(name = "duration")
-    String duration;
+    @Column(name = "source")
+    String source;
 
-    @Column(name = "sentence_condition")
-    String sentenceCondition;
-
-    @Column(name = "sentencing_date")
-    LocalDateTime sentencingDate;
+    @Column(name = "result")
+    String result;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
 
-//    @ManyToOne
-//    @JoinColumn(name = "case_id")
-//    Case caseEntity;
-
     @ManyToOne
-    @JoinColumn(name = "case_result_id")
-    CaseResult caseResult;
-}
+    @JoinColumn(name = "evidence_id")
+    Evidence evidence;
+} 

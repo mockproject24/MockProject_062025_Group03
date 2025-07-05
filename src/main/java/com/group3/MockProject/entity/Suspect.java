@@ -1,63 +1,79 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Table(name = "suspect")
 @Entity
+@Table(name = "suspects")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Suspect {
+
     @Id
+    @Column(name = "suspect_id")
     @GeneratedValue(strategy = GenerationType.UUID)
     String suspectId;
 
-    String caseId; // Foreign key to Case
-
+    @Column(name = "fullname")
     String fullname;
 
+    @Column(name = "national")
     String national;
 
+    @Column(name = "gender")
     String gender;
 
-    LocalDate dob;
+    @Column(name = "dob")
+    LocalDateTime dob;
 
+    @Column(name = "identification")
     String identification;
 
-    String phonenumber;
+    @Column(name = "phone_number")
+    String phoneNumber;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "MEDIUMTEXT")
     String description;
 
+    @Column(name = "address")
     String address;
 
+    @Column(name = "catch_time")
     LocalDateTime catchTime;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
     String notes;
 
+    @Column(name = "status")
     String status;
 
+    @Column(name = "mugshot_url")
     String mugshotUrl;
 
+    @Column(name = "fingerprints_hash")
     String fingerprintsHash;
 
+    @Column(name = "health_status")
     String healthStatus;
 
-    Boolean isDeleted;
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    Case caseEntity;
 
-    @PrePersist
-    protected void onCreate() {
-        this.isDeleted = false;
-    }
+    @OneToMany(mappedBy = "suspect")
+    List<Arrest> arrests;
+
+    @ManyToOne
+    @JoinColumn(name = "report_id")
+    Report report;
+
+    @OneToMany(mappedBy = "suspect")
+    List<SuspectEvidence> suspectEvidences;
 }

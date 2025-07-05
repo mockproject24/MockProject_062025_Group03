@@ -11,38 +11,34 @@ import org.hibernate.annotations.ColumnDefault;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "sentences")
+@Table(name = "warrants_results")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Sentence {
+public class WarrantResult {
     @Id
-    @Column(name = "sentence_id")
+    @Column(name = "warrant_result_id")
     @GeneratedValue(strategy = GenerationType.UUID)
-    String sentenceId;
+    String warrantResultId;
 
-    @Column(name = "sentence_type")
-    String sentenceType;
+    @Column(name = "police_response", columnDefinition = "MEDIUMTEXT")
+    String policeResponse;
 
-    @Column(name = "duration")
-    String duration;
+    @Column(name = "location")
+    String location;
 
-    @Column(name = "sentence_condition")
-    String sentenceCondition;
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
+    String notes;
 
-    @Column(name = "sentencing_date")
-    LocalDateTime sentencingDate;
+    @Column(name = "time_active")
+    LocalDateTime timeActive;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
 
-//    @ManyToOne
-//    @JoinColumn(name = "case_id")
-//    Case caseEntity;
-
     @ManyToOne
-    @JoinColumn(name = "case_result_id")
-    CaseResult caseResult;
-}
+    @JoinColumn(name = "warrant_id")
+    Warrant warrant;
+} 

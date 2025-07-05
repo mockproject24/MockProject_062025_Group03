@@ -1,41 +1,52 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Table(name = "warrant")
 @Entity
+@Table(name = "warrants")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Warrant {
+
     @Id
+    @Column(name = "warrant_id")
     @GeneratedValue(strategy = GenerationType.UUID)
     String warrantId;
 
-    String caseId; // Foreign key to Case
-
+    @Column(name = "warrant_name")
     String warrantName;
 
-    String attachedFile;
+    @Column(name = "attached_file", columnDefinition = "json")
+    List<String> attachedFile;
 
+    @Column(name = "time_publish")
     LocalDateTime timePublish;
 
-    Boolean isDeleted;
+    @Column(name = "is_deleted")
+    @ColumnDefault("false")
+    boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "warrant")
+    List<WarrantResult> warrantResults;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    Case caseEntity;
+
+    @OneToMany(mappedBy = "warrant")
+    List<Evidence> evidences;
 
     @PrePersist
     protected void onCreate() {
-        this.isDeleted = false;
-        if (this.timePublish == null) {
-            this.timePublish = LocalDateTime.now();
-        }
+        if (this.timePublish == null) this.timePublish = LocalDateTime.now();
     }
 }

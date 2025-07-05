@@ -1,14 +1,24 @@
 package com.group3.MockProject.entity;
 
-
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
 
-@Getter
-@Setter
+@Embeddable
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class WitnessInterviewId implements Serializable {
-    private String witnessId;
-    private String interviewId;
+    @Column(name = "witness_id")
+    String witnessId;
+
+    @Column(name = "interview_id")
+    String interviewId;
 }

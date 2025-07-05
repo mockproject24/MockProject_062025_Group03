@@ -1,39 +1,38 @@
 package com.group3.MockProject.entity;
 
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.*;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "indictment")
+@Table(name = "indictments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Indictment {
-    
     @Id
-    @Column(name = "indictment_id", length = 50)
-    private String indictmentId;
-    
-    @Column(name = "prosecution_id", length = 50, nullable = false)
-    private String prosecutionId;
-    
-    @Column(name = "content", length = 2000)
-    private String content;
-    
+    @Column(name = "indictment_id")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String indictmentId;
+
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
+    String content;
+
     @Column(name = "issued_at")
-    private LocalDateTime issuedAt;
-    
-    @Column(name = "is_deleted", nullable = false)
-    @Builder.Default
-    private Boolean isDeleted = false;
-    
-    // Quan hệ với PROSECUTIONS (n-1)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prosecution_id", insertable = false, updatable = false)
-    private Prosecution prosecution;
+    LocalDateTime issuedAt;
+
+    @Column(name = "is_deleted")
+    @ColumnDefault("false")
+    boolean isDeleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "prosecution_id")
+    Prosecution prosecution;
 }

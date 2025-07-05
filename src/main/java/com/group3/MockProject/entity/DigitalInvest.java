@@ -1,33 +1,39 @@
 package com.group3.MockProject.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
-@Table(name = "digital_invest")
+@Table(name = "digitals_invests")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class DigitalInvest {
 
     @Id
-    @Column(name = "evidence_id", length = 36)
-    private String evidenceId;
+    @Column(name = "evidence_id")
+    String evidenceId;
 
-    @Column(name = "device_type", length = 100)
-    private String deviceType;
+    @Column(name = "device_type")
+    String deviceType;
 
-    @Column(name = "analyst_tool", length = 255)
-    private String analystTool;
+    @Column(name = "analyst_tool")
+    String analystTool;
 
-    @Column(name = "result", columnDefinition = "TEXT")
-    private String result;
+    @Column(name = "result", columnDefinition = "MEDIUMTEXT")
+    String result;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    @ColumnDefault("false")
+    boolean isDeleted = false;
+
+    @OneToOne
+    @JoinColumn(name = "evidence_id")
+    Evidence evidence;
 }
