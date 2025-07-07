@@ -37,7 +37,7 @@ public class Question {
     String questionId;
 
     @Column(columnDefinition = "MEDIUMTEXT")
-    String content;
+    String content; //Same as "question"
 
     @Column(columnDefinition = "MEDIUMTEXT")
     String answer;

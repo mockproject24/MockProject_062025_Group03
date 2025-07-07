@@ -24,6 +24,9 @@ public class Suspect {
     @Column(name = "fullname")
     String fullname;
 
+    @Column(name = "suspect_id_card", nullable = false, unique = true)
+    Long suspectIdCard; // add unique column for suspect
+
     @Column(name = "national")
     String national;
 
@@ -76,4 +79,7 @@ public class Suspect {
 
     @OneToMany(mappedBy = "suspect")
     List<SuspectEvidence> suspectEvidences;
+
+    @OneToMany(mappedBy = "suspectInterviewee")
+    Interview suspectInterview;
 }
