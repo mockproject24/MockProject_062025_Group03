@@ -1,11 +1,11 @@
 package com.group3.MockProject.repository;
 
-import com.group3.MockProject.entity.Evidence;
+import com.group3.MockProject.entity.Interview;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * EvidenceRepository
+ * InterviewRepository
  * <p>
  * Provides business logic for managing employment details.
  * <p>
@@ -17,8 +17,9 @@ import org.springframework.stereotype.Repository;
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 7/4/2025      NGUYEN NGOC SY      Create
+ * 7/4/2025      User      Create
  */
 @Repository
-public interface EvidenceRepository extends JpaRepository<Evidence, String> {
+public interface InterviewRepository extends JpaRepository<Interview, String> {
+
 }

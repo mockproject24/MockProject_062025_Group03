@@ -9,11 +9,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDto {
-    private String username;
-    private String fullname;
-    private String avatarUrl;
-    private String email;
-    private String phoneNumber;
-    private String role;
-} 
+public class ForensicInvestDto {
+    private String labName;
+    private String report;
+    private LocalDateTime receivedAt;
+}

@@ -9,15 +9,13 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvestigationPlanResponseDto {
-    private String investigationPlanId;
-//    private String createdOfficerId;
+public class CaseDto {
     private String caseId;
+    private String caseNumber;
+    private String typeCase;
     private String severity;
-    private LocalDateTime deadlineDate;
-    private String result;
     private String status;
+    private String summary;
     private LocalDateTime createAt;
-    private String planContent;
-    private Boolean isDeleted;
-} 
+    private String location;
+}

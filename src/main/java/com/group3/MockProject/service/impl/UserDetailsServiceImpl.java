@@ -3,6 +3,7 @@ package com.group3.MockProject.service.impl;
 import com.group3.MockProject.entity.User;
 import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.security.UserDetailsImpl;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

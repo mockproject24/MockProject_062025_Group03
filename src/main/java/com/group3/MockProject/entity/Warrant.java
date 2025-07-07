@@ -1,5 +1,6 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.util.StringListJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -26,6 +27,7 @@ public class Warrant {
     String warrantName;
 
     @Column(name = "attached_file", columnDefinition = "json")
+    @Convert(converter = StringListJsonConverter.class)
     List<String> attachedFile;
 
     @Column(name = "time_publish")

@@ -39,6 +39,6 @@ public class RecordInfo {
     boolean isDeleted = false;
 
     @ManyToOne
-    @JoinColumn(name = "evidence_id")
+    @JoinColumn(name = "evidence_id", nullable = true)
     Evidence evidence;
 }
