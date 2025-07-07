@@ -10,6 +10,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+/**
+ * UserDetailsServiceImpl
+ *
+ * Provides business logic for managing employment details.
+ *
+ * Version 1.0
+ * Date: 7/4/2025
+ *
+ * Copyright
+ *
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 7/4/2025      NGUYEN NGOC SY      Create
+ */
+
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -29,4 +45,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return UserDetailsImpl.build(user);
     }
-} 
+}

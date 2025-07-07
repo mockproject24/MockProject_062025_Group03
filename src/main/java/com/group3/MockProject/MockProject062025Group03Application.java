@@ -13,7 +13,6 @@ public class MockProject062025Group03Application {
 	public static void main(String[] args) {
 		SpringApplication.run(MockProject062025Group03Application.class, args);
 	}
-
 	@Bean
 	CommandLineRunner initRoles(RoleRepository roleRepository) {
 		return args -> {

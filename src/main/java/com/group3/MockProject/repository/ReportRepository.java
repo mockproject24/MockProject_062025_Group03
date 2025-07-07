@@ -1,11 +1,10 @@
 package com.group3.MockProject.repository;
 
-import com.group3.MockProject.entity.Evidence;
+import com.group3.MockProject.entity.Report;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 /**
- * EvidenceRepository
+ * ReportRepository
  * <p>
  * Provides business logic for managing employment details.
  * <p>
@@ -19,6 +18,6 @@ import org.springframework.stereotype.Repository;
  * -------------------------------------
  * 7/4/2025      NGUYEN NGOC SY      Create
  */
-@Repository
-public interface EvidenceRepository extends JpaRepository<Evidence, String> {
+
+public interface ReportRepository extends JpaRepository<Report, String> {
 }
