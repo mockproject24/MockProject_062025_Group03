@@ -43,7 +43,7 @@ public class Question {
     String answer;
 
     @Column(name = "reliability")
-    Float reliability;
+    Float reliability; // Same as "levelOfTrust" ("A": 1.0, "B": 0.7, "C": 0.4)
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
