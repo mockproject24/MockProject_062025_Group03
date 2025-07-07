@@ -53,7 +53,7 @@ public class User {
     @Column(name = "phone_number")
     String phoneNumber;
 
-    @Column(name = "create_at", nullable=false)
+    @Column(name = "create_at", nullable = false)
     LocalDateTime createAt;
 
     @Column(name = "is_deleted")
@@ -75,7 +75,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     List<ProsecutionsUser> prosecutionsUsers;
 
-    @ManyToOne
+    @ManyToOne(fetch =  FetchType.LAZY)
     @JoinColumn(name = "role_id")
     Role role;
 
