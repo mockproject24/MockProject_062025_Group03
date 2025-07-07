@@ -1,7 +1,6 @@
 package com.group3.MockProject.repository;
 
-import com.group3.MockProject.entity.VictimInterview;
-import com.group3.MockProject.entity.VictimInterviewId;
+import com.group3.MockProject.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +21,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface VictimInterviewRepository extends JpaRepository<VictimInterview, VictimInterviewId> {
+    boolean existsByInterviewAndVictim(Interview interview, Victim victim);
 }

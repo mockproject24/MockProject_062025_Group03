@@ -101,7 +101,7 @@ public class InterviewServiceImpl implements InterviewService {
         if (createInterviewDto.getIntervieweeType().equalsIgnoreCase("witness")) {
             Witness witness = witnessRepository
                     .findWitnessByFullname(createInterviewDto.getInterviewee())
-                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found with " + createInterviewDto.getInterviewee()));
+                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
 
             if (witnessInterviewRepository.existsByInterviewAndWitness(interview, witness)) {
                 throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
@@ -119,7 +119,22 @@ public class InterviewServiceImpl implements InterviewService {
 
         //Todo case 2: Interview victim
         if (createInterviewDto.getIntervieweeType().equalsIgnoreCase("victim")) {
+            Victim victim = victimRepository
+                    .findVictimByFullname(createInterviewDto.getInterviewee())
+                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
 
+            if (victimInterviewRepository.existsByInterviewAndVictim(interview, victim)) {
+                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
+            }
+
+            VictimInterview victimInterview= new VictimInterview();
+            victimInterview.setInterview(interview);
+            victimInterview.setVictim(victim);
+
+            if(interview.getVictimsInterviews() == null) {
+                interview.setVictimsInterviews(new ArrayList<>());
+            }
+            interview.getVictimsInterviews().add(victimInterview);
         }
 
         //Todo case 3: Interview suspect (optional)

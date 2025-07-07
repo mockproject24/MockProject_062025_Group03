@@ -4,6 +4,8 @@ import com.group3.MockProject.entity.Victim;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * VictimRepository
  * <p>
@@ -21,4 +23,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface VictimRepository extends JpaRepository<Victim, String> {
+    Optional<Victim> findVictimByFullname(String fullname);
 }

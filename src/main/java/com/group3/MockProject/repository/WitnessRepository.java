@@ -23,7 +23,5 @@ import java.util.Optional;
  */
 @Repository
 public interface WitnessRepository extends JpaRepository<Witness, String> {
-    Optional<Witness> findWitnessByWitnessId(String witnessId);
-
     Optional<Witness> findWitnessByFullname(String fullname);
 }
