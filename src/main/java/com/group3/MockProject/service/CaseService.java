@@ -3,12 +3,14 @@ package com.group3.MockProject.service;
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.dto.response.RecordInfoResponseDto;
 import com.group3.MockProject.dto.response.UserResponseDto;
+import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.RecordInfo;
 import com.group3.MockProject.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * CaseService
@@ -29,14 +31,5 @@ import java.util.List;
 
 public interface CaseService {
     Page<UserResponseDto> getAssignedOfficers(String caseId, Pageable pageable);
-
     RecordInfoResponseDto createRecord(String caseId, CreateRecordInfoDto requestDto);
-  
-    public Case getCaseById(String caseId) {
-        Optional<Case> optionalCase = caseRepository.findById(caseId);
-        if (optionalCase.isEmpty()) {
-            throw new RuntimeException("Case not found with id: " + caseId);
-        }
-        return optionalCase.get();
-    }
 }

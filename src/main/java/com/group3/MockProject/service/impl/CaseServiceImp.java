@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,5 +101,13 @@ public class CaseServiceImp implements ICaseService {
             return new CaseListDto(page, pageSize, 0, new ArrayList<>());
         }
         return caseMapper.toDto(cases);
+    }
+
+    public Case getCaseById(String caseId) {
+        Optional<Case> optionalCase = caseRepository.findById(caseId);
+        if (optionalCase.isEmpty()) {
+            throw new RuntimeException("Case not found with id: " + caseId);
+        }
+        return optionalCase.get();
     }
 }
