@@ -12,7 +12,6 @@ import com.group3.MockProject.security.UserDetailsImpl;
 import com.group3.MockProject.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +22,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+/**
+ * AuthController
+ *
+ * Provides business logic for managing employment details.
+ *
+ * Version 1.0
+ * Date: 7/4/2025
+ *
+ * Copyright
+ *
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 7/4/2025      NGUYEN NGOC SY      Create
+ */
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -42,7 +56,7 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtil.generateJwtToken(authentication);
-        
+
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String role = userDetails.getAuthorities().stream()
                 .findFirst()
@@ -93,4 +107,4 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
-} 
+}
