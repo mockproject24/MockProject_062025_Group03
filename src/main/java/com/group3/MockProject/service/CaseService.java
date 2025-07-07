@@ -31,4 +31,12 @@ public interface CaseService {
     Page<UserResponseDto> getAssignedOfficers(String caseId, Pageable pageable);
 
     RecordInfoResponseDto createRecord(String caseId, CreateRecordInfoDto requestDto);
+  
+    public Case getCaseById(String caseId) {
+        Optional<Case> optionalCase = caseRepository.findById(caseId);
+        if (optionalCase.isEmpty()) {
+            throw new RuntimeException("Case not found with id: " + caseId);
+        }
+        return optionalCase.get();
+    }
 }

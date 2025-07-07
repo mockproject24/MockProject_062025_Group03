@@ -42,6 +42,13 @@ import java.util.Map;
 public class CaseController {
     @Autowired
     private CaseService caseService;
+  
+    
+    @GetMapping("/{caseId}")
+    public ResponseEntity<Case> getCaseById(@PathVariable String caseId) {
+        Case foundCase = caseService.getCaseById(caseId);
+        return ResponseEntity.ok(foundCase);
+    }
 
     @GetMapping("/{caseId}/assigned-officers")
     public ResponseEntity<Map<String, Object>> getAssignedOfficers(
