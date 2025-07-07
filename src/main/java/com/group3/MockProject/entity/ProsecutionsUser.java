@@ -1,7 +1,6 @@
 package com.group3.MockProject.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 

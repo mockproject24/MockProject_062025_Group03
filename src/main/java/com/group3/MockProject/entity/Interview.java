@@ -61,13 +61,4 @@ public class Interview {
     @OneToMany(mappedBy = "interview")
     List<Question> questions;
 
-//    @ManyToOne
-//    @JoinColumn(name = "investigation_plan_id")
-//    InvestigationPlan investigationPlan;
-//
-//    @OneToMany(mappedBy = "interview")
-//    List<WitnessInterview> witnessesInterviews;
-//
-//    @OneToMany(mappedBy = "interview")
-//    List<VictimInterview> victimsInterviews;
 } 

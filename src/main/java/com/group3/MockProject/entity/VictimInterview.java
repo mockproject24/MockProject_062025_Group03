@@ -31,4 +31,4 @@ public class VictimInterview {
 //    @Column(name = "is_deleted")
 //    @ColumnDefault("false")
 //    boolean isDeleted = false;
-} 
+}
