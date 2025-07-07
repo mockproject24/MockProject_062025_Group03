@@ -1,6 +1,8 @@
 package com.group3.MockProject.repository;
 
 import com.group3.MockProject.entity.Case;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -32,4 +34,6 @@ import java.util.List;
 public interface CaseRepository extends JpaRepository<Case, String> {
     @Query("SELECT c FROM Case c WHERE c.isDeleted = false")
     List<Case> findAllActiveCases();
+
+    Page<Case> findByCaseNumberContains(String search, Pageable pageable);
 }
