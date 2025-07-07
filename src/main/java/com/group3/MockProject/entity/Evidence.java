@@ -11,8 +11,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "evidences")
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
