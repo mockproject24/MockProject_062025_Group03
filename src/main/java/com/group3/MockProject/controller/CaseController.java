@@ -5,29 +5,82 @@ import com.group3.MockProject.dto.response.CaseListDto;
 import com.group3.MockProject.dto.response.EvidentDto;
 import com.group3.MockProject.service.ICaseService;
 import lombok.AllArgsConstructor;
+
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
+import com.group3.MockProject.dto.response.RecordInfoResponseDto;
+import com.group3.MockProject.dto.response.ResponseDto;
+import com.group3.MockProject.dto.response.UserResponseDto;
+import com.group3.MockProject.entity.RecordInfo;
+import com.group3.MockProject.entity.User;
+import com.group3.MockProject.service.CaseService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * CaseController
+ *
+ * Provides business logic for managing details.
+ *
+ * Version 1.0
+ *
+ * Date: 04/07/2025
+ *
+ * Copyright
+ *
+ * Modification Logs:
+ * DATE        AUTHOR        DESCRIPTION
+ * -------------------------------------------------------------
+ * 04/07/2025        Nguyễn Bảo Kha        Create
+ */
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/cases")
 public class CaseController {
-    private final ICaseService caseService;
+    @Autowired
+    private CaseService caseService;
 
-    /**
-     * Retrieves a paginated list of cases with optional search functionality.
-     *
-     * @param page     the page number, starting from 0 (must be >= 0)
-     * @param pageSize the number of items per page (must be > 0)
-     * @param search   an optional search keyword to filter cases
-     * @return a ResponseEntity containing a ResponseDto with the list of cases
-     */
+
+    @GetMapping("/{caseId}")
+    public ResponseEntity<Case> getCaseById(@PathVariable String caseId) {
+        Case foundCase = caseService.getCaseById(caseId);
+        return ResponseEntity.ok(foundCase);
+    }
+
+    @GetMapping("/{caseId}/assigned-officers")
+    public ResponseEntity<Map<String, Object>> getAssignedOfficers(
+            @PathVariable String caseId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserResponseDto> pageResult = caseService.getAssignedOfficers(caseId, pageable);
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", 200);
+        response.put("message", "Success");
+        response.put("result", new HashMap<String, Object>() {{
+            put("content", pageResult.getContent());
+            put("totalElements", pageResult.getTotalElements());
+            put("totalPages", pageResult.getTotalPages());
+            put("size", pageResult.getSize());
+            put("number", pageResult.getNumber());
+        }});
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("")
     public ResponseEntity<ResponseDto<CaseListDto>> getCaseLists(@RequestParam(defaultValue = "0") int page,
-                                                                  @RequestParam(defaultValue = "10") int pageSize,
-                                                                  @RequestParam(required = false) String search){
+                                                                 @RequestParam(defaultValue = "10") int pageSize,
+                                                                 @RequestParam(required = false) String search){
         if(page < 0 || pageSize <= 0) {
             return ResponseEntity.badRequest().body(ResponseDto.error("Page and pageSize must be greater than 0"));
         }
@@ -35,13 +88,19 @@ public class CaseController {
         return ResponseEntity.ok(ResponseDto.success(caseListDtos));
     }
 
-    /**
-     * Retrieves a list of evidences associated with a specific case.
-     *
-     * @param caseId the unique identifier of the case
-     * @return a ResponseEntity containing a ResponseDto with the list of evidences,
-     *         or a no-content response if no evidences are found
-     */
+    @PostMapping("/{caseId}/records")
+    public ResponseEntity<ResponseDto<RecordInfoResponseDto>> createRecord(
+            @PathVariable String caseId,
+            @RequestBody CreateRecordInfoDto requestDto) {
+        try {
+            RecordInfoResponseDto createdRecord = caseService.createRecord(caseId, requestDto);
+            ResponseDto<RecordInfoResponseDto> response = new ResponseDto<>(201, "Record created successfully", createdRecord);
+            return ResponseEntity.status(201).body(response);
+        } catch (Exception e) {
+            ResponseDto<RecordInfoResponseDto> response = new ResponseDto<>(500, "Error creating record: " + e.getMessage(), null);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
     @GetMapping("{caseId}/evidences")
     public ResponseEntity<ResponseDto<List<EvidentDto<?>>>> getEvidences(@PathVariable String caseId) {
         List<EvidentDto<?>> evidences = caseService.getEvidences(caseId);
@@ -51,4 +110,3 @@ public class CaseController {
         return ResponseEntity.ok(ResponseDto.success(evidences));
     }
 }
-

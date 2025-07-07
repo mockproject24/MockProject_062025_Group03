@@ -10,8 +10,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponseDto {
-    private Long id;
-    private String name;
+    private String username;
+    private String fullname;
+    private String avatarUrl;
     private String email;
-    private LocalDateTime createdAt;
+    private String phoneNumber;
+    private String role;
 } 
