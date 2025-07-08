@@ -1,34 +1,34 @@
 package com.group3.MockProject.controller;
 
-import com.group3.MockProject.dto.ResponseDto;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.service.ICaseService;
-import lombok.AllArgsConstructor;
-
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.ResponseDto;
-import com.group3.MockProject.dto.response.UserResponseDto;
-import com.group3.MockProject.entity.RecordInfo;
-import com.group3.MockProject.entity.User;
+import com.group3.MockProject.dto.response.ApiResponse;
+import com.group3.MockProject.dto.response.SuspectResponseDto;
+import com.group3.MockProject.entity.Suspect;
+import com.group3.MockProject.mapper.SuspectMapper;
+import com.group3.MockProject.repository.SuspectRepository;
 import com.group3.MockProject.service.CaseService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * CaseController
  *
+ * Provides controller for managing case information.
  * Provides business logic for managing details.
  *
  * Version 1.0
@@ -40,7 +40,7 @@ import java.util.Map;
  * Modification Logs:
  * DATE        AUTHOR        DESCRIPTION
  * -------------------------------------------------------------
- * 04/07/2025        Nguyễn Bảo Kha        Create
+ * 04/07/2025        Nguyễn Bảo Kha, DQMinh        Create
  */
 
 @RestController
@@ -56,6 +56,15 @@ public class CaseController {
         Case foundCase = caseService.getCaseById(caseId);
         return ResponseEntity.ok(foundCase);
     }
+    private final CaseService caseService;
+    private final SuspectMapper suspectMapper;
+    @GetMapping("/{caseId}/suspects")
+    public ApiResponse<?> getAllSuspects(@PathVariable("caseId") String caseId,
+                                         @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                         @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
+                                         @RequestParam(value="status", required = false) String status,
+                                         @RequestParam(value="day", required = false) @DateTimeFormat(pattern = "MM/dd/yyyy") LocalDate date){
+        Pageable pageable = PageRequest.of(page-1, pageSize);
 
     @GetMapping("/{caseId}/assigned-officers")
     public ResponseEntity<Map<String, Object>> getAssignedOfficers(
@@ -76,6 +85,14 @@ public class CaseController {
         }});
         return ResponseEntity.ok(response);
     }
+        Page<Suspect> suspectsPage = caseService.getAllSuspectsByCaseId(caseId, pageable, status, date);
+        List<SuspectResponseDto> suspects = suspectsPage==null? new ArrayList<>():suspectsPage.getContent().stream().map(suspectMapper::toSuspectResponseDto).toList();
+        Map<String,Object> responseResult = new HashMap<>();
+        responseResult.put("suspects",suspects);
+        responseResult.put("page",page);
+        responseResult.put("pageSize",pageSize);
+        responseResult.put("total",(suspectsPage==null? 0:suspectsPage.getTotalElements()));
+        return ApiResponse.<Map<String,Object>>builder().status(HttpStatus.OK.value()).message("Get suspects successfully").result(responseResult).build();
 
     @GetMapping("")
     public ResponseEntity<ResponseDto<CaseListDto>> getCaseLists(@RequestParam(defaultValue = "0") int page,

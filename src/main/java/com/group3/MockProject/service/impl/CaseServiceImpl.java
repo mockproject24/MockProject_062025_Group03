@@ -12,14 +12,19 @@ import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
 import com.group3.MockProject.repository.RecordInfoRepository;
 import com.group3.MockProject.repository.UserRepository;
+import com.group3.MockProject.entity.Suspect;
+import com.group3.MockProject.repository.SuspectRepository;
 import com.group3.MockProject.service.CaseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,10 +43,10 @@ import java.util.stream.Collectors;
  * Modification Logs:
  * DATE        AUTHOR        DESCRIPTION
  * -------------------------------------------------------------
- * 04/07/2025        Nguyễn Bảo Kha        Create
+ * 04/07/2025        Nguyễn Bảo Kha, DQMinh        Create
  */
-
 @Service
+@RequiredArgsConstructor
 public class CaseServiceImpl implements CaseService {
 
     @Autowired
@@ -56,6 +61,7 @@ public class CaseServiceImpl implements CaseService {
     @Autowired
     private EvidenceRepository evidenceRepository;
 
+    private final SuspectRepository suspectRepository;
     @Override
     public Page<UserResponseDto> getAssignedOfficers(String caseId, Pageable pageable) {
         Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
@@ -106,6 +112,12 @@ public class CaseServiceImpl implements CaseService {
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
+    public Page<Suspect> getAllSuspectsByCaseId(String caseId, Pageable pageable, String status, LocalDate date) {
+        if(date != null){
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+            return suspectRepository.findByCaseIdAndStatusAndCatchTime(caseId, status, date, startOfDay, endOfDay, pageable );
         }
+        return suspectRepository.findByCaseIdAndStatusAndCatchTime(caseId, status, date, null, null, pageable );
     }
 }

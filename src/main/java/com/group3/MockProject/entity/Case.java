@@ -24,8 +24,8 @@ public class Case {
     @GeneratedValue(strategy = GenerationType.UUID)
     String caseId;
 
-    @Column(name = "case_number")
-    String caseNumber;
+    @Column(name = "case_name")
+    String caseName;
 
     @Column(name = "type_case")
     String typeCase;
@@ -58,8 +58,8 @@ public class Case {
     @OneToMany(mappedBy = "caseEntity")
     List<Victim> victims;
 
-//    @OneToMany(mappedBy = "caseEntity")
-//    List<Suspect> suspects;
+    @OneToMany(mappedBy = "caseEntity")
+    List<Suspect> suspects;
 
     @OneToMany(mappedBy = "caseEntity")
     List<Witness> witnesses;
