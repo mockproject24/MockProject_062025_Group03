@@ -1,7 +1,7 @@
 package com.group3.MockProject.controller;
 
 import com.group3.MockProject.dto.ResponseDto;
-import com.group3.MockProject.dto.request.SaveInitialResponseDto;
+import com.group3.MockProject.dto.request.SaveInitialRequest;
 import com.group3.MockProject.service.CaseInitialService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +37,7 @@ public class CaseInitialController {
      */
     @PostMapping("/{case_id}/initial-response")
     public ResponseDto<Void> saveInitialResponse(@PathVariable("case_id") String caseId,
-                                                 @RequestBody SaveInitialResponseDto request) {
+                                                 @RequestBody SaveInitialRequest request) {
         return caseInitialService.saveInitialResponse(caseId, request);
     }
 }
