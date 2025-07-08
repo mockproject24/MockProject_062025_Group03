@@ -35,4 +35,5 @@ public interface CaseService {
     Page<Suspect> getAllSuspectsByCaseId(String caseId, Pageable pageable, String status, LocalDate date);
     Page<UserResponseDto> getAssignedOfficers(String caseId, Pageable pageable);
     RecordInfoResponseDto createRecord(String caseId, CreateRecordInfoDto requestDto);
+    Case getCaseById(String caseId);
 }

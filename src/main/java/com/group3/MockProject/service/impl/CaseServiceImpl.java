@@ -49,16 +49,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CaseServiceImpl implements CaseService {
 
-    @Autowired
+
     private UserRepository userRepository;
 
-    @Autowired
+
     private RecordInfoRepository recordInfoRepository;
 
-    @Autowired
+
     private CaseRepository caseRepository;
 
-    @Autowired
+
     private EvidenceRepository evidenceRepository;
 
     private final SuspectRepository suspectRepository;
@@ -112,6 +112,8 @@ public class CaseServiceImpl implements CaseService {
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
+        }
+    }
     public Page<Suspect> getAllSuspectsByCaseId(String caseId, Pageable pageable, String status, LocalDate date) {
         if(date != null){
             LocalDateTime startOfDay = date.atStartOfDay();
@@ -119,5 +121,9 @@ public class CaseServiceImpl implements CaseService {
             return suspectRepository.findByCaseIdAndStatusAndCatchTime(caseId, status, date, startOfDay, endOfDay, pageable );
         }
         return suspectRepository.findByCaseIdAndStatusAndCatchTime(caseId, status, date, null, null, pageable );
+    }
+    @Override
+    public Case getCaseById(String caseId){
+        return caseRepository.findById(caseId).orElseThrow();
     }
 }

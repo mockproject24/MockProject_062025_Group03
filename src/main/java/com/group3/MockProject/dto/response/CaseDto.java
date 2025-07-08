@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CaseDto {
     private String caseId;
-    private String caseNumber;
+    private String caseName;
     private String typeCase;
     private String severity;
     private String status;

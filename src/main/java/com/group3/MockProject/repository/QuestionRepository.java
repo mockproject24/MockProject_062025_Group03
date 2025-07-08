@@ -22,5 +22,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, String> {
-    boolean existByContentAndInterview(String content, Interview interview);
+    boolean existsByContentAndInterview(String content, Interview interview);
 }
