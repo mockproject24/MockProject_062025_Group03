@@ -7,14 +7,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+/**
+ * SuspectRepository
+ * <p>
+ * Provides business logic for managing employment details.
+ * <p>
+ * Version 1.0
+ * Date: 04/07/2025
+ * <p>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 04/07/2025   Hải Đăng      Create
+ */
 @Repository
 public interface SuspectRepository extends JpaRepository<Suspect,String> {
-
-    @Query("""
-            SELECT s FROM Suspect s
-            WHERE s.caseEntity.caseId = :caseId
-            AND (:status IS NULL OR s.status = :status)
-            AND (:date IS NULL OR (s.catchTime BETWEEN :startOfDay AND :endOfDay))   
-            """)
-    Page<Suspect> findByCaseIdAndStatusAndCatchTime(String caseId, String status, LocalDate date, LocalDateTime startOfDay, LocalDateTime endOfDay, Pageable pageable);
 }
