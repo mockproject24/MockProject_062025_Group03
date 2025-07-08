@@ -1,5 +1,9 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.enums.CrimeType;
+import com.group3.MockProject.enums.ReportStatus;
+import com.group3.MockProject.enums.ReporterIncidentRelationship;
+import com.group3.MockProject.enums.Severity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,11 +27,13 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.UUID)
     String reportId;
 
-    @Column(name = "type_report")
-    String typeReport;
+    @Column(name = "crime_type")
+    @Enumerated(EnumType.STRING)
+    CrimeType crimeType;
 
     @Column(name = "severity")
-    String severity;
+    @Enumerated(EnumType.STRING)
+    Severity severity;
 
     @Column(name = "incident_date")
     LocalDateTime incidentDate;
@@ -58,7 +64,12 @@ public class Report {
     boolean isDeleted = false;
 
     @Column(name = "status")
-    String status;
+    @Enumerated(EnumType.STRING)
+    ReportStatus status;
+
+    @Column(name="reporter_incident_relationship")
+    @Enumerated(EnumType.STRING)
+    ReporterIncidentRelationship reporterIncidentRelationship;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
