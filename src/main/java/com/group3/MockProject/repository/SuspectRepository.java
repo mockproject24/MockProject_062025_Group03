@@ -29,7 +29,6 @@ import java.time.LocalDateTime;
  */
 @Repository
 public interface SuspectRepository extends JpaRepository<Suspect, String> {
-
     /**
      * Finds suspects by case ID with optional status and date filtering
      * @param caseId The case identifier
@@ -44,7 +43,8 @@ public interface SuspectRepository extends JpaRepository<Suspect, String> {
            "(:caseId IS NULL OR s.caseEntity.caseId = :caseId) AND " +
            "(:status IS NULL OR s.status = :status) AND " +
            "(:startOfDay IS NULL OR s.catchTime >= :startOfDay) AND " +
-           "(:endOfDay IS NULL OR s.catchTime <= :endOfDay)")
+           "(:endOfDay IS NULL OR s.catchTime <= :endOfDay)" +
+            "AND s.isDeleted = false ")
     Page<Suspect> findByCaseIdAndStatusAndCatchTime(
             @Param("caseId") String caseId,
             @Param("status") String status,

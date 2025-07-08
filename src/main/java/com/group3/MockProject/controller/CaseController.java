@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +25,7 @@ import com.group3.MockProject.dto.response.ApiResponse;
 import com.group3.MockProject.dto.response.CaseListDto;
 import com.group3.MockProject.dto.response.EvidentDto;
 import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.SuspectResponseDto;
+import com.group3.MockProject.dto.response.SuspectsResponseDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.mapper.SuspectMapper;
@@ -84,7 +83,7 @@ public class CaseController {
      * @return ApiResponse containing paginated suspects data
      */
     @GetMapping("/{caseId}/suspects")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAllSuspects(
+    public ApiResponse<?> getAllSuspects(
             @PathVariable("caseId") String caseId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
@@ -92,25 +91,17 @@ public class CaseController {
             @RequestParam(value = "day", required = false) @DateTimeFormat(pattern = "MM/dd/yyyy") LocalDate date) {
 
         try {
-            Pageable pageable = PageRequest.of(page - 1, pageSize);
-            Page<Suspect> suspectsPage = caseService.getAllSuspectsByCaseId(caseId, pageable, status, date);
-
-            List<SuspectResponseDto> suspects = suspectsPage == null ?
-                    new ArrayList<>() :
-                    suspectsPage.getContent().stream()
-                            .map(suspectMapper::toSuspectResponseDto)
-                            .toList();
-
-            Map<String, Object> responseResult = new HashMap<>();
-            responseResult.put("suspects", suspects);
-            responseResult.put("page", page);
-            responseResult.put("pageSize", pageSize);
-            responseResult.put("total", (suspectsPage == null ? 0 : suspectsPage.getTotalElements()));
-
-            return ResponseEntity.ok(ApiResponse.success("Get suspects successfully", responseResult));
+            return ApiResponse.<SuspectsResponseDto>builder()
+                    .code(HttpStatus.OK.value())
+                    .message("Get suspects succesfully")
+                    .result(caseService.getAllSuspectsByCaseId(caseId,page,pageSize, status, date))
+                    .build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error retrieving suspects: " + e.getMessage()));
+            return ApiResponse.<Void>builder()
+                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .message("Error retrieving suspects: " + e.getMessage())
+                    .result(null)
+                    .build();
         }
     }
 
