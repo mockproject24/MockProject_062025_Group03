@@ -98,7 +98,7 @@ public class CaseServiceImp implements ICaseService {
             cases = caseRepository.findByCaseNameContains(search, pageable);
 
         if (cases.isEmpty()) {
-            return new CaseListDto(page, pageSize, 0, new ArrayList<>());
+            return new CaseListDto(page, pageSize, 0L, new ArrayList<>());
         }
         return caseMapper.toDto(cases);
     }

@@ -3,7 +3,14 @@ package com.group3.MockProject.service.impl;
 import com.group3.MockProject.dto.request.CreateInterviewDto;
 import com.group3.MockProject.dto.request.QuestionDto;
 import com.group3.MockProject.entity.*;
-import com.group3.MockProject.repository.*;
+import com.group3.MockProject.repository.InterviewRepository;
+import com.group3.MockProject.repository.UserRepository;
+import com.group3.MockProject.repository.VictimRepository;
+import com.group3.MockProject.repository.WitnessRepository;
+// TODO: Uncomment when VictimInterview entity is properly implemented
+// import com.group3.MockProject.repository.VictimInterviewRepository;
+// TODO: Uncomment when WitnessInterview entity is properly implemented
+// import com.group3.MockProject.repository.WitnessInterviewRepository;
 import com.group3.MockProject.service.InterviewService;
 import jakarta.persistence.EntityNotFoundException;
 import org.apache.coyote.BadRequestException;
@@ -40,23 +47,26 @@ public class InterviewServiceImpl implements InterviewService {
     private final UserRepository userRepository;
     private final VictimRepository victimRepository;
     private final WitnessRepository witnessRepository;
-    private final VictimInterviewRepository victimInterviewRepository;
-    private final WitnessInterviewRepository witnessInterviewRepository;
+    // TODO: Uncomment when VictimInterview entity is properly implemented
+    // private final VictimInterviewRepository victimInterviewRepository;
+    // TODO: Uncomment when WitnessInterview entity is properly implemented
+    // private final WitnessInterviewRepository witnessInterviewRepository;
     private final Path uploadRoot = Paths.get("uploads");
 
     public InterviewServiceImpl(
             InterviewRepository interviewRepository,
             UserRepository userRepository,
             VictimRepository victimRepository,
-            WitnessRepository witnessRepository,
-            VictimInterviewRepository victimInterviewRepository,
-            WitnessInterviewRepository witnessInterviewRepository) {
+            WitnessRepository witnessRepository) {
+            // TODO: Add VictimInterviewRepository and WitnessInterviewRepository parameters when entities are available
         this.interviewRepository = interviewRepository;
         this.userRepository = userRepository;
         this.victimRepository = victimRepository;
         this.witnessRepository = witnessRepository;
-        this.victimInterviewRepository = victimInterviewRepository;
-        this.witnessInterviewRepository = witnessInterviewRepository;
+        // TODO: Uncomment when VictimInterview entity is properly implemented
+        // this.victimInterviewRepository = victimInterviewRepository;
+        // TODO: Uncomment when WitnessInterview entity is properly implemented
+        // this.witnessInterviewRepository = witnessInterviewRepository;
     }
 
     @Override
@@ -99,42 +109,44 @@ public class InterviewServiceImpl implements InterviewService {
 
         //Todo Case 1: Interview witness
         if (createInterviewDto.getIntervieweeType().equalsIgnoreCase("witness")) {
-            Witness witness = witnessRepository
-                    .findWitnessByFullname(createInterviewDto.getInterviewee())
-                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
-
-            if (witnessInterviewRepository.existsByInterviewAndWitness(interview, witness)) {
-                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
-            }
-
-            WitnessInterview witnessInterview = new WitnessInterview();
-            witnessInterview.setInterview(interview);
-            witnessInterview.setWitness(witness);
-
-            if(interview.getWitnessesInterviews() == null) {
-                interview.setWitnessesInterviews(new ArrayList<>());
-            }
-            interview.getWitnessesInterviews().add(witnessInterview);
+//            Witness witness = witnessRepository
+//                    .findWitnessByFullname(createInterviewDto.getInterviewee())
+//                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
+//
+//            if (witnessInterviewRepository.existsByInterviewAndWitness(interview, witness)) {
+//                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
+//            }
+//
+//            WitnessInterview witnessInterview = new WitnessInterview();
+//            witnessInterview.setInterview(interview);
+//            witnessInterview.setWitness(witness);
+//
+//            if(interview.getWitnessesInterviews() == null) {
+//                interview.setWitnessesInterviews(new ArrayList<>());
+//            }
+//            interview.getWitnessesInterviews().add(witnessInterview);
+            // TODO: Implement witness interview when WitnessInterview entity is available
         }
 
         //Todo case 2: Interview victim
         if (createInterviewDto.getIntervieweeType().equalsIgnoreCase("victim")) {
-            Victim victim = victimRepository
-                    .findVictimByFullname(createInterviewDto.getInterviewee())
-                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
-
-            if (victimInterviewRepository.existsByInterviewAndVictim(interview, victim)) {
-                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
-            }
-
-            VictimInterview victimInterview= new VictimInterview();
-            victimInterview.setInterview(interview);
-            victimInterview.setVictim(victim);
-
-            if(interview.getVictimsInterviews() == null) {
-                interview.setVictimsInterviews(new ArrayList<>());
-            }
-            interview.getVictimsInterviews().add(victimInterview);
+//            Victim victim = victimRepository
+//                    .findVictimByFullname(createInterviewDto.getInterviewee())
+//                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
+//
+//            if (victimInterviewRepository.existsByInterviewAndVictim(interview, victim)) {
+//                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
+//            }
+//
+//            VictimInterview victimInterview= new VictimInterview();
+//            victimInterview.setInterview(interview);
+//            victimInterview.setVictim(victim);
+//
+//            if(interview.getVictimsInterviews() == null) {
+//                interview.setVictimsInterviews(new ArrayList<>());
+//            }
+//            interview.getVictimsInterviews().add(victimInterview);
+            // TODO: Implement victim interview when VictimInterview entity is available
         }
 
         //Todo case 3: Interview suspect (optional)

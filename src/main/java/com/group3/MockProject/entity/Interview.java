@@ -47,15 +47,25 @@ public class Interview {
     User interviewer;
 
     @ManyToOne
-    @JoinColumn(name = "investigation_plan_id")
-    InvestigationPlan investigationPlan;
+    @JoinColumn(name = "suspect_interviewee_id")
+    Suspect suspectInterviewee;
+
+    @ManyToOne
+    @JoinColumn(name = "victim_interviewee_id")
+    Victim victimInterviewee;
+
+    @ManyToOne
+    @JoinColumn(name = "witness_interviewee_id")
+    Witness witnessInterviewee;
 
     @OneToMany(mappedBy = "interview")
     List<Question> questions;
 
-    @OneToMany(mappedBy = "interview")
-    List<WitnessInterview> witnessesInterviews;
+    // TODO: Uncomment when WitnessInterview entity is properly implemented
+    // @OneToMany(mappedBy = "interview")
+    // List<WitnessInterview> witnessesInterviews;
 
-    @OneToMany(mappedBy = "interview")
-    List<VictimInterview> victimsInterviews;
+    // TODO: Uncomment when VictimInterview entity is properly implemented
+    // @OneToMany(mappedBy = "interview")
+    // List<VictimInterview> victimsInterviews;
 } 

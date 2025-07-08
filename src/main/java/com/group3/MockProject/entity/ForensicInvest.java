@@ -30,6 +30,10 @@ public class ForensicInvest {
     @Column(name = "received_at")
     LocalDateTime receivedAt;
 
+    //thêm resultSummary
+    @Column(name = "result_summary")
+    String resultSummary;
+
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;

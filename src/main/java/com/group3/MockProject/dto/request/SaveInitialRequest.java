@@ -27,7 +27,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaveInitialResponseDto {
+public class SaveInitialRequest {
 
     @JsonProperty("dispatch_time")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -61,7 +61,21 @@ public class SaveInitialResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PreservationMeasureDto {
+        @JsonProperty("officer_name")
+        private String officerName;
+        @JsonProperty("start_time")
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        private LocalDateTime startTime;
+        @JsonProperty("end_time")
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        private LocalDateTime endTime;
+        @JsonProperty("protection_methods")
+        private String protectionMethods;
+        @JsonProperty("area_covered")
+        private String areaCovered;
         private String notes;
+        @JsonProperty("attachment_url")
+        private String attachmentUrl;
     }
 
     @Data
@@ -74,8 +88,12 @@ public class SaveInitialResponseDto {
         @JsonProperty("type_of_support")
         private String typeOfSupport;
 
-        @JsonProperty("time_of_arrival")
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        private LocalDateTime timeOfArrival;
+        @JsonProperty("personnel_assigned")
+        private String personnelAssigned;
+        @JsonProperty("location_assigned")
+        private String locationAssigned;
+        @JsonProperty("scene_sketch_url")
+        private String sceneSketchUrl;
+        private String notes;
     }
 } 

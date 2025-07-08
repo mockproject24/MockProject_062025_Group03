@@ -1,5 +1,6 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.HolidayType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,52 +9,50 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
+
 /**
- * Question
+ * Holiday
  * <p>
- * Question entity
+ * Provides business logic for managing employment details.
  * <p>
  * Version 1.0
- * Date: 01/07/2025
+ * Date: 07/07/2025
  * <p>
  * Copyright
  * <p>
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 01/07/2025     DQMinh      Create
+ * 07/07/2025     Hải Đăng      Create
  */
-
 @Entity
-@Table(name = "question")
+@Table(name = "holidays")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Question {
+public class Holiday {
+
     @Id
-    @Column(name = "question_id")
+    @Column(name = "holiday_id")
     @GeneratedValue(strategy = GenerationType.UUID)
-    String questionId;
+    String holidayId;
 
-    @Column(columnDefinition = "MEDIUMTEXT")
-    String content; //Same as "question"
+    @Column(name = "holiday_name")
+    String holidayName;
 
-    @Column(columnDefinition = "MEDIUMTEXT")
-    String answer;
+    @Column(name = "type_of_holiday")
+    @Enumerated(EnumType.STRING)
+    HolidayType typeOfHoliday;
 
-    @Column(name = "reliability")
-    Float reliability; // Same as "levelOfTrust" ("A": 1.0, "B": 0.7, "C": 0.4)
+    @Column(name = "date_of_holiday")
+    LocalDateTime dateOfHoliday;
+
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
+    String notes;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
-
-    @ManyToOne
-    @JoinColumn(name = "interview_id")
-    Interview interview;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    User user;
-} 
+}

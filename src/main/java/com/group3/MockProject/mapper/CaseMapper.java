@@ -29,8 +29,8 @@ public class CaseMapper {
                 entity.getTypeCase(),
                 entity.getSeverity(),
                 entity.getStatus(),
-                entity.getSummary(),
                 entity.getCreateAt(),
+                "Local PD – Investigation Division", // Default receiving unit
                 location
         );
     }

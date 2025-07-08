@@ -1,31 +1,85 @@
 package com.group3.MockProject.mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.group3.MockProject.dto.response.SuspectResponseDto;
 import com.group3.MockProject.entity.Suspect;
-import org.springframework.stereotype.Component;
 
 /**
  * SuspectMapper
- * <p>
- * Provides business logic for managing employment details.
- * <p>
+ *
+ * Provides mapping functionality between Suspect entity and DTOs.
+ *
  * Version 1.0
- * Date: 7/4/2025
- * <p>
+ *
+ * Date: 08-07-2025
+ *
  * Copyright
- * <p>
+ *
  * Modification Logs:
- * DATE         AUTHOR       DESCRIPTION
- * -------------------------------------
- * 7/4/2025      doanm      Create
+ * DATE                 AUTHOR          DESCRIPTION
+ * -----------------------------------------------------------------------
+ * 08-07-2025         Ngoc Nghia            Create
  */
 @Component
 public class SuspectMapper {
+
+    /**
+     * Converts Suspect entity to SuspectResponseDto
+     * @param suspect The suspect entity to convert
+     * @return SuspectResponseDto containing suspect data
+     */
     public SuspectResponseDto toSuspectResponseDto(Suspect suspect) {
-        SuspectResponseDto suspectResponseDto = new SuspectResponseDto();
-        suspectResponseDto.setSuspectId(suspect.getSuspectId());
-        suspectResponseDto.setFullname(suspect.getFullname());
-        suspectResponseDto.setStatus(suspect.getStatus());
-        return suspectResponseDto;
+        if (suspect == null) {
+            return null;
+        }
+
+        return SuspectResponseDto.builder()
+                .suspectId(suspect.getSuspectId())
+                .fullname(suspect.getFullname())
+                .national(suspect.getNational())
+                .gender(suspect.getGender())
+                .dob(suspect.getDob())
+                .identification(suspect.getIdentification())
+                .phoneNumber(suspect.getPhoneNumber())
+                .description(suspect.getDescription())
+                .address(suspect.getAddress())
+                .catchTime(suspect.getCatchTime())
+                .notes(suspect.getNotes())
+                .status(suspect.getStatus())
+                .mugshotUrl(suspect.getMugshotUrl())
+                .fingerprintsHash(suspect.getFingerprintsHash())
+                .healthStatus(suspect.getHealthStatus())
+                .caseId(suspect.getCaseEntity() != null ? suspect.getCaseEntity().getCaseId() : null)
+                .build();
+    }
+
+    /**
+     * Converts SuspectResponseDto to Suspect entity
+     * @param suspectDto The suspect DTO to convert
+     * @return Suspect entity
+     */
+    public Suspect toSuspectEntity(SuspectResponseDto suspectDto) {
+        if (suspectDto == null) {
+            return null;
+        }
+
+        return Suspect.builder()
+                .suspectId(suspectDto.getSuspectId())
+                .fullname(suspectDto.getFullname())
+                .national(suspectDto.getNational())
+                .gender(suspectDto.getGender())
+                .dob(suspectDto.getDob())
+                .identification(suspectDto.getIdentification())
+                .phoneNumber(suspectDto.getPhoneNumber())
+                .description(suspectDto.getDescription())
+                .address(suspectDto.getAddress())
+                .catchTime(suspectDto.getCatchTime())
+                .notes(suspectDto.getNotes())
+                .status(suspectDto.getStatus())
+                .mugshotUrl(suspectDto.getMugshotUrl())
+                .fingerprintsHash(suspectDto.getFingerprintsHash())
+                .healthStatus(suspectDto.getHealthStatus())
+                .build();
     }
 }

@@ -1,9 +1,10 @@
 package com.group3.MockProject.entity;
 
-import com.group3.MockProject.enums.CrimeType;
-import com.group3.MockProject.enums.ReportStatus;
+import com.group3.MockProject.constant.CrimeType;
+import com.group3.MockProject.constant.ReportStatus;
+import com.group3.MockProject.constant.ReporterIncidentRelationshipType;
+import com.group3.MockProject.constant.SeverityType;
 import com.group3.MockProject.enums.ReporterIncidentRelationship;
-import com.group3.MockProject.enums.Severity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,7 @@ public class Report {
 
     @Column(name = "severity")
     @Enumerated(EnumType.STRING)
-    Severity severity;
+    SeverityType severity;
 
     @Column(name = "incident_date")
     LocalDateTime incidentDate;
@@ -58,6 +59,9 @@ public class Report {
 
     @Column(name = "reporter_phone_number")
     String reporterPhoneNumber;
+
+//    @Column(name = "reporter_incident_relationship")
+//    ReporterIncidentRelationshipType reporterIncidentRelationship;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
