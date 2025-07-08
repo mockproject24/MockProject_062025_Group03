@@ -163,6 +163,16 @@ public class CaseServiceImpl implements CaseService {
             Case caseEntity = caseRepository.findById(caseId)
                     .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
 
+            Evidence evidence = null;
+//            if (requestDto.getEvidenceId() != null) {
+//                evidence = evidenceRepository.findById(requestDto.getEvidenceId())
+//                        .orElseThrow(() -> new RuntimeException("Evidence not found: " + requestDto.getEvidenceId()));
+//            }else{
+//                 evidence = new Evidence();
+//                 evidence.setCaseEntity(caseEntity);
+//                 evidenceRepository.save(evidence);
+//            }
+
             RecordInfo record = new RecordInfo();
             record.setTypeName(requestDto.getTypeName());
             record.setSource(requestDto.getSource());
@@ -193,7 +203,8 @@ public class CaseServiceImpl implements CaseService {
     /**
      * Retrieves suspects for a specific case with filtering options
      * @param caseId The case identifier
-     * @param pageable Pagination information
+     * @param page the page to get
+     * @param pageSize number of elements in a page
      * @param status Optional status filter
      * @param date Optional date filter
      * @return Page of suspects matching the criteria
@@ -234,9 +245,9 @@ public class CaseServiceImpl implements CaseService {
         return CaseDto.builder()
                 .caseId(caseEntity.getCaseId())
                 .caseNumber("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
-                .typeCase(caseEntity.getTypeCase().getLabel())
-                .severity(caseEntity.getSeverity().getLabel())
-                .status(caseEntity.getStatus().getLabel())
+                .typeCase(caseEntity.getTypeCase())
+                .severity(caseEntity.getSeverity())
+                .status(caseEntity.getStatus())
                 .createdAt(caseEntity.getCreateAt())
                 .receivingUnit("Local PD – Investigation Division") // Default value since field doesn't exist
                 .location("Not specified") // Default value since field doesn't exist
