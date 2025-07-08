@@ -47,15 +47,27 @@ public class Interview {
     User interviewer;
 
     @ManyToOne
-    @JoinColumn(name = "investigation_plan_id")
-    InvestigationPlan investigationPlan;
+    @JoinColumn(name = "suspect_interviewee_id")
+    Suspect suspectInterviewee;
+
+    @ManyToOne
+    @JoinColumn(name = "victim_interviewee_id")
+    Victim victimInterviewee;
+
+    @ManyToOne
+    @JoinColumn(name = "witness_interviewee_id")
+    Witness witnessInterviewee;
 
     @OneToMany(mappedBy = "interview")
     List<Question> questions;
 
-    @OneToMany(mappedBy = "interview")
-    List<WitnessInterview> witnessesInterviews;
-
-    @OneToMany(mappedBy = "interview")
-    List<VictimInterview> victimsInterviews;
+//    @ManyToOne
+//    @JoinColumn(name = "investigation_plan_id")
+//    InvestigationPlan investigationPlan;
+//
+//    @OneToMany(mappedBy = "interview")
+//    List<WitnessInterview> witnessesInterviews;
+//
+//    @OneToMany(mappedBy = "interview")
+//    List<VictimInterview> victimsInterviews;
 } 

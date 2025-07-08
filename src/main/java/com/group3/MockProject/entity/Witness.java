@@ -25,6 +25,9 @@ public class Witness {
     @Column(name = "fullname")
     String fullname;
 
+    @Column(name = "witness_id_card", nullable = false, unique = true)
+    Long witnessIdCard; // add unique column for witness
+
     @Column(name = "contact")
     String contact;
 
@@ -42,8 +45,10 @@ public class Witness {
     @JoinColumn(name = "case_id")
     Case caseEntity;
 
-    @OneToMany(mappedBy = "witness")
-    List<WitnessInterview> interviews;
+//    @OneToMany(mappedBy = "witness")
+//    List<WitnessInterview> interviews;
+    @OneToMany(mappedBy = "witnessInterviewee")
+    Interview witnessInterview;
 
     @OneToMany(mappedBy = "witness")
     List<ReportsWitnesses> reportsWitnesses;

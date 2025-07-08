@@ -44,6 +44,9 @@ public class User {
     @Column(name = "fullname", nullable = false)
     String fullname;
 
+//    @Column(name = "user_id_card", nullable = false, unique = true)
+//    Long userIdCard; // add unique column for user
+
     @Column(name = "avatar_url")
     String avatarUrl;
 
