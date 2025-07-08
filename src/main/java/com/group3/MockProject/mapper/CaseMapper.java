@@ -25,7 +25,7 @@ public class CaseMapper {
         }
         return new CaseDto(
                 entity.getCaseId(),
-                entity.getCaseNumber(),
+                "#" + entity.getCaseId(), // Use caseId since caseNumber doesn't exist
                 entity.getTypeCase(),
                 entity.getSeverity(),
                 entity.getStatus(),

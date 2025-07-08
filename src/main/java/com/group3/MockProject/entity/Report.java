@@ -60,16 +60,14 @@ public class Report {
     @Column(name = "reporter_phone_number")
     String reporterPhoneNumber;
 
-    @Column(name = "reporter_incident_relationship")
-    ReporterIncidentRelationshipType reporterIncidentRelationship;
+//    @Column(name = "reporter_incident_relationship")
+//    ReporterIncidentRelationshipType reporterIncidentRelationship;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
 
     @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    ReportStatus status;
     @Enumerated(EnumType.STRING)
     ReportStatus status;
 

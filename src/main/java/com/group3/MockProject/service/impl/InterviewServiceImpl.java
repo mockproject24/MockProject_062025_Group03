@@ -7,7 +7,8 @@ import com.group3.MockProject.repository.InterviewRepository;
 import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.repository.VictimRepository;
 import com.group3.MockProject.repository.WitnessRepository;
-import com.group3.MockProject.repository.VictimInterviewRepository;
+// TODO: Uncomment when VictimInterview entity is properly implemented
+// import com.group3.MockProject.repository.VictimInterviewRepository;
 // TODO: Uncomment when WitnessInterview entity is properly implemented
 // import com.group3.MockProject.repository.WitnessInterviewRepository;
 import com.group3.MockProject.service.InterviewService;
@@ -46,7 +47,8 @@ public class InterviewServiceImpl implements InterviewService {
     private final UserRepository userRepository;
     private final VictimRepository victimRepository;
     private final WitnessRepository witnessRepository;
-    private final VictimInterviewRepository victimInterviewRepository;
+    // TODO: Uncomment when VictimInterview entity is properly implemented
+    // private final VictimInterviewRepository victimInterviewRepository;
     // TODO: Uncomment when WitnessInterview entity is properly implemented
     // private final WitnessInterviewRepository witnessInterviewRepository;
     private final Path uploadRoot = Paths.get("uploads");
@@ -55,14 +57,14 @@ public class InterviewServiceImpl implements InterviewService {
             InterviewRepository interviewRepository,
             UserRepository userRepository,
             VictimRepository victimRepository,
-            WitnessRepository witnessRepository,
-            VictimInterviewRepository victimInterviewRepository) {
-            // TODO: Add WitnessInterviewRepository parameter when WitnessInterview entity is available
+            WitnessRepository witnessRepository) {
+            // TODO: Add VictimInterviewRepository and WitnessInterviewRepository parameters when entities are available
         this.interviewRepository = interviewRepository;
         this.userRepository = userRepository;
         this.victimRepository = victimRepository;
         this.witnessRepository = witnessRepository;
-        this.victimInterviewRepository = victimInterviewRepository;
+        // TODO: Uncomment when VictimInterview entity is properly implemented
+        // this.victimInterviewRepository = victimInterviewRepository;
         // TODO: Uncomment when WitnessInterview entity is properly implemented
         // this.witnessInterviewRepository = witnessInterviewRepository;
     }
@@ -128,22 +130,23 @@ public class InterviewServiceImpl implements InterviewService {
 
         //Todo case 2: Interview victim
         if (createInterviewDto.getIntervieweeType().equalsIgnoreCase("victim")) {
-            Victim victim = victimRepository
-                    .findVictimByFullname(createInterviewDto.getInterviewee())
-                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
-
-            if (victimInterviewRepository.existsByInterviewAndVictim(interview, victim)) {
-                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
-            }
-
-            VictimInterview victimInterview= new VictimInterview();
-            victimInterview.setInterview(interview);
-            victimInterview.setVictim(victim);
-
-            if(interview.getVictimsInterviews() == null) {
-                interview.setVictimsInterviews(new ArrayList<>());
-            }
-            interview.getVictimsInterviews().add(victimInterview);
+//            Victim victim = victimRepository
+//                    .findVictimByFullname(createInterviewDto.getInterviewee())
+//                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
+//
+//            if (victimInterviewRepository.existsByInterviewAndVictim(interview, victim)) {
+//                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
+//            }
+//
+//            VictimInterview victimInterview= new VictimInterview();
+//            victimInterview.setInterview(interview);
+//            victimInterview.setVictim(victim);
+//
+//            if(interview.getVictimsInterviews() == null) {
+//                interview.setVictimsInterviews(new ArrayList<>());
+//            }
+//            interview.getVictimsInterviews().add(victimInterview);
+            // TODO: Implement victim interview when VictimInterview entity is available
         }
 
         //Todo case 3: Interview suspect (optional)

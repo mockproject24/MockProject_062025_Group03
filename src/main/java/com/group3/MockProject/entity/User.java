@@ -75,8 +75,8 @@ public class User {
     LocalDateTime dateAttended;
 
     //them
-    @Column(name = "refresh_token")
-    LocalDateTime refreshToken;
+    @Column(name = "refresh_token", columnDefinition = "MEDIUMTEXT")
+    String refreshToken;
 
     //them
     @Enumerated(EnumType.STRING)

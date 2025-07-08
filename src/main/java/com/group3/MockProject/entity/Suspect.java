@@ -81,5 +81,5 @@ public class Suspect {
     List<SuspectEvidence> suspectEvidences;
 
     @OneToMany(mappedBy = "suspectInterviewee")
-    Interview suspectInterview;
+    List<Interview> suspectInterviews;
 }

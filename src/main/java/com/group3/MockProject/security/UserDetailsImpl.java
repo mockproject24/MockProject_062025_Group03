@@ -87,7 +87,7 @@ public class UserDetailsImpl implements UserDetails {
         return new UserDetailsImpl(
                 user.getUsername(),
                 user.getUsername(),
-                user.getEmail(),
+                null, // email removed from User entity
                 user.getFullname(),
                 user.getPasswordHash(),
                 authorities);

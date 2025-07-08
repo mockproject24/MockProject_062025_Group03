@@ -57,7 +57,7 @@ public class Victim {
 //    @OneToMany(mappedBy = "victim")
 //    List<VictimInterview> victimInterviews;
     @OneToMany(mappedBy = "victimInterviewee")
-    Interview victimInterview;
+    List<Interview> victimInterviews;
 
     @OneToMany(mappedBy = "victim")
     List<ReportsVictims> reportsVictims;

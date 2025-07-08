@@ -19,7 +19,9 @@ import org.springframework.stereotype.Repository;
  * -------------------------------------
  * 7/5/2025      User      Create
  */
-@Repository
-public interface VictimInterviewRepository extends JpaRepository<VictimInterview, VictimInterviewId> {
-    boolean existsByInterviewAndVictim(Interview interview, Victim victim);
-}
+
+// TODO: Uncomment when VictimInterview entity is properly implemented
+// @Repository
+// public interface VictimInterviewRepository extends JpaRepository<VictimInterview, VictimInterviewId> {
+//     boolean existsByInterviewAndVictim(Interview interview, Victim victim);
+// }

@@ -65,6 +65,7 @@ public class Interview {
     // @OneToMany(mappedBy = "interview")
     // List<WitnessInterview> witnessesInterviews;
 
-    @OneToMany(mappedBy = "interview")
-    List<VictimInterview> victimsInterviews;
+    // TODO: Uncomment when VictimInterview entity is properly implemented
+    // @OneToMany(mappedBy = "interview")
+    // List<VictimInterview> victimsInterviews;
 } 

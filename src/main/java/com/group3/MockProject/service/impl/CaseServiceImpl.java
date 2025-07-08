@@ -138,7 +138,7 @@ public class CaseServiceImpl implements CaseService {
                     user.getUsername(),
                     user.getFullname(),
                     user.getAvatarUrl(),
-                    user.getEmail(),
+                    null, // email removed from User entity
                     user.getPhoneNumber(),
                     user.getRole() != null ? user.getRole().getRoleId() : null
             ));
@@ -220,7 +220,7 @@ public class CaseServiceImpl implements CaseService {
     private CaseDto convertToCaseDto(Case caseEntity) {
         return CaseDto.builder()
                 .caseId(caseEntity.getCaseId())
-                .caseNumber(caseEntity.getCaseNumber() != null ? caseEntity.getCaseNumber() : "#" + caseEntity.getCaseId())
+                .caseNumber("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
                 .typeCase(caseEntity.getTypeCase())
                 .severity(caseEntity.getSeverity())
                 .status(caseEntity.getStatus())

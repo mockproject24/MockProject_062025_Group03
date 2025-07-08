@@ -33,5 +33,5 @@ public interface CaseRepository extends JpaRepository<Case, String> {
     @Query("SELECT c FROM Case c WHERE c.isDeleted = false")
     List<Case> findAllActiveCases();
 
-    Page<Case> findByCaseNumberContains(String search, Pageable pageable);
+    Page<Case> findByCaseIdContains(String search, Pageable pageable);
 }

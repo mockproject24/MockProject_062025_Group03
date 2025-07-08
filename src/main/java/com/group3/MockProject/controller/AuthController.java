@@ -118,7 +118,7 @@ public class AuthController {
             JwtResponse jwtResponse = new JwtResponse(
                     jwt,
                     userDetails.getUsername(),
-                    userDetails.getEmail(),
+                    null, // email removed from User entity
                     userDetails.getFullname(),
                     role);
 
@@ -151,18 +151,11 @@ public class AuthController {
                         .body(ApiResponse.badRequest("Username is already taken"));
             }
 
-            // Check if email already exists
-            if (userRepository.existsByEmail(registerRequest.getEmail())) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.badRequest("Email is already in use"));
-            }
-
             // Create new user
             User user = new User();
             user.setUsername(registerRequest.getUsername());
             user.setPasswordHash(encoder.encode(registerRequest.getPassword()));
             user.setFullname(registerRequest.getFullname());
-            user.setEmail(registerRequest.getEmail());
             user.setPhoneNumber(registerRequest.getPhoneNumber());
             user.setCreateAt(LocalDateTime.now());
             user.setDeleted(false);
