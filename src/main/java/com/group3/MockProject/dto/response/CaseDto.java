@@ -29,49 +29,49 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CaseDto {
-    
+
     /**
      * Case unique identifier
      */
     @JsonProperty("case_id")
     private String caseId;
-    
+
     /**
      * Case number for display
      */
     @JsonProperty("case_number")
     private String caseNumber;
-    
+
     /**
      * Type of the case
      */
     @JsonProperty("type_case")
     private String typeCase;
-    
+
     /**
      * Severity level of the case
      */
     @JsonProperty("severity")
     private String severity;
-    
+
     /**
      * Current status of the case
      */
     @JsonProperty("status")
     private String status;
-    
+
     /**
      * Case creation timestamp
      */
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
-    
+
     /**
      * Unit that received the case
      */
     @JsonProperty("receiving_unit")
     private String receivingUnit;
-    
+
     /**
      * Location where the case occurred
      */

@@ -32,6 +32,7 @@ import com.group3.MockProject.repository.SuspectRepository;
 import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.service.CaseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -184,6 +185,7 @@ public class CaseServiceImpl implements CaseService {
 
             return responseDto;
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
         }
     }
@@ -191,8 +193,7 @@ public class CaseServiceImpl implements CaseService {
     /**
      * Retrieves suspects for a specific case with filtering options
      * @param caseId The case identifier
-     * @param page the page to get
-     * @param pageSize number of elements in a page
+     * @param pageable Pagination information
      * @param status Optional status filter
      * @param date Optional date filter
      * @return Page of suspects matching the criteria
