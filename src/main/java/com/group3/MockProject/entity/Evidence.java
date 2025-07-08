@@ -1,7 +1,8 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.EvidenceType;
+import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
-import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -11,8 +12,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "evidences")
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -47,6 +46,11 @@ public class Evidence {
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
+
+    //them
+    @Enumerated(EnumType.STRING)
+    @Column(name = "evidence_type")
+    EvidenceType evidenceType;
 
     @OneToOne(mappedBy = "evidence")
     DigitalInvest digitalInvest;

@@ -23,7 +23,7 @@ import com.group3.MockProject.entity.Suspect;
  */
 @Component
 public class SuspectMapper {
-    
+
     /**
      * Converts Suspect entity to SuspectResponseDto
      * @param suspect The suspect entity to convert
@@ -33,7 +33,7 @@ public class SuspectMapper {
         if (suspect == null) {
             return null;
         }
-        
+
         return SuspectResponseDto.builder()
                 .suspectId(suspect.getSuspectId())
                 .fullname(suspect.getFullname())
@@ -53,7 +53,7 @@ public class SuspectMapper {
                 .caseId(suspect.getCaseEntity() != null ? suspect.getCaseEntity().getCaseId() : null)
                 .build();
     }
-    
+
     /**
      * Converts SuspectResponseDto to Suspect entity
      * @param suspectDto The suspect DTO to convert
@@ -63,7 +63,7 @@ public class SuspectMapper {
         if (suspectDto == null) {
             return null;
         }
-        
+
         return Suspect.builder()
                 .suspectId(suspectDto.getSuspectId())
                 .fullname(suspectDto.getFullname())
@@ -82,4 +82,4 @@ public class SuspectMapper {
                 .healthStatus(suspectDto.getHealthStatus())
                 .build();
     }
-} 
+}

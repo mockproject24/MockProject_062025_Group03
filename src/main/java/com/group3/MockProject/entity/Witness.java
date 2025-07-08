@@ -25,6 +25,9 @@ public class Witness {
     @Column(name = "fullname")
     String fullname;
 
+    @Column(name = "witness_id_card", nullable = false, unique = true)
+    Long witnessIdCard; // add unique column for witness
+
     @Column(name = "contact")
     String contact;
 

@@ -26,19 +26,20 @@ import com.group3.MockProject.entity.Suspect;
  * Copyright
  *
  * Modification Logs:
- * DATE                 AUTHOR          DESCRIPTION
- * -----------------------------------------------------------------------
- * 08-07-2025          Nguyễn Bảo Kha, DQMinh             Create
+ * DATE        AUTHOR        DESCRIPTION
+ * -------------------------------------------------------------
+ * 04/07/2025        Nguyễn Bảo Kha        Create
  */
+
 public interface CaseService {
-    
+
     /**
      * Retrieves a case by its unique identifier
      * @param caseId The unique identifier of the case
      * @return Case entity
      */
     Case getCaseById(String caseId);
-    
+
     /**
      * Retrieves paginated list of cases with optional search functionality
      * @param page Page number (0-based)
@@ -47,14 +48,14 @@ public interface CaseService {
      * @return CaseListDto containing paginated case data
      */
     CaseListDto getListCase(int page, int pageSize, String search);
-    
+
     /**
      * Retrieves all evidences for a specific case
      * @param caseId The case identifier
      * @return List of evidence DTOs
      */
     List<EvidentDto<?>> getEvidences(String caseId);
-    
+
     /**
      * Retrieves assigned officers for a specific case with pagination
      * @param caseId The case identifier
@@ -62,7 +63,7 @@ public interface CaseService {
      * @return Page of UserResponseDto containing officer data
      */
     Page<UserResponseDto> getAssignedOfficers(String caseId, Pageable pageable);
-    
+
     /**
      * Creates a new record for a specific case
      * @param caseId The case identifier
@@ -70,7 +71,7 @@ public interface CaseService {
      * @return RecordInfoResponseDto containing created record data
      */
     RecordInfoResponseDto createRecord(String caseId, CreateRecordInfoDto requestDto);
-    
+
     /**
      * Retrieves suspects for a specific case with filtering options
      * @param caseId The case identifier

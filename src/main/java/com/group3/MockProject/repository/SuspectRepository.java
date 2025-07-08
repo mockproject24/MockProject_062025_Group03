@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
  */
 @Repository
 public interface SuspectRepository extends JpaRepository<Suspect, String> {
-    
+
     /**
      * Finds suspects by case ID with optional status and date filtering
      * @param caseId The case identifier
@@ -46,10 +46,10 @@ public interface SuspectRepository extends JpaRepository<Suspect, String> {
            "(:startOfDay IS NULL OR s.catchTime >= :startOfDay) AND " +
            "(:endOfDay IS NULL OR s.catchTime <= :endOfDay)")
     Page<Suspect> findByCaseIdAndStatusAndCatchTime(
-            @Param("caseId") String caseId, 
-            @Param("status") String status, 
-            @Param("date") LocalDate date, 
-            @Param("startOfDay") LocalDateTime startOfDay, 
-            @Param("endOfDay") LocalDateTime endOfDay, 
+            @Param("caseId") String caseId,
+            @Param("status") String status,
+            @Param("date") LocalDate date,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay,
             Pageable pageable);
-} 
+}

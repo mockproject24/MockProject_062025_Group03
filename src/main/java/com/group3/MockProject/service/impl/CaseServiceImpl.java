@@ -29,6 +29,10 @@ import com.group3.MockProject.repository.RecordInfoRepository;
 import com.group3.MockProject.repository.SuspectRepository;
 import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.service.CaseService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,9 +48,9 @@ import lombok.RequiredArgsConstructor;
  * Copyright
  *
  * Modification Logs:
- * DATE                 AUTHOR          DESCRIPTION
- * -----------------------------------------------------------------------
- * 08-07-2025         Group3            Create
+ * DATE        AUTHOR        DESCRIPTION
+ * -------------------------------------------------------------
+ * 04/07/2025        Nguyễn Bảo Kha        Create
  */
 @Service
 @RequiredArgsConstructor
@@ -57,7 +61,7 @@ public class CaseServiceImpl implements CaseService {
     private final CaseRepository caseRepository;
     private final EvidenceRepository evidenceRepository;
     private final SuspectRepository suspectRepository;
-    
+
     /**
      * Retrieves a case by its unique identifier
      * @param caseId The unique identifier of the case
@@ -69,7 +73,7 @@ public class CaseServiceImpl implements CaseService {
         return caseRepository.findById(caseId)
                 .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
     }
-    
+
     /**
      * Retrieves paginated list of cases with optional search functionality
      * @param page Page number (0-based)
@@ -82,18 +86,18 @@ public class CaseServiceImpl implements CaseService {
         try {
             Pageable pageable = PageRequest.of(page, pageSize);
             Page<Case> casePage;
-            
+
             if (search != null && !search.trim().isEmpty()) {
                 // TODO: Implement search functionality when search repository method is available
                 casePage = caseRepository.findAll(pageable);
             } else {
                 casePage = caseRepository.findAll(pageable);
             }
-            
+
             List<CaseDto> caseDtos = casePage.getContent().stream()
                     .map(this::convertToCaseDto)
                     .toList();
-            
+
             return CaseListDto.builder()
                     .page(page + 1) // Convert to 1-based for response
                     .pageSize(pageSize)
@@ -104,7 +108,7 @@ public class CaseServiceImpl implements CaseService {
             throw new RuntimeException("Error retrieving cases: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Retrieves all evidences for a specific case
      * @param caseId The case identifier
@@ -119,7 +123,7 @@ public class CaseServiceImpl implements CaseService {
             throw new RuntimeException("Error retrieving evidences: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Retrieves assigned officers for a specific case with pagination
      * @param caseId The case identifier
@@ -159,14 +163,14 @@ public class CaseServiceImpl implements CaseService {
             RecordInfo record = new RecordInfo();
             record.setTypeName(requestDto.getTypeName());
             record.setSource(requestDto.getSource());
-            record.setDateCollected(requestDto.getDateCollected() != null ? 
+            record.setDateCollected(requestDto.getDateCollected() != null ?
                     requestDto.getDateCollected() : LocalDateTime.now());
             record.setSummary(requestDto.getSummary());
             record.setDeleted(requestDto.getIsDeleted() != null ? requestDto.getIsDeleted() : false);
             record.setEvidence(null); // Set to null as evidence handling is not implemented
 
             RecordInfo saved = recordInfoRepository.saveAndFlush(record);
-            
+
             RecordInfoResponseDto responseDto = new RecordInfoResponseDto();
             responseDto.setRecordInfoId(saved.getRecordInfoId());
             responseDto.setTypeName(saved.getTypeName());
@@ -175,7 +179,7 @@ public class CaseServiceImpl implements CaseService {
             responseDto.setSummary(saved.getSummary());
             responseDto.setIsDeleted(saved.isDeleted());
             responseDto.setEvidenceId(null);
-            
+
             return responseDto;
         } catch (Exception ex) {
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
@@ -195,19 +199,19 @@ public class CaseServiceImpl implements CaseService {
         try {
             LocalDateTime startOfDay = null;
             LocalDateTime endOfDay = null;
-            
+
             if (date != null) {
                 startOfDay = date.atStartOfDay();
                 endOfDay = date.atTime(LocalTime.MAX);
             }
-            
+
             return suspectRepository.findByCaseIdAndStatusAndCatchTime(
                     caseId, status, date, startOfDay, endOfDay, pageable);
         } catch (Exception e) {
             throw new RuntimeException("Error retrieving suspects: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Converts Case entity to CaseDto for API response
      * @param caseEntity The case entity to convert

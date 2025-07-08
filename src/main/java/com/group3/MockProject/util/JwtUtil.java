@@ -14,7 +14,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    
+
     /**
      * Logger for this class
      */
@@ -44,9 +44,9 @@ public class JwtUtil {
      */
     public String generateJwtToken(Authentication authentication) {
         String username = authentication.getName();
-        
+
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
+
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
@@ -66,7 +66,7 @@ public class JwtUtil {
      */
     public String generateTokenFromUsername(String username) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
+
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
@@ -86,7 +86,7 @@ public class JwtUtil {
      */
     public String getUsernameFromJwtToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
+
         return Jwts.parser()
                 .setSigningKey(key)
                 .build()
@@ -108,12 +108,12 @@ public class JwtUtil {
     public boolean validateJwtToken(String authToken) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            
+
             Jwts.parser()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(authToken);
-            
+
             return true;
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
@@ -127,4 +127,4 @@ public class JwtUtil {
 
         return false;
     }
-} 
+}

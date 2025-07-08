@@ -1,5 +1,6 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -44,11 +46,15 @@ public class User {
     @Column(name = "fullname", nullable = false)
     String fullname;
 
+//    @Column(name = "user_id_card", nullable = false, unique = true)
+//    Long userIdCard; // add unique column for user
+
     @Column(name = "avatar_url")
     String avatarUrl;
 
-    @Column(name = "email")
-    String email;
+    //bỏ email
+//    @Column(name = "email")
+//    String email;
 
     @Column(name = "phone_number")
     String phoneNumber;
@@ -59,6 +65,23 @@ public class User {
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
+
+    //them
+    @Column(name = "dob")
+    LocalDateTime dob;
+
+    //them
+    @Column(name = "date_attended")
+    LocalDateTime dateAttended;
+
+    //them
+    @Column(name = "refresh_token")
+    LocalDateTime refreshToken;
+
+    //them
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    UserStatus status;
 
     @OneToMany(mappedBy = "user")
     List<Report> reports;

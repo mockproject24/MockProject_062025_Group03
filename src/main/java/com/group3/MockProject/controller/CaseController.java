@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * CaseController
  *
- * Provides REST API endpoints for case management operations.
+ * Provides business logic for managing details.
  *
  * Version 1.0
  *
@@ -46,15 +46,15 @@ import lombok.RequiredArgsConstructor;
  * Copyright
  *
  * Modification Logs:
- * DATE                 AUTHOR          DESCRIPTION
- * -----------------------------------------------------------------------
- * 08-07-2025         Group3            Create
+ * DATE        AUTHOR        DESCRIPTION
+ * -------------------------------------------------------------
+ * 04/07/2025        Nguyễn Bảo Kha        Create
  */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cases")
 public class CaseController {
-    
+
     private final CaseService caseService;
     private final SuspectMapper suspectMapper;
 
@@ -90,23 +90,23 @@ public class CaseController {
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "day", required = false) @DateTimeFormat(pattern = "MM/dd/yyyy") LocalDate date) {
-        
+
         try {
             Pageable pageable = PageRequest.of(page - 1, pageSize);
             Page<Suspect> suspectsPage = caseService.getAllSuspectsByCaseId(caseId, pageable, status, date);
-            
-            List<SuspectResponseDto> suspects = suspectsPage == null ? 
-                    new ArrayList<>() : 
+
+            List<SuspectResponseDto> suspects = suspectsPage == null ?
+                    new ArrayList<>() :
                     suspectsPage.getContent().stream()
                             .map(suspectMapper::toSuspectResponseDto)
                             .toList();
-            
+
             Map<String, Object> responseResult = new HashMap<>();
             responseResult.put("suspects", suspects);
             responseResult.put("page", page);
             responseResult.put("pageSize", pageSize);
             responseResult.put("total", (suspectsPage == null ? 0 : suspectsPage.getTotalElements()));
-            
+
             return ResponseEntity.ok(ApiResponse.success("Get suspects successfully", responseResult));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -126,13 +126,13 @@ public class CaseController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) String search) {
-        
+
         try {
             if (page < 0 || pageSize <= 0) {
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
             }
-            
+
             CaseListDto caseListDtos = caseService.getListCase(page, pageSize, search);
             return ResponseEntity.ok(ApiResponse.success(caseListDtos));
         } catch (Exception e) {
@@ -151,7 +151,7 @@ public class CaseController {
     public ResponseEntity<ApiResponse<RecordInfoResponseDto>> createRecord(
             @PathVariable String caseId,
             @RequestBody CreateRecordInfoDto requestDto) {
-        
+
         try {
             RecordInfoResponseDto createdRecord = caseService.createRecord(caseId, requestDto);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -171,11 +171,11 @@ public class CaseController {
     public ResponseEntity<ApiResponse<List<EvidentDto<?>>>> getEvidences(@PathVariable String caseId) {
         try {
             List<EvidentDto<?>> evidences = caseService.getEvidences(caseId);
-            
+
             if (evidences.isEmpty()) {
                 return ResponseEntity.ok(ApiResponse.success("No evidences found", evidences));
             }
-            
+
             return ResponseEntity.ok(ApiResponse.success(evidences));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
  * Modification Logs:
  * DATE                 AUTHOR          DESCRIPTION
  * -----------------------------------------------------------------------
- * 08-07-2025         Group3            Create
+ * 08-07-2025         Ngoc Nghia            Create
  */
 @Data
 @Builder
@@ -31,17 +31,17 @@ public class ApiResponse<T> {
      * HTTP status code
      */
     private Integer code;
-    
+
     /**
      * Response message
      */
     private String message;
-    
+
     /**
      * Response data
      */
     private T result;
-    
+
     /**
      * Creates a successful response
      * @param data The response data
@@ -54,7 +54,7 @@ public class ApiResponse<T> {
                 .result(data)
                 .build();
     }
-    
+
     /**
      * Creates a successful response with custom message
      * @param message Custom success message
@@ -68,7 +68,7 @@ public class ApiResponse<T> {
                 .result(data)
                 .build();
     }
-    
+
     /**
      * Creates an error response
      * @param code Error code
@@ -82,7 +82,7 @@ public class ApiResponse<T> {
                 .result(null)
                 .build();
     }
-    
+
     /**
      * Creates a bad request error response
      * @param message Error message
@@ -95,7 +95,7 @@ public class ApiResponse<T> {
                 .result(null)
                 .build();
     }
-    
+
     /**
      * Creates an internal server error response
      * @param message Error message
@@ -108,4 +108,4 @@ public class ApiResponse<T> {
                 .result(null)
                 .build();
     }
-} 
+}
