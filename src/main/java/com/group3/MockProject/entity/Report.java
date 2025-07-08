@@ -1,5 +1,9 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.CrimeType;
+import com.group3.MockProject.constant.ReportStatus;
+import com.group3.MockProject.constant.ReporterIncidentRelationshipType;
+import com.group3.MockProject.constant.SeverityType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,11 +27,13 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.UUID)
     String reportId;
 
-    @Column(name = "type_report")
-    String typeReport;
+    @Column(name = "crime_type")
+    @Enumerated(EnumType.STRING)
+    CrimeType crimeType;
 
     @Column(name = "severity")
-    String severity;
+    @Enumerated(EnumType.STRING)
+    SeverityType severity;
 
     @Column(name = "incident_date")
     LocalDateTime incidentDate;
@@ -53,12 +59,16 @@ public class Report {
     @Column(name = "reporter_phone_number")
     String reporterPhoneNumber;
 
+    @Column(name = "reporter_incident_relationship")
+    ReporterIncidentRelationshipType reporterIncidentRelationship;
+
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
 
     @Column(name = "status")
-    String status;
+    @Enumerated(EnumType.STRING)
+    ReportStatus status;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

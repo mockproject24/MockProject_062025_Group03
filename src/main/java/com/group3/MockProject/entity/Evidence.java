@@ -1,5 +1,7 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.EvidenceType;
+import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -45,6 +47,11 @@ public class Evidence {
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
+
+    //them
+    @Enumerated(EnumType.STRING)
+    @Column(name = "evidence_type")
+    EvidenceType evidenceType;
 
     @OneToOne(mappedBy = "evidence")
     DigitalInvest digitalInvest;
