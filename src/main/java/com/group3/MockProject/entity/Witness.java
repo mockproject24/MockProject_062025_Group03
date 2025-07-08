@@ -42,8 +42,9 @@ public class Witness {
     @JoinColumn(name = "case_id")
     Case caseEntity;
 
-    @OneToMany(mappedBy = "witness")
-    List<WitnessInterview> interviews;
+    // TODO: Uncomment when WitnessInterview entity is properly implemented
+    // @OneToMany(mappedBy = "witness")
+    // List<WitnessInterview> interviews;
 
     @OneToMany(mappedBy = "witness")
     List<ReportsWitnesses> reportsWitnesses;
