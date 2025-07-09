@@ -24,9 +24,6 @@ public class Suspect {
     @Column(name = "fullname")
     String fullname;
 
-    @Column(name = "suspect_id_card", nullable = false, unique = true)
-    Long suspectIdCard; // add unique column for suspect
-
     @Column(name = "national")
     String national;
 
@@ -66,10 +63,6 @@ public class Suspect {
     @Column(name = "health_status")
     String healthStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "case_id")
-    Case caseEntity;
-
     @OneToMany(mappedBy = "suspect")
     List<Arrest> arrests;
 
@@ -78,8 +71,7 @@ public class Suspect {
     Report report;
 
     @OneToMany(mappedBy = "suspect")
-    List<SuspectEvidence> suspectEvidences;
+    List<SuspectEvidence> EvidenceSuspects;
 
-    @OneToMany(mappedBy = "suspectInterviewee")
-    List<Interview> suspectInterviews;
+
 }

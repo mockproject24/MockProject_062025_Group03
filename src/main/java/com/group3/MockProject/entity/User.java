@@ -1,5 +1,6 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.GenderType;
 import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -40,53 +41,45 @@ public class User {
     @Column(name = "username")
     String username;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     String passwordHash;
 
-    @Column(name = "fullname", nullable = false)
-    String fullname;
-
-//    @Column(name = "user_id_card", nullable = false, unique = true)
-//    Long userIdCard; // add unique column for user
+    @Column(name = "full_name")
+    String fullName;
 
     @Column(name = "avatar_url")
     String avatarUrl;
 
-    //bỏ email
-//    @Column(name = "email")
-//    String email;
-
     @Column(name = "phone_number")
     String phoneNumber;
 
-    @Column(name = "create_at", nullable = false)
+    @Column(name = "gender")
+    GenderType gender;
+
+    @Column(name = "dob")
+    LocalDateTime dob;
+
+    @Column(name = "date_attended")
+    LocalDateTime dateAttended;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    UserStatus status;
+
+    @Column(name = "create_at")
     LocalDateTime createAt;
+
+    @Column(name = "refresh_token")
+    String refreshToken;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
     boolean isDeleted = false;
 
-    //them
-    @Column(name = "dob")
-    LocalDateTime dob;
-
-    //them
-    @Column(name = "date_attended")
-    LocalDateTime dateAttended;
-
-    //them
-    @Column(name = "refresh_token", columnDefinition = "MEDIUMTEXT")
-    String refreshToken;
-
-    //them
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    UserStatus status;
-
     @OneToMany(mappedBy = "user")
     List<Report> reports;
 
-    @OneToMany(mappedBy = "interviewer")
+    @OneToMany(mappedBy = "userInterviewer")
     List<Interview> interviews;
 
     @OneToMany(mappedBy = "createdOfficer")
@@ -107,4 +100,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     List<Question> questions;
+
+    @OneToMany(mappedBy = "user")
+    List<Warrant> warrants;
 }
