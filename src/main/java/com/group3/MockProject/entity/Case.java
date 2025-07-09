@@ -1,5 +1,8 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.CaseSeverity;
+import com.group3.MockProject.constant.CaseStatus;
+import com.group3.MockProject.constant.CaseType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -28,13 +31,16 @@ public class Case {
     String caseName;
 
     @Column(name = "type_case")
-    String typeCase;
+    @Enumerated(EnumType.STRING)
+    CaseType typeCase;
 
     @Column(name = "severity")
-    String severity;
+    @Enumerated(EnumType.STRING)
+    CaseSeverity severity;
 
     @Column(name = "status")
-    String status;
+    @Enumerated(EnumType.STRING)
+    CaseStatus status;
 
     @Column(name = "summary", columnDefinition = "TEXT")
     String summary;

@@ -26,8 +26,8 @@ public class Inmate {
 //    @JoinColumn(name = "sentence_id")
 //    private Sentence sentence;
 
-    @Column(name = "fullname")
-    String fullname;
+    @Column(name = "full_name")
+    String fullName;
 
     @Column(name = "assigned_facility")
     String assignedFacility;
