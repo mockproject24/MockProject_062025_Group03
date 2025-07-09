@@ -1,37 +1,25 @@
 package com.group3.MockProject.controller;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import com.group3.MockProject.dto.request.CreateEvidenceRequest;
+import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.service.EvidenceService;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.ApiResponse;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.SuspectsResponseDto;
 import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.service.CaseService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * CaseController
@@ -56,6 +44,7 @@ public class CaseController {
 
     private final CaseService caseService;
     private final SuspectMapper suspectMapper;
+    private final EvidenceService evidenceService;
 
     /**
      * Retrieves a specific case by its ID
@@ -172,5 +161,24 @@ public class CaseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.internalServerError("Error retrieving evidences: " + e.getMessage()));
         }
+    }
+
+    @PostMapping(value = "/{caseId}/evidences", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<EvidenceResponse>> createEvidence(
+            @PathVariable String caseId,
+            @RequestPart("request") @Valid CreateEvidenceRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        return ResponseEntity.ok(ApiResponse.success("Get evidence by id successfully!",
+                evidenceService.createEvidence(caseId,request,file)));
+    }
+
+    @GetMapping("/{caseId}/evidence/{evidenceId}")
+    public ResponseEntity<ApiResponse<EvidenceResponse>> getEvidence(
+            @PathVariable String caseId,
+            @PathVariable String evidenceId
+    ){
+        EvidenceResponse evidenceResponse = evidenceService.getEvidence(caseId,evidenceId);
+        return ResponseEntity.ok(ApiResponse.success("Get evidence by id successfully!",evidenceResponse));
     }
 }
