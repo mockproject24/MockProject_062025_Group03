@@ -1,10 +1,7 @@
 package com.group3.MockProject.controller;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.*;
@@ -17,13 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.ApiResponse;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.SuspectResponseDto;
 import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.service.CaseService;
 

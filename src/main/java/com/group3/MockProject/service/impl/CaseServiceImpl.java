@@ -139,7 +139,7 @@ public class CaseServiceImpl implements CaseService {
             Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
             return users.map(user -> new UserResponseDto(
                     user.getUsername(),
-                    user.getFullName(),
+                    user.getFullname(),
                     user.getAvatarUrl(),
                     null, // email removed from User entity
                     user.getPhoneNumber(),
@@ -199,6 +199,7 @@ public class CaseServiceImpl implements CaseService {
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
         }
     }
+
 
     /**
      * Retrieves suspects for a specific case with filtering options
