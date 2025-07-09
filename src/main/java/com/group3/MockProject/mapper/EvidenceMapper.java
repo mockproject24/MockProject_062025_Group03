@@ -1,8 +1,13 @@
 package com.group3.MockProject.mapper;
 
 import com.group3.MockProject.dto.response.EvidenceResponse;
+import com.group3.MockProject.dto.response.SuspectResponse;
+import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
+import com.group3.MockProject.entity.Suspect;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 /**
  * EvidenceMapper
@@ -21,7 +26,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class EvidenceMapper {
-    public EvidenceResponse toResponse(Evidence evidence) {
+    public EvidenceResponse toResponse(Evidence evidence, String mugshotUrl, Case caseEntity) {
         return EvidenceResponse.builder()
                 .evidenceId(evidence.getEvidenceId())
                 .description(evidence.getDescription())
@@ -30,10 +35,18 @@ public class EvidenceMapper {
                 .attachFile(evidence.getAttachFile())
                 .status(evidence.getStatus())
                 .isDeleted(evidence.isDeleted())
-                .caseId(evidence.getCaseEntity() != null ? evidence.getCaseEntity().getCaseId() : null)
-                .username(evidence.getUser() != null ? evidence.getUser().getUsername() : null)
-                .reportId(evidence.getReport() != null ? evidence.getReport().getReportId() : null)
-                .warrantId(evidence.getWarrant() != null ? evidence.getWarrant().getWarrantId() : null)
+                .caseId(caseEntity.getCaseId())
+                .build();
+    }
+
+    private SuspectResponse toSuspectResponse(Suspect suspect, String mugshotUrl, Case caseEntity) {
+        return SuspectResponse.builder()
+                .caseId(caseEntity.getCaseId())
+                .fullName(suspect.getFullname())
+                .address(suspect.getAddress())
+                .moreInfo(suspect.getNotes())
+                .mugshotUrl(mugshotUrl)
+                .uploadedAt(Instant.now())
                 .build();
     }
 

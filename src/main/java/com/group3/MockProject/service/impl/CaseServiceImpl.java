@@ -133,7 +133,7 @@ public class CaseServiceImpl implements CaseService {
             Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
             return users.map(user -> new UserResponseDto(
                     user.getUsername(),
-                    user.getFullname(),
+                    user.getFullName(),
                     user.getAvatarUrl(),
                     null, // email removed from User entity
                     user.getPhoneNumber(),
