@@ -3,6 +3,7 @@ package com.group3.MockProject.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -65,6 +66,10 @@ public class Suspect {
 
     @Column(name = "health_status")
     String healthStatus;
+
+    @Column(name="is_deleted")
+    @ColumnDefault(value = "false")
+    Boolean isDeleted;
 
     @ManyToOne
     @JoinColumn(name = "case_id")

@@ -1,8 +1,9 @@
 package com.group3.MockProject.mapper;
 
+import com.group3.MockProject.dto.response.SuspectDto;
 import org.springframework.stereotype.Component;
 
-import com.group3.MockProject.dto.response.SuspectResponseDto;
+import com.group3.MockProject.dto.response.SuspectsResponseDto;
 import com.group3.MockProject.entity.Suspect;
 
 /**
@@ -29,12 +30,11 @@ public class SuspectMapper {
      * @param suspect The suspect entity to convert
      * @return SuspectResponseDto containing suspect data
      */
-    public SuspectResponseDto toSuspectResponseDto(Suspect suspect) {
+    public SuspectDto toSuspectDto(Suspect suspect) {
         if (suspect == null) {
             return null;
         }
-
-        return SuspectResponseDto.builder()
+        return SuspectDto.builder()
                 .suspectId(suspect.getSuspectId())
                 .fullname(suspect.getFullname())
                 .national(suspect.getNational())
@@ -59,7 +59,7 @@ public class SuspectMapper {
      * @param suspectDto The suspect DTO to convert
      * @return Suspect entity
      */
-    public Suspect toSuspectEntity(SuspectResponseDto suspectDto) {
+    public Suspect toSuspectEntity(SuspectDto suspectDto) {
         if (suspectDto == null) {
             return null;
         }

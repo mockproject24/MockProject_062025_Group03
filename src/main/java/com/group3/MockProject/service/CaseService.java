@@ -3,14 +3,11 @@ package com.group3.MockProject.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.group3.MockProject.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.UserResponseDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Suspect;
 
@@ -75,10 +72,11 @@ public interface CaseService {
     /**
      * Retrieves suspects for a specific case with filtering options
      * @param caseId The case identifier
-     * @param pageable Pagination information
+     * @param page the page to get
+     * @param pageSize number of elements in a page
      * @param status Optional status filter
      * @param date Optional date filter
      * @return Page of suspects matching the criteria
      */
-    Page<Suspect> getAllSuspectsByCaseId(String caseId, Pageable pageable, String status, LocalDate date);
+    SuspectsResponseDto getAllSuspectsByCaseId(String caseId, int page, int pageSize, String status, LocalDate date);
 }

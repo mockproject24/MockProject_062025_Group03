@@ -2,25 +2,31 @@ package com.group3.MockProject.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 /**
- * SuspectResponseDto
+ * SuspectDto
+ * <p>
+ *
+ * <p>
  * Version 1.0
+ * Date: 7/8/2025
+ * <p>
  * Copyright
+ * <p>
  * Modification Logs:
- * DATE                 AUTHOR          DESCRIPTION
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 7/8/2025      DQMinh      Create
  */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SuspectResponseDto {
-
+@Builder
+public class SuspectDto {
     /**
      * Suspect unique identifier
      */
@@ -100,4 +106,5 @@ public class SuspectResponseDto {
      * Case ID associated with this suspect
      */
     private String caseId;
+
 }
