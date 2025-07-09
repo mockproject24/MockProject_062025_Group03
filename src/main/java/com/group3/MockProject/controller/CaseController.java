@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.service.CaseService;
 
 import lombok.RequiredArgsConstructor;
@@ -43,7 +42,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class CaseController {
 
     private final CaseService caseService;
-    private final SuspectMapper suspectMapper;
     private final EvidenceService evidenceService;
 
     /**

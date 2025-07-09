@@ -1,13 +1,13 @@
 package com.group3.MockProject.mapper;
 
+import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.EvidenceResponse;
-import com.group3.MockProject.dto.response.SuspectResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
-import com.group3.MockProject.entity.Suspect;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * EvidenceMapper
@@ -26,26 +26,28 @@ import java.time.Instant;
  */
 @Component
 public class EvidenceMapper {
-    public EvidenceResponse toResponse(Evidence evidence, String mugshotUrl, Case caseEntity) {
-        return EvidenceResponse.builder()
-                .evidenceId(evidence.getEvidenceId())
-                .description(evidence.getDescription())
-                .collectedAt(evidence.getCollectedAt())
-                .currentLocation(evidence.getCurrentLocation())
-                .attachFile(evidence.getAttachFile())
-                .status(evidence.getStatus())
-                .isDeleted(evidence.isDeleted())
-                .caseId(caseEntity.getCaseId())
+    public Evidence toEvidenceEntity(CreateEvidenceRequest request, String fileUrl, Case caseEntity) {
+        return Evidence.builder()
+                .description(request.getDescription())
+                .currentLocation(request.getCurrentLocation())
+                .attachFile(fileUrl)
+                .collectedAt(request.getCollectedAt() != null ? request.getCollectedAt() : LocalDateTime.now())
+                .evidenceType(request.getEvidenceType())
+                .status("ACTIVE")
+                .caseEntity(caseEntity)
+                .isDeleted(false)
                 .build();
     }
 
-    private SuspectResponse toSuspectResponse(Suspect suspect, String mugshotUrl, Case caseEntity) {
-        return SuspectResponse.builder()
-                .caseId(caseEntity.getCaseId())
-                .fullName(suspect.getFullname())
-                .address(suspect.getAddress())
-                .moreInfo(suspect.getNotes())
-                .mugshotUrl(mugshotUrl)
+    public EvidenceResponse toEvidenceResponse(Evidence evidence, String fileUrl) {
+        return EvidenceResponse.builder()
+                .caseId(evidence.getCaseEntity().getCaseId())
+                .evidenceId(evidence.getEvidenceId())
+                .description(evidence.getDescription())
+                .currentLocation(evidence.getCurrentLocation())
+                .attachFile(fileUrl)
+                .evidenceType(evidence.getEvidenceType())
+                .collectedAt(evidence.getCollectedAt())
                 .uploadedAt(Instant.now())
                 .build();
     }

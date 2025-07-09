@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.group3.MockProject.constant.CaseType;
 import com.group3.MockProject.dto.response.*;
 import com.group3.MockProject.mapper.SuspectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,9 +229,9 @@ public class CaseServiceImpl implements CaseService {
         return CaseDto.builder()
                 .caseId(caseEntity.getCaseId())
                 .caseNumber("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
-                .typeCase(caseEntity.getTypeCase())
-                .severity(caseEntity.getSeverity())
-                .status(caseEntity.getStatus())
+                .typeCase(CaseType.MURDER.getLabel())
+                .severity(caseEntity.getSeverity().getLabel())
+                .status(caseEntity.getStatus().getLabel())
                 .createdAt(caseEntity.getCreateAt())
                 .receivingUnit("Local PD – Investigation Division") // Default value since field doesn't exist
                 .location("Not specified") // Default value since field doesn't exist
