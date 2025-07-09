@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Table(name = "users_cases")
 @Data
@@ -18,9 +21,19 @@ public class UsersCases {
     @EmbeddedId
     UsersCasesId id;
 
+    @Column(name = "notes", columnDefinition = "MEDIUMTEXT")
+    String notes;
+
+    @Column(name = "assigned_at")
+    LocalDateTime assignedAt;
+
+    @Column(name = "is_deleted")
+    @ColumnDefault("false")
+    boolean isDeleted = false;
+
     @ManyToOne
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
+    @MapsId("username")
+    @JoinColumn(name = "username")
     User user;
 
     @ManyToOne
@@ -28,10 +41,6 @@ public class UsersCases {
     @JoinColumn(name = "case_id")
     Case caseEntity;
 
-    @Column(name = "responsible", columnDefinition = "TEXT")
-    String responsible;
-
-    @Column(name = "is_deleted")
-    @ColumnDefault("false")
-    boolean isDeleted = false;
+    @OneToMany(mappedBy = "caseUser")
+    List<Task> tasks;
 } 

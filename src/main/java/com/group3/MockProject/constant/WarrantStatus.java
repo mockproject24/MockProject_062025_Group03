@@ -3,7 +3,7 @@ package com.group3.MockProject.constant;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * CaseType
+ * WarrantStatus
  * <p>
  * Provides business logic for managing employment details.
  * <p>
@@ -15,16 +15,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 08/07/2025      ASUS      Create
+ * 08/07/2025    Hải Đăng      Create
  */
-public enum CaseType {
-    ROBBERY("Robbery"),
-    MURDER("Murder"),
-    RAPE("Rape");
+public enum WarrantStatus {
+    WAITING_EXECUTING("Waiting executing"),
+    EXECUTING("Executing"),
+    COMPLETED("Completed");
 
     private final String label;
 
-    CaseType(String label) {
+    WarrantStatus(String label) {
         this.label = label;
     }
 

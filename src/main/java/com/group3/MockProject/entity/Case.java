@@ -82,9 +82,6 @@ public class Case {
     @OneToMany(mappedBy = "caseEntity")
     List<Prosecution> prosecutions;
 
-//    @OneToMany(mappedBy = "caseEntity")
-//    List<Sentence> sentences;
-
     @OneToMany(mappedBy = "caseEntity")
     List<UsersCases> usersCases;
 

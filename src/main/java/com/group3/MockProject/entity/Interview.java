@@ -43,8 +43,8 @@ public class Interview {
     boolean isDeleted = false;
 
     @ManyToOne
-    @JoinColumn(name = "interviewer_id")
-    User interviewer;
+    @JoinColumn(name = "user_interviewer_id")
+    User userInterviewer;
 
     @ManyToOne
     @JoinColumn(name = "suspect_interviewee_id")
@@ -60,12 +60,4 @@ public class Interview {
 
     @OneToMany(mappedBy = "interview")
     List<Question> questions;
-
-    // TODO: Uncomment when WitnessInterview entity is properly implemented
-    // @OneToMany(mappedBy = "interview")
-    // List<WitnessInterview> witnessesInterviews;
-
-    // TODO: Uncomment when VictimInterview entity is properly implemented
-    // @OneToMany(mappedBy = "interview")
-    // List<VictimInterview> victimsInterviews;
 } 

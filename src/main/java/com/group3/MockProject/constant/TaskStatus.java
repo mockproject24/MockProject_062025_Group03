@@ -3,7 +3,7 @@ package com.group3.MockProject.constant;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * CaseType
+ * TaskStatus
  * <p>
  * Provides business logic for managing employment details.
  * <p>
@@ -17,14 +17,14 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * -------------------------------------
  * 08/07/2025      ASUS      Create
  */
-public enum CaseType {
-    ROBBERY("Robbery"),
-    MURDER("Murder"),
-    RAPE("Rape");
+public enum TaskStatus {
+    WAITING_EXECUTING("Waiting executing"),
+    EXECUTING("Executing"),
+    COMPLETED("Completed");
 
     private final String label;
 
-    CaseType(String label) {
+    TaskStatus(String label) {
         this.label = label;
     }
 
@@ -32,5 +32,4 @@ public enum CaseType {
     public String getLabel() {
         return label;
     }
-
 }
