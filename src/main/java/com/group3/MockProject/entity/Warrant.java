@@ -1,5 +1,8 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.TaskStatus;
+import com.group3.MockProject.constant.WarrantStatus;
+import com.group3.MockProject.util.StringListJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +28,11 @@ public class Warrant {
     @Column(name = "warrant_name")
     String warrantName;
 
+    @Column(name= "police_response")
+    String policeResponse;
+
     @Column(name = "attached_file", columnDefinition = "json")
+    @Convert(converter = StringListJsonConverter.class)
     List<String> attachedFile;
 
     @Column(name = "time_publish")
@@ -35,8 +42,16 @@ public class Warrant {
     @ColumnDefault("false")
     boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "warrant")
-    List<WarrantResult> warrantResults;
+    @Column(name = "deadline")
+    LocalDateTime deadline;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    WarrantStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "police_response")
+    User user;
 
     @ManyToOne
     @JoinColumn(name = "case_id")

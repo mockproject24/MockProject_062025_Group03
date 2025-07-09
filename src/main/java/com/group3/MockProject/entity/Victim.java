@@ -1,5 +1,7 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.GenderType;
+import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -28,20 +30,20 @@ public class Victim {
     @Column(name = "contact")
     String contact;
 
-    @Column(name = "injuries",columnDefinition = "MEDIUMTEXT")
-    String injuries;
-
     @Column(name="national")
     String national;
 
     @Column(name="gender")
-    String gender;
+    GenderType gender;
 
     @Column(name="description", columnDefinition = "MEDIUMTEXT")
     String description;
 
+    @Column(name = "injuries",columnDefinition = "MEDIUMTEXT")
+    String injuries;
+
     @Column(name = "status")
-    String status;
+    UserStatus status;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
@@ -51,8 +53,8 @@ public class Victim {
     @JoinColumn(name = "case_id")
     Case caseEntity;
 
-    @OneToMany(mappedBy = "victim")
-    List<VictimInterview> victimInterviews;
+    @OneToMany(mappedBy = "victimInterviewee")
+    List<Interview> victimInterviews;
 
     @OneToMany(mappedBy = "victim")
     List<ReportsVictims> reportsVictims;

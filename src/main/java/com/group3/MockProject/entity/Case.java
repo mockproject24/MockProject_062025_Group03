@@ -1,8 +1,12 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.CaseSeverity;
+import com.group3.MockProject.constant.CaseStatus;
+import com.group3.MockProject.constant.CaseType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -10,6 +14,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Entity
 @Table(name = "cases")
@@ -24,17 +29,20 @@ public class Case {
     @GeneratedValue(strategy = GenerationType.UUID)
     String caseId;
 
-    @Column(name = "case_number")
-    Integer caseNumber;
+    @Column(name = "case_name")
+    String caseName;
 
     @Column(name = "type_case")
-    String typeCase;
+    @Enumerated(EnumType.STRING)
+    CaseType typeCase;
 
     @Column(name = "severity")
-    String severity;
+    @Enumerated(EnumType.STRING)
+    CaseSeverity severity;
 
     @Column(name = "status")
-    String status;
+    @Enumerated(EnumType.STRING)
+    CaseStatus status;
 
     @Column(name = "summary", columnDefinition = "TEXT")
     String summary;
@@ -58,8 +66,8 @@ public class Case {
     @OneToMany(mappedBy = "caseEntity")
     List<Victim> victims;
 
-//    @OneToMany(mappedBy = "caseEntity")
-//    List<Suspect> suspects;
+    @OneToMany(mappedBy = "caseEntity")
+    List<Suspect> suspects;
 
     @OneToMany(mappedBy = "caseEntity")
     List<Witness> witnesses;
@@ -75,9 +83,6 @@ public class Case {
 
     @OneToMany(mappedBy = "caseEntity")
     List<Prosecution> prosecutions;
-
-//    @OneToMany(mappedBy = "caseEntity")
-//    List<Sentence> sentences;
 
     @OneToMany(mappedBy = "caseEntity")
     List<UsersCases> usersCases;

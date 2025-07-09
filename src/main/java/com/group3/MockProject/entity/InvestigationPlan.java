@@ -50,6 +50,7 @@ public class InvestigationPlan{
     @JoinColumn(name = "case_id")
     Case caseEntity;
 
-    @OneToMany(mappedBy = "investigationPlan")
-    List<Interview> interviews;
+    // TODO: Add investigationPlan property to Interview entity if needed
+    // @OneToMany(mappedBy = "investigationPlan")
+    // List<Interview> interviews;
 }

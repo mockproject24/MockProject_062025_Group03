@@ -1,15 +1,15 @@
 package com.group3.MockProject.entity;
 
+import com.group3.MockProject.constant.EvidenceType;
+import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "evidences")
@@ -17,8 +17,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString(exclude = {
+        "digitalInvest", "financialInvest", "physicalInvest", "forensicInvest",
+        "recordInfos", "caseEntity", "user", "report", "warrant",
+        "casesEvidences", "evidencesSuspects", "measureSurveys"
+})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Evidence {
     @Id
+    @EqualsAndHashCode.Include
     @Column(name = "evidence_id")
     @GeneratedValue(strategy = GenerationType.UUID)
     String evidenceId;
@@ -42,6 +49,11 @@ public class Evidence {
     @ColumnDefault("false")
     boolean isDeleted = false;
 
+    //them
+    @Enumerated(EnumType.STRING)
+    @Column(name = "evidence_type")
+    EvidenceType evidenceType;
+
     @OneToOne(mappedBy = "evidence")
     DigitalInvest digitalInvest;
 
@@ -52,7 +64,7 @@ public class Evidence {
     PhysicalInvest physicalInvest;
 
     @OneToMany(mappedBy = "evidence")
-    List<RecordInfo> recordInfos;
+    Set<RecordInfo> recordInfos;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
@@ -76,7 +88,7 @@ public class Evidence {
     List<SuspectEvidence> evidencesSuspects;
 
     @OneToMany(mappedBy = "evidence")
-    List<MeasureSurvey> measureSurveys;
+    Set<MeasureSurvey> measureSurveys;
 
     @ManyToOne
     @JoinColumn(name = "warrant_id")
