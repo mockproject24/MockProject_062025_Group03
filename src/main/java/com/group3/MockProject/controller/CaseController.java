@@ -1,14 +1,9 @@
 package com.group3.MockProject.controller;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import com.group3.MockProject.dto.response.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.ApiResponse;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.SuspectsResponseDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.service.CaseService;
 
@@ -58,18 +46,18 @@ public class CaseController {
     private final SuspectMapper suspectMapper;
 
     /**
-     * Retrieves a specific case by its ID
+     * Retrieves detail a specific case by its ID
+     *
      * @param caseId The unique identifier of the case
-     * @return ResponseEntity containing the case data
+     * @return CaseDetailDto containing the case detail
      */
     @GetMapping("/{caseId}")
-    public ResponseEntity<ApiResponse<Case>> getCaseById(@PathVariable String caseId) {
+    public ApiResponse<CaseDetailDto> getCaseDetail(@PathVariable String caseId) {
         try {
-            Case foundCase = caseService.getCaseById(caseId);
-            return ResponseEntity.ok(ApiResponse.success(foundCase));
+            CaseDetailDto foundCase = caseService.getCaseDetailById(caseId);
+            return ApiResponse.success(foundCase);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error retrieving case: " + e.getMessage()));
+            return ApiResponse.internalServerError("Error retrieving case: " + e.getMessage());
         }
     }
 

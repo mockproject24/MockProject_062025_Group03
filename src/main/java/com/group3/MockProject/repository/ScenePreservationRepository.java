@@ -18,6 +18,6 @@ import org.springframework.stereotype.Repository;
  * -------------------------------------
  * 04-Jul-25     Hoang Tran     Create
  */
-@Repository
-public interface ScenePreservationRepository extends JpaRepository<ScenePreservation, String> {
-} 
+//@Repository
+//public interface ScenePreservationRepository extends JpaRepository<ScenePreservation, String> {
+//}

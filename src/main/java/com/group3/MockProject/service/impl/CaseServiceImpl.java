@@ -7,7 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
+import com.group3.MockProject.entity.Task;
+import com.group3.MockProject.entity.UsersCases;
+import com.group3.MockProject.entity.Warrant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,11 +29,8 @@ import com.group3.MockProject.repository.EvidenceRepository;
 import com.group3.MockProject.repository.RecordInfoRepository;
 import com.group3.MockProject.repository.SuspectRepository;
 import com.group3.MockProject.repository.UserRepository;
+import com.group3.MockProject.repository.WarrantRepository;
 import com.group3.MockProject.service.CaseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
@@ -58,17 +59,27 @@ public class CaseServiceImpl implements CaseService {
     private final CaseRepository caseRepository;
     private final EvidenceRepository evidenceRepository;
     private final SuspectRepository suspectRepository;
+    private final WarrantRepository warrantRepository;
     private final SuspectMapper suspectMapper;
+    private final CaseMapper caseMapper;
+
     /**
-     * Retrieves a case by its unique identifier
+     * Retrieves a case by its unique identifier with all related details
+     *
      * @param caseId The unique identifier of the case
-     * @return Case entity
+     * @return CaseDetailDto containing case details with tasks, suspects, warrants, and evidences
      * @throws RuntimeException if case is not found
      */
     @Override
-    public Case getCaseById(String caseId) {
-        return caseRepository.findById(caseId)
-                .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
+    public CaseDetailDto getCaseDetailById(String caseId) {
+        Case caseEntity = caseRepository.findByIdWithDetails(caseId);
+        if (caseEntity == null) throw new RuntimeException("Case not found: " + caseId);
+
+        List<Suspect> suspectEntities = suspectRepository.findByCaseEntityCaseId(caseId);
+        List<Warrant> warrantEntities = warrantRepository.findByCaseEntityCaseId(caseId);
+        List<Evidence> evidenceEntities = evidenceRepository.findByCaseEntityCaseId(caseId);
+
+        return caseMapper.toCaseDetailDto(caseEntity, suspectEntities, warrantEntities, evidenceEntities);
     }
 
     /**
@@ -133,7 +144,7 @@ public class CaseServiceImpl implements CaseService {
             Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
             return users.map(user -> new UserResponseDto(
                     user.getUsername(),
-                    user.getFullname(),
+                    user.getFullName(),
                     user.getAvatarUrl(),
                     null, // email removed from User entity
                     user.getPhoneNumber(),

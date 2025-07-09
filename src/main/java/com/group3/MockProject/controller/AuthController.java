@@ -155,7 +155,7 @@ public class AuthController {
             User user = new User();
             user.setUsername(registerRequest.getUsername());
             user.setPasswordHash(encoder.encode(registerRequest.getPassword()));
-            user.setFullname(registerRequest.getFullname());
+            user.setFullName(registerRequest.getFullname());
             user.setPhoneNumber(registerRequest.getPhoneNumber());
             user.setCreateAt(LocalDateTime.now());
             user.setDeleted(false);

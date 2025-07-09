@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * SuspectRepository
@@ -52,4 +53,12 @@ public interface SuspectRepository extends JpaRepository<Suspect, String> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay,
             Pageable pageable);
+
+    /**
+     * Finds all active suspects by case ID
+     * @param caseId The case identifier
+     * @return List of suspects for the case
+     */
+    @Query("SELECT s FROM Suspect s WHERE s.caseEntity.caseId = :caseId AND s.isDeleted = false")
+    List<Suspect> findByCaseEntityCaseId(@Param("caseId") String caseId);
 }

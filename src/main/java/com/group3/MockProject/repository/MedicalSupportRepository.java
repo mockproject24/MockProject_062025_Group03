@@ -1,6 +1,6 @@
 package com.group3.MockProject.repository;
 
-import com.group3.MockProject.entity.MedicalSupport;
+//import com.group3.MockProject.entity.MedicalSupport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +19,6 @@ import org.springframework.stereotype.Repository;
  * -------------------------------------
  * 04-Jul-25     Hoang Tran     Create
  */
-@Repository
-public interface MedicalSupportRepository extends JpaRepository<MedicalSupport, String> {
-} 
+//@Repository
+//public interface MedicalSupportRepository extends JpaRepository<MedicalSupport, String> {
+//}

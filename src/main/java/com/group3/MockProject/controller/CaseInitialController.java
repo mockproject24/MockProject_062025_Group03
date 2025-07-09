@@ -26,18 +26,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CaseInitialController {
 
-    private final CaseInitialService caseInitialService;
-
-    /**
-     * Save initial response information for a case
-     *
-     * @param caseId  the case ID
-     * @param request the initial response data
-     * @return ResponseDto with success or error message
-     */
-    @PostMapping("/{case_id}/initial-response")
-    public ResponseDto<Void> saveInitialResponse(@PathVariable("case_id") String caseId,
-                                                 @RequestBody SaveInitialRequest request) {
-        return caseInitialService.saveInitialResponse(caseId, request);
-    }
+//    private final CaseInitialService caseInitialService;
+//
+//    /**
+//     * Save initial response information for a case
+//     *
+//     * @param caseId  the case ID
+//     * @param request the initial response data
+//     * @return ResponseDto with success or error message
+//     */
+//    @PostMapping("/{case_id}/initial-response")
+//    public ResponseDto<Void> saveInitialResponse(@PathVariable("case_id") String caseId,
+//                                                 @RequestBody SaveInitialRequest request) {
+//        return caseInitialService.saveInitialResponse(caseId, request);
+//    }
 }
