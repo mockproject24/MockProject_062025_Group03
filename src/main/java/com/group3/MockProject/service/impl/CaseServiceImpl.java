@@ -6,6 +6,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.mapper.SuspectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,11 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.CaseDto;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.UserResponseDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
 import com.group3.MockProject.entity.RecordInfo;
@@ -61,7 +58,7 @@ public class CaseServiceImpl implements CaseService {
     private final CaseRepository caseRepository;
     private final EvidenceRepository evidenceRepository;
     private final SuspectRepository suspectRepository;
-
+    private final SuspectMapper suspectMapper;
     /**
      * Retrieves a case by its unique identifier
      * @param caseId The unique identifier of the case
@@ -179,24 +176,26 @@ public class CaseServiceImpl implements CaseService {
             responseDto.setSummary(saved.getSummary());
             responseDto.setIsDeleted(saved.isDeleted());
             responseDto.setEvidenceId(null);
-
             return responseDto;
         } catch (Exception ex) {
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
         }
     }
 
+
     /**
      * Retrieves suspects for a specific case with filtering options
      * @param caseId The case identifier
-     * @param pageable Pagination information
+     * @param page the page to get
+     * @param pageSize number of elements in a page
      * @param status Optional status filter
      * @param date Optional date filter
      * @return Page of suspects matching the criteria
      */
     @Override
-    public Page<Suspect> getAllSuspectsByCaseId(String caseId, Pageable pageable, String status, LocalDate date) {
+    public SuspectsResponseDto getAllSuspectsByCaseId(String caseId,int page, int pageSize, String status, LocalDate date) {
         try {
+            Pageable pageable = PageRequest.of(page - 1, pageSize);
             LocalDateTime startOfDay = null;
             LocalDateTime endOfDay = null;
 
@@ -205,8 +204,16 @@ public class CaseServiceImpl implements CaseService {
                 endOfDay = date.atTime(LocalTime.MAX);
             }
 
-            return suspectRepository.findByCaseIdAndStatusAndCatchTime(
+            Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
                     caseId, status, date, startOfDay, endOfDay, pageable);
+
+            return SuspectsResponseDto.builder()
+                    .page(page)
+                    .pageSize(pageSize)
+                    .total(suspectsPage.getTotalElements())
+                    .totalPages(suspectsPage.getTotalPages())
+                    .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
+                    .build();
         } catch (Exception e) {
             throw new RuntimeException("Error retrieving suspects: " + e.getMessage(), e);
         }
