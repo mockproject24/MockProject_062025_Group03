@@ -135,4 +135,36 @@ public class EvidenceServiceImpl implements EvidenceService {
 
         return fileName;
     }
+
+    @Override
+    public EvidenceResponse updateEvidence(String evidenceId, CreateEvidenceRequest request, MultipartFile file) {
+        try {
+            // Tìm evidence theo evidenceId
+            var evidence = evidenceRepository.findById(evidenceId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Evidence not found with ID: " + evidenceId));
+
+            // Nếu có file mới, thực hiện lưu file và cập nhật đường dẫn
+            String fileUrl = evidence.getAttachFile();
+            if (file != null && !file.isEmpty()) {
+                String storedFileName = store(file);
+                fileUrl = baseURI + storedFileName;
+            }
+
+            // Cập nhật các trường thông tin
+            evidence.setDescription(request.getDescription());
+            evidence.setCurrentLocation(request.getCurrentLocation());
+            evidence.setEvidenceType(request.getEvidenceType());
+            evidence.setCollectedAt(request.getCollectedAt() != null ? request.getCollectedAt() : evidence.getCollectedAt());
+            evidence.setAttachFile(fileUrl);
+
+            evidence = evidenceRepository.save(evidence);
+
+            return toEvidenceResponse(evidence, fileUrl);
+        } catch (URISyntaxException | IOException e) {
+            log.error("Error while updating evidence file: {}", e.getMessage(), e);
+            throw new StorageException("Failed to update evidence");
+        }
+    }
+
+
 }
