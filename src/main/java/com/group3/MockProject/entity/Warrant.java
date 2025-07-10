@@ -28,8 +28,8 @@ public class Warrant {
     @Column(name = "warrant_name")
     String warrantName;
 
-    @Column(name= "police_response")
-    String policeResponse;
+//    @Column(name= "police_response")
+//    String policeResponse;
 
     @Column(name = "attached_file", columnDefinition = "json")
     @Convert(converter = StringListJsonConverter.class)
