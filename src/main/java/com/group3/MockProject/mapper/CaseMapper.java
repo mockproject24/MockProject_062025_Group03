@@ -25,10 +25,10 @@ public class CaseMapper {
         }
         return new CaseDto(
                 entity.getCaseId(),
-                entity.getCaseName(),
-                entity.getTypeCase(),
-                entity.getSeverity(),
-                entity.getStatus(),
+                "#" + entity.getCaseId(), // Use caseId since caseNumber doesn't exist
+                entity.getTypeCase().getLabel(),
+                entity.getSeverity().getLabel(),
+                entity.getStatus().getLabel(),
                 entity.getCreateAt(),
                 "Local PD – Investigation Division", // Default receiving unit
                 location

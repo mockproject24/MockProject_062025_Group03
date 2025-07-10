@@ -15,6 +15,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
+import com.group3.MockProject.dto.response.CaseDto;
+import com.group3.MockProject.dto.response.CaseListDto;
+import com.group3.MockProject.dto.response.EvidentDto;
+import com.group3.MockProject.dto.response.RecordInfoResponseDto;
+import com.group3.MockProject.dto.response.UserResponseDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
 import com.group3.MockProject.entity.RecordInfo;
@@ -176,12 +181,12 @@ public class CaseServiceImpl implements CaseService {
             responseDto.setSummary(saved.getSummary());
             responseDto.setIsDeleted(saved.isDeleted());
             responseDto.setEvidenceId(null);
+
             return responseDto;
         } catch (Exception ex) {
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
         }
     }
-
 
     /**
      * Retrieves suspects for a specific case with filtering options
@@ -228,9 +233,9 @@ public class CaseServiceImpl implements CaseService {
         return CaseDto.builder()
                 .caseId(caseEntity.getCaseId())
                 .caseNumber("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
-                .typeCase(caseEntity.getTypeCase())
-                .severity(caseEntity.getSeverity())
-                .status(caseEntity.getStatus())
+                .typeCase(caseEntity.getTypeCase().getLabel())
+                .severity(caseEntity.getSeverity().getLabel())
+                .status(caseEntity.getStatus().getLabel())
                 .createdAt(caseEntity.getCreateAt())
                 .receivingUnit("Local PD – Investigation Division") // Default value since field doesn't exist
                 .location("Not specified") // Default value since field doesn't exist

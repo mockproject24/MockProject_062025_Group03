@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
  */
 
 @Entity
-@Table(name = "users")
+@Table(name = "tasks")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

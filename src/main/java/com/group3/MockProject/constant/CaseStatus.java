@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * CaseStatus
  * <p>
- * Provides business logic for managing employment details.
  * <p>
  * Version 1.0
  * Date: 08/07/2025
@@ -13,9 +12,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Copyright
  * <p>
  * Modification Logs:
- * DATE         AUTHOR       DESCRIPTION
- * -------------------------------------
- * 08/07/2025      ASUS      Create
+ * DATE        AUTHOR        DESCRIPTION
  */
 public enum CaseStatus {
     PENDING_APPROVAL("Pending Approval"),
@@ -32,5 +29,4 @@ public enum CaseStatus {
     public String getLabel() {
         return label;
     }
-
 }
