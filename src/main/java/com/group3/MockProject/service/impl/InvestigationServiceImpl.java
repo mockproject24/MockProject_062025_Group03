@@ -47,7 +47,7 @@ public class InvestigationServiceImpl implements InvestigationService {
             return new InvestigationPlanResponseDto(
                     plan.getInvestigationPlanId(),
                     caseEntity.getCaseId(),
-                    caseEntity.getSeverity(),
+                    caseEntity.getSeverity().getLabel(),
                     plan.getDeadlineDate(),
                     plan.getResult(),
                     plan.getStatus(),

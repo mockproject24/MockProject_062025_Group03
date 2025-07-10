@@ -133,7 +133,7 @@ public class CaseServiceImpl implements CaseService {
             Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
             return users.map(user -> new UserResponseDto(
                     user.getUsername(),
-                    user.getFullname(),
+                    user.getFullName(),
                     user.getAvatarUrl(),
                     null, // email removed from User entity
                     user.getPhoneNumber(),
@@ -228,9 +228,9 @@ public class CaseServiceImpl implements CaseService {
         return CaseDto.builder()
                 .caseId(caseEntity.getCaseId())
                 .caseNumber("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
-                .typeCase(caseEntity.getTypeCase())
-                .severity(caseEntity.getSeverity())
-                .status(caseEntity.getStatus())
+                .typeCase(caseEntity.getTypeCase().getLabel())
+                .severity(caseEntity.getSeverity().getLabel())
+                .status(caseEntity.getStatus().getLabel())
                 .createdAt(caseEntity.getCreateAt())
                 .receivingUnit("Local PD – Investigation Division") // Default value since field doesn't exist
                 .location("Not specified") // Default value since field doesn't exist

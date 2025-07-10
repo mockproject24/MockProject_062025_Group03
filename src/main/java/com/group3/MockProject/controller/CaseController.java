@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.group3.MockProject.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.ApiResponse;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.SuspectsResponseDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.mapper.SuspectMapper;
@@ -35,15 +32,15 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * CaseController
- *
+ * <p>
  * Provides business logic for managing details.
- *
+ * <p>
  * Version 1.0
- *
+ * <p>
  * Date: 08-07-2025
- *
+ * <p>
  * Copyright
- *
+ * <p>
  * Modification Logs:
  * DATE        AUTHOR        DESCRIPTION
  * -------------------------------------------------------------
@@ -59,6 +56,7 @@ public class CaseController {
 
     /**
      * Retrieves a specific case by its ID
+     *
      * @param caseId The unique identifier of the case
      * @return ResponseEntity containing the case data
      */
@@ -75,11 +73,12 @@ public class CaseController {
 
     /**
      * Retrieves all suspects for a specific case with pagination and filtering
-     * @param caseId The case identifier
-     * @param page Page number (default: 1)
+     *
+     * @param caseId   The case identifier
+     * @param page     Page number (default: 1)
      * @param pageSize Number of items per page (default: 10)
-     * @param status Optional status filter
-     * @param date Optional date filter
+     * @param status   Optional status filter
+     * @param date     Optional date filter
      * @return ApiResponse containing paginated suspects data
      */
     @GetMapping("/{caseId}/suspects")
@@ -94,7 +93,7 @@ public class CaseController {
             return ApiResponse.<SuspectsResponseDto>builder()
                     .code(HttpStatus.OK.value())
                     .message("Get suspects succesfully")
-                    .result(caseService.getAllSuspectsByCaseId(caseId,page,pageSize, status, date))
+                    .result(caseService.getAllSuspectsByCaseId(caseId, page, pageSize, status, date))
                     .build();
         } catch (Exception e) {
             return ApiResponse.<Void>builder()
@@ -107,9 +106,10 @@ public class CaseController {
 
     /**
      * Retrieves paginated list of cases with optional search
-     * @param page Page number (default: 0)
+     *
+     * @param page     Page number (default: 0)
      * @param pageSize Number of items per page (default: 10)
-     * @param search Optional search term
+     * @param search   Optional search term
      * @return ResponseEntity containing paginated cases data
      */
     @GetMapping("")
@@ -133,8 +133,41 @@ public class CaseController {
     }
 
     /**
+     * Retrieves paginated list of officers assigned to a specific case
+     *
+     * @param caseId   The unique identifier of the case
+     * @param page     Page number (default: 0)
+     * @param pageSize Number of items per page (default: 10)
+     * @return ResponseEntity containing paginated officers data
+     */
+    @GetMapping("/{caseId}/assigned-officers")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAssignedOfficers(
+            @PathVariable String caseId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            if (page < 0 || pageSize <= 0) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
+            }
+            Page<UserResponseDto> officerPage = caseService.getAssignedOfficers(caseId, PageRequest.of(page, pageSize));
+            Map<String, Object> result = new HashMap<>();
+            result.put("content", officerPage.getContent());
+            result.put("totalElements", officerPage.getTotalElements());
+            result.put("totalPages", officerPage.getTotalPages());
+            result.put("size", officerPage.getSize());
+            result.put("number", officerPage.getNumber());
+            return ResponseEntity.ok(ApiResponse.success(result));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.internalServerError("Error retrieving assigned officers: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Creates a new record for a specific case
-     * @param caseId The case identifier
+     *
+     * @param caseId     The case identifier
      * @param requestDto The record creation data
      * @return ResponseEntity containing the created record data
      */
@@ -155,6 +188,7 @@ public class CaseController {
 
     /**
      * Retrieves all evidences for a specific case
+     *
      * @param caseId The case identifier
      * @return ResponseEntity containing case evidences data
      */
