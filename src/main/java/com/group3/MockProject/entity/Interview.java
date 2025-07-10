@@ -57,6 +57,10 @@ public class Interview {
     @JoinColumn(name = "witness_interviewee_id")
     Witness witnessInterviewee;
 
+    @ManyToOne
+    @JoinColumn(name = "case_interviewee_id")
+    Case caseInterview;
+
     @OneToMany(mappedBy = "interview", fetch = FetchType.LAZY)
     List<Question> questions;
 

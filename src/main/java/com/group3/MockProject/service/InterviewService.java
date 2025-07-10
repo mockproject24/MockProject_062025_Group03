@@ -20,15 +20,15 @@ import java.util.List;
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
  * 7/4/2025      User      Create
+ * 7/10/2025     User      Update to match API spec exactly
  */
 public interface InterviewService {
     /**
      * Create new interview
-     * @param caseId Case ID
-     * @param suspectId Suspect ID
-     * @param dto Interview data
-     * @param files Attached files
+     * @param caseId Case ID from URL path
+     * @param dto Interview data containing all required fields
+     * @param files Attached files (optional)
      * @return Created interview information
      */
-    InterviewResponseDto createInterview(String caseId, String suspectId, CreateInterviewDto dto, List<MultipartFile> files);
+    InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files);
 }

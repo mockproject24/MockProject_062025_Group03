@@ -9,6 +9,7 @@ import com.group3.MockProject.repository.*;
 import com.group3.MockProject.service.InterviewService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,9 +38,11 @@ import java.util.List;
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
  * 7/4/2025      User      Create
+ * 7/10/2025     User      Update to match API spec exactly
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class InterviewServiceImpl implements InterviewService {
     // Repositories for database access
     private final InterviewRepository interviewRepository;
@@ -52,7 +55,7 @@ public class InterviewServiceImpl implements InterviewService {
     // Mapper for DTO/Entity conversion
     private final InterviewMapper interviewMapper;
 
-    @Value("${spring.upload-file.base-uri:file:./uploads/}")
+    @Value("${spring.upload-file.base-uri}")
     private String baseUri;
 
     // Constants for file upload
@@ -61,31 +64,21 @@ public class InterviewServiceImpl implements InterviewService {
     );
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
-    public InterviewServiceImpl(InterviewRepository interviewRepository, InterviewFileRepository interviewFileRepository, UserRepository userRepository, SuspectRepository suspectRepository, VictimRepository victimRepository, WitnessRepository witnessRepository, InterviewMapper interviewMapper) {
-        this.interviewRepository = interviewRepository;
-        this.interviewFileRepository = interviewFileRepository;
-        this.userRepository = userRepository;
-        this.suspectRepository = suspectRepository;
-        this.victimRepository = victimRepository;
-        this.witnessRepository = witnessRepository;
-        this.interviewMapper = interviewMapper;
-    }
-
     @Override
     @Transactional
-    public InterviewResponseDto createInterview(String caseId, String suspectId, CreateInterviewDto dto, List<MultipartFile> files) {
+    public InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files) {
         log.info("Starting interview creation process for case: {}", caseId);
 
         // STEP 1: Validate input data
         validateInterviewData(dto);
 
         // STEP 2: Find interviewer by ID
-        User interviewer = findInterviewerById(dto.getInterviewer());
+        User interviewer = findInterviewerById(dto.getInterviewerId());
 
         // STEP 3: Upload files if provided
         List<String> uploadedFilePaths = uploadFilesIfProvided(files);
 
-        // STEP 4: Create Interview entity from DTO (without files)
+        // STEP 4: Create Interview entity from DTO
         Interview interview = interviewMapper.convertToInterviewEntity(dto, interviewer);
 
         // STEP 5: Set interviewee based on type
@@ -103,7 +96,7 @@ public class InterviewServiceImpl implements InterviewService {
         Interview savedInterview = interviewRepository.save(interview);
 
         // STEP 9: Convert to Response DTO and return
-        InterviewResponseDto responseDto = interviewMapper.convertToResponseDto(savedInterview, caseId, suspectId);
+        InterviewResponseDto responseDto = interviewMapper.convertToResponseDto(savedInterview);
 
         log.info("Interview created successfully with ID: {}", savedInterview.getInterviewId());
         return responseDto;
@@ -158,7 +151,7 @@ public class InterviewServiceImpl implements InterviewService {
             throw new IllegalArgumentException("Location is required");
         }
 
-        if (isStringEmpty(dto.getInterviewer())) {
+        if (isStringEmpty(dto.getInterviewerId())) {
             throw new IllegalArgumentException("Interviewer ID is required");
         }
 
@@ -246,7 +239,7 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     // ================================
-    // FILE UPLOAD METHODS - FIXED VERSION
+    // FILE UPLOAD METHODS
     // ================================
 
     /**
@@ -280,7 +273,7 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     /**
-     * Upload single file - FIXED VERSION using baseUri from config
+     * Upload single file
      */
     private String uploadSingleFile(MultipartFile file) throws IOException {
         // Validate file before upload
@@ -352,25 +345,21 @@ public class InterviewServiceImpl implements InterviewService {
 
     /**
      * Extract directory path from baseUri config
-     * Example: "file:./uploads/" -> "./uploads"
      */
     private String extractDirectoryFromBaseUri(String baseUri) {
         if (baseUri == null || baseUri.isEmpty()) {
-            return "uploads"; // fallback default
+            return "uploads";
         }
 
-        // Remove "file:" prefix if exists
         String directory = baseUri;
         if (directory.startsWith("file:")) {
             directory = directory.substring(5);
         }
 
-        // Remove trailing slash if exists
         if (directory.endsWith("/")) {
             directory = directory.substring(0, directory.length() - 1);
         }
 
-        // If empty after processing, use default
         if (directory.isEmpty()) {
             directory = "uploads";
         }
@@ -390,14 +379,18 @@ public class InterviewServiceImpl implements InterviewService {
         Long idCardNumber = Long.parseLong(intervieweeIdCard);
 
         String type = intervieweeType.toUpperCase();
-        if (type.equals("SUSPECT")) {
-            setSuspectAsInterviewee(interview, idCardNumber);
-        } else if (type.equals("VICTIM")) {
-            setVictimAsInterviewee(interview, idCardNumber);
-        } else if (type.equals("WITNESS")) {
-            setWitnessAsInterviewee(interview, idCardNumber);
-        } else {
-            throw new IllegalArgumentException("Invalid interviewee type: " + intervieweeType);
+        switch (type) {
+            case "SUSPECT":
+                setSuspectAsInterviewee(interview, idCardNumber);
+                break;
+            case "VICTIM":
+                setVictimAsInterviewee(interview, idCardNumber);
+                break;
+            case "WITNESS":
+                setWitnessAsInterviewee(interview, idCardNumber);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid interviewee type: " + intervieweeType);
         }
     }
 

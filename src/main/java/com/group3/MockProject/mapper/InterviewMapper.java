@@ -27,7 +27,7 @@ import java.util.UUID;
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 7/10/2025      FongFox      Create
+ * 7/10/2025      FongFox      Create complete mapper
  */
 @Component
 public class InterviewMapper {
@@ -35,7 +35,7 @@ public class InterviewMapper {
      * Convert CreateInterviewDto to Interview entity
      * @param dto CreateInterviewDto from client
      * @param interviewer User who conducts the interview
-     * @return Interview entity (without files)
+     * @return Interview entity (without files and questions)
      */
     public Interview convertToInterviewEntity(CreateInterviewDto dto, User interviewer) {
         Interview interview = new Interview();
@@ -65,7 +65,7 @@ public class InterviewMapper {
         if (filePaths != null && !filePaths.isEmpty()) {
             for (String filePath : filePaths) {
                 InterviewFile interviewFile = new InterviewFile();
-                interviewFile.setInterviewFileId(UUID.randomUUID().toString()); // Updated field name
+                interviewFile.setInterviewFileId(UUID.randomUUID().toString());
                 interviewFile.setAttachedFile(filePath);
                 interviewFile.setInterview(interview);
                 interviewFile.setDeleted(false);
@@ -88,10 +88,12 @@ public class InterviewMapper {
     public List<Question> convertToQuestionEntities(List<QuestionDto> questionDtos, Interview interview, User user) {
         List<Question> questions = new ArrayList<>();
 
-        // Convert each question
-        for (QuestionDto questionDto : questionDtos) {
-            Question question = convertToQuestionEntity(questionDto, interview, user);
-            questions.add(question);
+        if (questionDtos != null && !questionDtos.isEmpty()) {
+            // Convert each question
+            for (QuestionDto questionDto : questionDtos) {
+                Question question = convertToQuestionEntity(questionDto, interview, user);
+                questions.add(question);
+            }
         }
 
         return questions;
@@ -114,6 +116,7 @@ public class InterviewMapper {
         question.setInterview(interview);
         question.setUser(user);
         question.setDeleted(false);
+        // createAt and updateAt will be set automatically by timestamps
 
         return question;
     }
@@ -121,11 +124,9 @@ public class InterviewMapper {
     /**
      * Convert Interview entity to Response DTO
      * @param interview Interview entity that was saved
-     * @param caseId Case ID from URL parameter
-     * @param suspectId Suspect ID from URL parameter
      * @return InterviewResponseDto
      */
-    public InterviewResponseDto convertToResponseDto(Interview interview, String caseId, String suspectId) {
+    public InterviewResponseDto convertToResponseDto(Interview interview) {
         // Get interviewee name based on type
         String intervieweeName = getIntervieweeName(interview);
 
@@ -134,9 +135,6 @@ public class InterviewMapper {
 
         // Build response DTO
         return InterviewResponseDto.builder()
-                .interviewId(interview.getInterviewId())
-                .caseId(caseId)
-                .suspectId(suspectId)
                 .startTime(interview.getStartTime())
                 .endTime(interview.getEndTime())
                 .location(interview.getLocation())
@@ -151,23 +149,24 @@ public class InterviewMapper {
 
     /**
      * Convert level of trust string to float value
-     * @param levelOfTrust "a", "b", "c"
+     * @param levelOfTrust "a", "b", "c" (case insensitive)
      * @return Float value (1.0, 0.7, 0.4)
      */
     private Float convertLevelOfTrustToFloat(String levelOfTrust) {
-        if (levelOfTrust == null) {
-            return 0.4f; // Default value
+        if (levelOfTrust == null || levelOfTrust.trim().isEmpty()) {
+            return 0.4f; // Default value for invalid input
         }
 
-        String level = levelOfTrust.toLowerCase();
-        if (level.equals("a")) {
-            return 1.0f; // High trust
-        } else if (level.equals("b")) {
-            return 0.7f; // Medium trust
-        } else if (level.equals("c")) {
-            return 0.4f; // Low trust
-        } else {
-            return 0.4f; // Default for invalid values
+        String level = levelOfTrust.toLowerCase().trim();
+        switch (level) {
+            case "a":
+                return 1.0f; // High trust
+            case "b":
+                return 0.7f; // Medium trust
+            case "c":
+                return 0.4f; // Low trust
+            default:
+                return 0.4f; // Default for invalid values
         }
     }
 
@@ -179,19 +178,32 @@ public class InterviewMapper {
     private String getIntervieweeName(Interview interview) {
         String typeInterviewee = interview.getTypeInterviewee();
 
-        if (typeInterviewee == null) {
+        if (typeInterviewee == null || typeInterviewee.trim().isEmpty()) {
             return "Unknown";
         }
 
-        if (typeInterviewee.equals("SUSPECT") && interview.getSuspectInterviewee() != null) {
-            return interview.getSuspectInterviewee().getFullname();
-        } else if (typeInterviewee.equals("VICTIM") && interview.getVictimInterviewee() != null) {
-            return interview.getVictimInterviewee().getFullname();
-        } else if (typeInterviewee.equals("WITNESS") && interview.getWitnessInterviewee() != null) {
-            return interview.getWitnessInterviewee().getFullName();
-        } else {
-            return "Unknown";
+        String type = typeInterviewee.toUpperCase();
+        switch (type) {
+            case "SUSPECT":
+                if (interview.getSuspectInterviewee() != null) {
+                    return interview.getSuspectInterviewee().getFullname();
+                }
+                break;
+            case "VICTIM":
+                if (interview.getVictimInterviewee() != null) {
+                    return interview.getVictimInterviewee().getFullname();
+                }
+                break;
+            case "WITNESS":
+                if (interview.getWitnessInterviewee() != null) {
+                    return interview.getWitnessInterviewee().getFullName();
+                }
+                break;
+            default:
+                return "Unknown";
         }
+
+        return "Unknown";
     }
 
     /**

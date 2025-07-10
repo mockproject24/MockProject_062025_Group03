@@ -33,9 +33,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class InterviewResponseDto {
-    private String interviewId;        // Generated interview ID
-    private String caseId;             // Case ID from URL
-    private String suspectId;          // Suspect ID from URL
     private LocalDateTime startTime;   // Interview start time
     private LocalDateTime endTime;     // Interview end time
     private String location;           // Interview location
