@@ -22,8 +22,8 @@ public class Witness {
     @GeneratedValue(strategy = GenerationType.UUID)
     String witnessId;
 
-    @Column(name = "fullname")
-    String fullname;
+    @Column(name = "full_name")
+    String fullName;
 
     @Column(name = "witness_id_card", nullable = false, unique = true)
     Long witnessIdCard; // add unique column for witness
@@ -45,10 +45,8 @@ public class Witness {
     @JoinColumn(name = "case_id")
     Case caseEntity;
 
-//    @OneToMany(mappedBy = "witness")
-//    List<WitnessInterview> interviews;
     @OneToMany(mappedBy = "witnessInterviewee")
-    Interview witnessInterview;
+    List<Interview> witnessInterviews;
 
     @OneToMany(mappedBy = "witness")
     List<ReportsWitnesses> reportsWitnesses;

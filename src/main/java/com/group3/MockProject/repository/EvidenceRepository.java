@@ -4,6 +4,8 @@ import com.group3.MockProject.entity.Evidence;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * EvidenceRepository
  * <p>
@@ -21,4 +23,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface EvidenceRepository extends JpaRepository<Evidence, String> {
+    Optional<Evidence> findByCaseEntity_CaseIdAndEvidenceId(String caseId, String evidenceId);
 }

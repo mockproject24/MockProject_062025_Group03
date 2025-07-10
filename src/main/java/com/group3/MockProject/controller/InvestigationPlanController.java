@@ -1,5 +1,7 @@
 package com.group3.MockProject.controller;
 
+import com.group3.MockProject.dto.request.CreateInvestigationPlanDto;
+import com.group3.MockProject.dto.response.InvestigationPlanRespone.CreateInvestigationRespone;
 import com.group3.MockProject.dto.response.InvestigationPlanResponseDto;
 import com.group3.MockProject.dto.response.ResponseDto;
 import com.group3.MockProject.service.InvestigationService;
@@ -10,10 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,5 +63,17 @@ public class InvestigationPlanController {
             put("number", pageResult.getNumber());
         }});
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/cases/{caseId}/investigations")
+    public ResponseEntity<ResponseDto<CreateInvestigationRespone>> createInvestigationPlan(
+            @ModelAttribute CreateInvestigationPlanDto requestDto,
+            @PathVariable Long caseId){
+
+
+
+        CreateInvestigationRespone response = new CreateInvestigationRespone();
+        ResponseDto<CreateInvestigationRespone> CreateInvestigationRespone = null;
+        return ResponseEntity.ok(CreateInvestigationRespone);
     }
 }

@@ -1,9 +1,10 @@
 package com.group3.MockProject.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.group3.MockProject.constant.EvidenceType;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -26,17 +27,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EvidenceResponse {
-    private String evidenceId;
-    private String description;
-    private LocalDateTime collectedAt;
-    private String currentLocation;
-    private String attachFile;
-    private String status;
-    private boolean isDeleted;
 
-    private String caseId;
-    private String username;
-    private String reportId;
-    private String warrantId;
+    String caseId;
+    String evidenceId;
+    String description;
+    String currentLocation;
+    String attachFile;
+    EvidenceType evidenceType;
+    LocalDateTime collectedAt;
+    Instant uploadedAt;
 }

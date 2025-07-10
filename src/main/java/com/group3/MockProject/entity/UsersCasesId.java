@@ -16,8 +16,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UsersCasesId implements Serializable {
-    @Column(name = "user_id")
-    String userId;
+    @Column(name = "username")
+    String username;
 
     @Column(name = "case_id")
     String caseId;
