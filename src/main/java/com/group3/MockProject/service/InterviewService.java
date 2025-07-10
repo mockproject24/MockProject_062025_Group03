@@ -1,7 +1,7 @@
 package com.group3.MockProject.service;
 
 import com.group3.MockProject.dto.request.CreateInterviewDto;
-import org.apache.coyote.BadRequestException;
+import com.group3.MockProject.dto.response.InterviewResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * InterviewService
  * <p>
- * Provides business logic for managing employment details.
+ * Interface defining interview service operations
  * <p>
  * Version 1.0
  * Date: 7/4/2025
@@ -22,5 +22,13 @@ import java.util.List;
  * 7/4/2025      User      Create
  */
 public interface InterviewService {
-    public void createInterview(String caseId, String suspectId, CreateInterviewDto dto, List<MultipartFile> files) throws BadRequestException;
+    /**
+     * Create new interview
+     * @param caseId Case ID
+     * @param suspectId Suspect ID
+     * @param dto Interview data
+     * @param files Attached files
+     * @return Created interview information
+     */
+    InterviewResponseDto createInterview(String caseId, String suspectId, CreateInterviewDto dto, List<MultipartFile> files);
 }

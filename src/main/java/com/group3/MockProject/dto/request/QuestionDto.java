@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuestionDto {
-    private String question;
-    private String answer;
-    private String levelOfTrust;
+    private String question;      // Question content
+    private String answer;        // Answer content
+    private String levelOfTrust;  // Trust level: "a", "b", "c"
 }

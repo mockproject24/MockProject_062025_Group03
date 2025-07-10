@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,9 +30,6 @@ public class Interview {
 
     @Column(name = "location")
     String location;
-
-    @Column(name = "attached_file", columnDefinition = "MEDIUMTEXT")
-    String attachedFile;
 
     @Column(name = "start_time")
     LocalDateTime startTime;
@@ -58,6 +57,17 @@ public class Interview {
     @JoinColumn(name = "witness_interviewee_id")
     Witness witnessInterviewee;
 
-    @OneToMany(mappedBy = "interview")
+    @OneToMany(mappedBy = "interview", fetch = FetchType.LAZY)
     List<Question> questions;
+
+    @OneToMany(mappedBy = "interview", fetch = FetchType.LAZY)
+    List<InterviewFile> interviewFileList;
+
+    @Column(name = "create_at")
+    @CreationTimestamp
+    LocalDateTime createAt;
+
+    @Column(name = "update_at")
+    @UpdateTimestamp
+    LocalDateTime updateAt;
 } 
