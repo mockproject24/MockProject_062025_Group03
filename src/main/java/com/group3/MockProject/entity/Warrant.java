@@ -50,7 +50,7 @@ public class Warrant {
     WarrantStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "police_response")
+    @JoinColumn(name = "username")
     User user;
 
     @ManyToOne

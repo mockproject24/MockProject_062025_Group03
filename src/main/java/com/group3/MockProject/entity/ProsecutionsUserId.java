@@ -32,8 +32,8 @@ import java.io.Serializable;
 @Embeddable
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProsecutionsUserId implements Serializable {
-    @Column(name = "user_id")
-    String userId;
+    @Column(name = "username")
+    String username;
     @Column(name = "prosecution_id")
     String prosecutionId;
 }

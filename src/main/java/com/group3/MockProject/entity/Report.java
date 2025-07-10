@@ -76,7 +76,7 @@ public class Report {
     ReporterIncidentRelationship reporterIncidentRelationship;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     User user;
 
     @ManyToOne

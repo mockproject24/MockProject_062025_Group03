@@ -71,7 +71,7 @@ public class Evidence {
     Case caseEntity;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     User user;
 
     @OneToOne(mappedBy = "evidence")

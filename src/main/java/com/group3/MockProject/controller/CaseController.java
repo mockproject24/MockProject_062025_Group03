@@ -93,7 +93,7 @@ public class CaseController {
         try {
             return ApiResponse.<SuspectsResponseDto>builder()
                     .code(HttpStatus.OK.value())
-                    .message("Get suspects succesfully")
+                    .message("Get suspects successfully")
                     .result(caseService.getAllSuspectsByCaseId(caseId,page,pageSize, status, date))
                     .build();
         } catch (Exception e) {

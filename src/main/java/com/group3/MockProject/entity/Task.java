@@ -63,11 +63,11 @@ public class Task {
     @ColumnDefault("false")
     boolean isDeleted = false;
 
-    @Column(name = "case_id", nullable = false)
-    private String caseId;
-
-    @Column(name = "username", nullable = false)
-    private String username;
+//    @Column(name = "case_id", nullable = false)
+//    private String caseId;
+//
+//    @Column(name = "username", nullable = false)
+//    private String username;
 
     @ManyToOne
     @JoinColumns({

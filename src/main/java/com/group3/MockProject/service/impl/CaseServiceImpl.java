@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.exception.ResourceNotFoundException;
 import com.group3.MockProject.mapper.SuspectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -133,7 +134,7 @@ public class CaseServiceImpl implements CaseService {
             Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
             return users.map(user -> new UserResponseDto(
                     user.getUsername(),
-                    user.getFullname(),
+                    user.getFullName(),
                     user.getAvatarUrl(),
                     null, // email removed from User entity
                     user.getPhoneNumber(),
@@ -194,29 +195,28 @@ public class CaseServiceImpl implements CaseService {
      */
     @Override
     public SuspectsResponseDto getAllSuspectsByCaseId(String caseId,int page, int pageSize, String status, LocalDate date) {
-        try {
-            Pageable pageable = PageRequest.of(page - 1, pageSize);
-            LocalDateTime startOfDay = null;
-            LocalDateTime endOfDay = null;
 
-            if (date != null) {
-                startOfDay = date.atStartOfDay();
-                endOfDay = date.atTime(LocalTime.MAX);
-            }
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        LocalDateTime startOfDay = null;
+        LocalDateTime endOfDay = null;
 
-            Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
-                    caseId, status, date, startOfDay, endOfDay, pageable);
-
-            return SuspectsResponseDto.builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(suspectsPage.getTotalElements())
-                    .totalPages(suspectsPage.getTotalPages())
-                    .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Error retrieving suspects: " + e.getMessage(), e);
+        if (date != null) {
+            startOfDay = date.atStartOfDay();
+            endOfDay = date.atTime(LocalTime.MAX);
         }
+        boolean caseExists = caseRepository.existsById(caseId);
+        if (!caseExists) throw new ResourceNotFoundException("Case " + caseId + " not found");
+
+        Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
+                caseId, status, date, startOfDay, endOfDay, pageable);
+
+        return SuspectsResponseDto.builder()
+                .page(page)
+                .pageSize(pageSize)
+                .total(suspectsPage.getTotalElements())
+                .totalPages(suspectsPage.getTotalPages())
+                .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
+                .build();
     }
 
     /**
@@ -228,9 +228,9 @@ public class CaseServiceImpl implements CaseService {
         return CaseDto.builder()
                 .caseId(caseEntity.getCaseId())
                 .caseNumber("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
-                .typeCase(caseEntity.getTypeCase())
-                .severity(caseEntity.getSeverity())
-                .status(caseEntity.getStatus())
+                .typeCase(caseEntity.getTypeCase().getLabel())
+                .severity(caseEntity.getSeverity().getLabel())
+                .status(caseEntity.getStatus().getLabel())
                 .createdAt(caseEntity.getCreateAt())
                 .receivingUnit("Local PD – Investigation Division") // Default value since field doesn't exist
                 .location("Not specified") // Default value since field doesn't exist
