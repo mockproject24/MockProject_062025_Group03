@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
  */
 
 @Entity
-@Table(name = "users")
+@Table(name = "tasks")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -63,11 +63,11 @@ public class Task {
     @ColumnDefault("false")
     boolean isDeleted = false;
 
-    @Column(name = "case_id", nullable = false)
-    private String caseId;
+//    @Column(name = "case_id", nullable = false)
+//    private String caseId;
 
-    @Column(name = "username", nullable = false)
-    private String username;
+//    @Column(name = "username", nullable = false)
+//    private String username;
 
     @ManyToOne
     @JoinColumns({

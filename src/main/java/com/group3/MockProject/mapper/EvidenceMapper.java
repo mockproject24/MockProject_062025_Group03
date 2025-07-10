@@ -33,8 +33,8 @@ public class EvidenceMapper {
                 .collectedAt(evidence.getCollectedAt())
                 .currentLocation(evidence.getCurrentLocation())
                 .attachFile(evidence.getAttachFile())
-                .status(evidence.getStatus())
-                .isDeleted(evidence.isDeleted())
+//                .status(evidence.getStatus())
+//                .isDeleted(evidence.isDeleted())
                 .caseId(caseEntity.getCaseId())
                 .build();
     }
