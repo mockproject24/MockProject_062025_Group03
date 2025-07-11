@@ -10,6 +10,7 @@ import com.group3.MockProject.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,9 +42,9 @@ public class InterviewMapper {
         Interview interview = new Interview();
 
         // Set basic information
-        interview.setInterviewId(UUID.randomUUID().toString());
-        interview.setStartTime(LocalDateTime.from(dto.getStartTime()));
-        interview.setEndTime(LocalDateTime.from(dto.getEndTime()));
+        // FIXED: Convert Instant to LocalDateTime properly
+        interview.setStartTime(dto.getStartTime().atZone(ZoneOffset.UTC).toLocalDateTime());
+        interview.setEndTime(dto.getEndTime().atZone(ZoneOffset.UTC).toLocalDateTime());
         interview.setLocation(dto.getLocation());
         interview.setTypeInterviewee(dto.getIntervieweeType());
         interview.setUserInterviewer(interviewer);
@@ -65,7 +66,6 @@ public class InterviewMapper {
         if (filePaths != null && !filePaths.isEmpty()) {
             for (String filePath : filePaths) {
                 InterviewFile interviewFile = new InterviewFile();
-                interviewFile.setInterviewFileId(UUID.randomUUID().toString());
                 interviewFile.setAttachedFile(filePath);
                 interviewFile.setInterview(interview);
                 interviewFile.setDeleted(false);
@@ -109,7 +109,7 @@ public class InterviewMapper {
     private Question convertToQuestionEntity(QuestionDto dto, Interview interview, User user) {
         Question question = new Question();
 
-        question.setQuestionId(UUID.randomUUID().toString());
+//        question.setQuestionId(UUID.randomUUID().toString());
         question.setContent(dto.getQuestion());
         question.setAnswer(dto.getAnswer());
         question.setReliability(convertLevelOfTrustToFloat(dto.getLevelOfTrust()));

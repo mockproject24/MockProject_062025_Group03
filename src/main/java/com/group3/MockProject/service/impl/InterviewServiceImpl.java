@@ -20,9 +20,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * InterviewServiceImpl
@@ -51,7 +54,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final SuspectRepository suspectRepository;
     private final VictimRepository victimRepository;
     private final WitnessRepository witnessRepository;
-
+    private final QuestionRepository questionRepository;
     // Mapper for DTO/Entity conversion
     private final InterviewMapper interviewMapper;
 
@@ -63,6 +66,7 @@ public class InterviewServiceImpl implements InterviewService {
             "mp4", "mp3", "wav", "avi", "mov", "pdf", "doc", "docx", "jpg", "png"
     );
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
 
     @Override
     @Transactional
@@ -84,16 +88,31 @@ public class InterviewServiceImpl implements InterviewService {
         // STEP 5: Set interviewee based on type
         setIntervieweeByType(interview, dto.getIntervieweeType(), dto.getIntervieweeIdCard());
 
-        // STEP 6: Create questions from DTO
-        List<Question> questions = interviewMapper.convertToQuestionEntities(dto.getQuesAndAns(), interview, interviewer);
-        interview.setQuestions(questions);
-
-        // STEP 7: Create InterviewFile entities
-        List<InterviewFile> interviewFiles = interviewMapper.convertToInterviewFileEntities(uploadedFilePaths, interview);
-        interview.setInterviewFileList(interviewFiles);
-
-        // STEP 8: Save interview to database (cascade will save questions and files)
+        // STEP 6: Save interview FIRST (without children)
         Interview savedInterview = interviewRepository.save(interview);
+        log.info("Interview saved with ID: {}", savedInterview.getInterviewId());
+
+        // STEP 7: Create and save questions manually
+        List<Question> questions = interviewMapper.convertToQuestionEntities(dto.getQuesAndAns(), savedInterview, interviewer);
+        if (questions != null && !questions.isEmpty()) {
+            for (Question question : questions) {
+                question.setInterview(savedInterview); // Ensure back reference
+            }
+            List<Question> savedQuestions = questionRepository.saveAll(questions);
+            savedInterview.setQuestions(savedQuestions);
+            log.info("Saved {} questions", savedQuestions.size());
+        }
+
+        // STEP 8: Create and save interview files manually
+        List<InterviewFile> interviewFiles = interviewMapper.convertToInterviewFileEntities(uploadedFilePaths, savedInterview);
+        if (interviewFiles != null && !interviewFiles.isEmpty()) {
+            for (InterviewFile file : interviewFiles) {
+                file.setInterview(savedInterview); // Ensure back reference
+            }
+            List<InterviewFile> savedFiles = interviewFileRepository.saveAll(interviewFiles);
+            savedInterview.setInterviewFileList(savedFiles);
+            log.info("Saved {} files", savedFiles.size());
+        }
 
         // STEP 9: Convert to Response DTO and return
         InterviewResponseDto responseDto = interviewMapper.convertToResponseDto(savedInterview);
@@ -102,10 +121,329 @@ public class InterviewServiceImpl implements InterviewService {
         return responseDto;
     }
 
+
+    /*
+    @Override
+    @Transactional
+    public InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files) {
+        log.info("=== SUPER MINIMAL DEBUG TEST START ===");
+
+        try {
+            log.info("Step 1: Validate basic DTO");
+            if (dto == null) {
+                throw new IllegalArgumentException("DTO is null");
+            }
+            log.info("✅ DTO validation passed");
+
+            log.info("Step 2: Create minimal interview entity");
+            Interview interview = new Interview();
+            interview.setLocation("TEST LOCATION");
+            interview.setTypeInterviewee("WITNESS");
+            interview.setDeleted(false);
+
+            // Set minimal datetime
+            interview.setStartTime(LocalDateTime.now());
+            interview.setEndTime(LocalDateTime.now().plusHours(1));
+
+            log.info("Step 3: Set all relationships to NULL to avoid FK constraints");
+            interview.setUserInterviewer(null);
+            interview.setSuspectInterviewee(null);
+            interview.setVictimInterviewee(null);
+            interview.setWitnessInterviewee(null);
+            interview.setCaseInterview(null);
+            interview.setQuestions(null);
+            interview.setInterviewFileList(null);
+
+            log.info("✅ Interview entity created: {}", interview);
+
+            log.info("Step 4: Attempt to save minimal interview to database");
+            Interview savedInterview = interviewRepository.save(interview);
+            log.info("✅ SUCCESS: Interview saved with ID: {}", savedInterview.getInterviewId());
+
+            log.info("Step 5: Create fake response for testing");
+            InterviewResponseDto response = InterviewResponseDto.builder()
+                    .startTime(savedInterview.getStartTime())
+                    .endTime(savedInterview.getEndTime())
+                    .location(savedInterview.getLocation())
+                    .interviewerName("DEBUG TEST INTERVIEWER")
+                    .intervieweeType(savedInterview.getTypeInterviewee())
+                    .intervieweeName("DEBUG TEST INTERVIEWEE")
+                    .totalQuestions(0)
+                    .attachedFiles(new ArrayList<>())
+                    .createdAt(savedInterview.getCreateAt())
+                    .build();
+
+            log.info("✅ Response DTO created: {}", response);
+            log.info("=== SUPER MINIMAL DEBUG TEST SUCCESS ===");
+            return response;
+
+        } catch (Exception e) {
+            log.error("❌ === SUPER MINIMAL DEBUG TEST FAILED ===");
+            log.error("❌ Error type: {}", e.getClass().getSimpleName());
+            log.error("❌ Error message: {}", e.getMessage());
+
+            // Check specific error types
+            if (e.getMessage().contains("Row was updated or deleted")) {
+                log.error("❌ ISSUE: Database concurrency/versioning problem");
+            } else if (e.getMessage().contains("foreign key constraint")) {
+                log.error("❌ ISSUE: Foreign key constraint violation");
+            } else if (e.getMessage().contains("Column") && e.getMessage().contains("cannot be null")) {
+                log.error("❌ ISSUE: Required database column is null");
+            }
+
+            log.error("❌ Full stack trace: ", e);
+            throw e;
+        }
+    }
+    */
+
+    /*
+    @Override
+    @Transactional
+    public InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files) {
+        log.info("=== STEP BY STEP DEBUG TEST ===");
+
+        try {
+            log.info("Step 1: Basic validation");
+            if (dto == null) {
+                throw new IllegalArgumentException("DTO is null");
+            }
+            log.info("✅ DTO OK");
+
+            log.info("Step 2: Try to find interviewer by ID: {}", dto.getInterviewerId());
+            User interviewer = findInterviewerById(dto.getInterviewerId());
+            log.info("✅ Found interviewer: {}", interviewer.getFullName());
+
+            log.info("Step 3: Create interview with REAL data from DTO");
+            Interview interview = new Interview();
+            // Use REAL data from DTO
+            interview.setStartTime(dto.getStartTime().atZone(ZoneOffset.UTC).toLocalDateTime());
+            interview.setEndTime(dto.getEndTime().atZone(ZoneOffset.UTC).toLocalDateTime());
+            interview.setLocation(dto.getLocation());
+            interview.setTypeInterviewee(dto.getIntervieweeType());
+            interview.setDeleted(false);
+
+            // Set interviewer (REAL relationship)
+            interview.setUserInterviewer(interviewer);
+
+            // Set other relationships to NULL for now
+            interview.setSuspectInterviewee(null);
+            interview.setVictimInterviewee(null);
+            interview.setWitnessInterviewee(null);
+            interview.setCaseInterview(null);
+            interview.setQuestions(null);
+            interview.setInterviewFileList(null);
+
+            log.info("✅ Interview entity created with real data");
+
+            log.info("Step 4: Try to save interview with interviewer relationship");
+            Interview savedInterview = interviewRepository.save(interview);
+            log.info("✅ SUCCESS: Interview saved with interviewer relationship. ID: {}", savedInterview.getInterviewId());
+
+            log.info("Step 5: Try to find interviewee");
+            setIntervieweeByType(savedInterview, dto.getIntervieweeType(), dto.getIntervieweeIdCard());
+            log.info("✅ Interviewee set successfully");
+
+            log.info("Step 6: Update interview with interviewee");
+            Interview updatedInterview = interviewRepository.save(savedInterview);
+            log.info("✅ Interview updated with interviewee. ID: {}", updatedInterview.getInterviewId());
+
+            log.info("Step 7: Create response with real data");
+            InterviewResponseDto response = InterviewResponseDto.builder()
+                    .startTime(updatedInterview.getStartTime())
+                    .endTime(updatedInterview.getEndTime())
+                    .location(updatedInterview.getLocation())
+                    .interviewerName(updatedInterview.getUserInterviewer().getFullName())
+                    .intervieweeType(updatedInterview.getTypeInterviewee())
+                    .intervieweeName(getIntervieweeName(updatedInterview))
+                    .totalQuestions(0) // Still 0 for now
+                    .attachedFiles(new ArrayList<>()) // Still empty for now
+                    .createdAt(updatedInterview.getCreateAt())
+                    .build();
+
+            log.info("✅ Response created successfully");
+            log.info("=== STEP BY STEP DEBUG SUCCESS ===");
+            return response;
+
+        } catch (Exception e) {
+            log.error("❌ Error at step: {}", e.getMessage());
+            log.error("❌ Error type: {}", e.getClass().getSimpleName());
+            log.error("❌ Stack trace: ", e);
+            throw e;
+        }
+    }
+    */
+
+    /*
+    @Override
+    @Transactional
+    public InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files) {
+        log.info("=== FINAL COMPLETE TEST - Adding Questions ===");
+
+        try {
+            // Steps 1-6 đã work, giữ nguyên
+            log.info("Step 1-2: Validation and find interviewer");
+            if (dto == null) {
+                throw new IllegalArgumentException("DTO is null");
+            }
+            User interviewer = findInterviewerById(dto.getInterviewerId());
+            log.info("✅ Found interviewer: {}", interviewer.getFullName());
+
+            log.info("Step 3-4: Create and save interview");
+            Interview interview = new Interview();
+            interview.setStartTime(dto.getStartTime().atZone(ZoneOffset.UTC).toLocalDateTime());
+            interview.setEndTime(dto.getEndTime().atZone(ZoneOffset.UTC).toLocalDateTime());
+            interview.setLocation(dto.getLocation());
+            interview.setTypeInterviewee(dto.getIntervieweeType());
+            interview.setDeleted(false);
+            interview.setUserInterviewer(interviewer);
+
+            // Set other relationships to NULL
+            interview.setSuspectInterviewee(null);
+            interview.setVictimInterviewee(null);
+            interview.setWitnessInterviewee(null);
+            interview.setCaseInterview(null);
+            interview.setQuestions(null);
+            interview.setInterviewFileList(null);
+
+            Interview savedInterview = interviewRepository.save(interview);
+            log.info("✅ Interview saved: {}", savedInterview.getInterviewId());
+
+            log.info("Step 5-6: Set interviewee");
+            setIntervieweeByType(savedInterview, dto.getIntervieweeType(), dto.getIntervieweeIdCard());
+            Interview updatedInterview = interviewRepository.save(savedInterview);
+            log.info("✅ Interviewee set: {}", getIntervieweeName(updatedInterview));
+
+            // Thay thế Step 7-8 trong method createInterview:
+            // NEW: Add questions step by step - DETAILED DEBUG
+            log.info("Step 7: Process questions - START");
+            List<Question> questions = new ArrayList<>();
+
+            if (dto.getQuesAndAns() != null && !dto.getQuesAndAns().isEmpty()) {
+                log.info("Creating {} questions", dto.getQuesAndAns().size());
+
+                for (int i = 0; i < dto.getQuesAndAns().size(); i++) {
+                    QuestionDto questionDto = dto.getQuesAndAns().get(i);
+                    log.info("Processing question {}: {}", i + 1, questionDto.getQuestion());
+
+                    Question question = new Question();
+                    question.setContent(questionDto.getQuestion());
+                    question.setAnswer(questionDto.getAnswer());
+                    question.setReliability(convertLevelOfTrustToFloat(questionDto.getLevelOfTrust()));
+                    question.setInterview(updatedInterview);
+                    question.setUser(interviewer);
+                    question.setDeleted(false);
+
+                    questions.add(question);
+                    log.info("✅ Question {} created in memory", i + 1);
+                }
+
+                log.info("Step 8: Save questions ONE BY ONE to find exact issue");
+                List<Question> savedQuestions = new ArrayList<>();
+
+                for (int i = 0; i < questions.size(); i++) {
+                    Question question = questions.get(i);
+                    try {
+                        log.info("Attempting to save question {}: {}", i + 1, question.getContent());
+                        log.info("Question details - ID: {}, Interview ID: {}, User ID: {}",
+                                question.getQuestionId(),
+                                question.getInterview().getInterviewId(),
+                                question.getUser().getUsername());
+
+                        Question savedQuestion = questionRepository.save(question);
+                        savedQuestions.add(savedQuestion);
+
+                        log.info("✅ Question {} saved successfully with ID: {}", i + 1, savedQuestion.getQuestionId());
+                    } catch (Exception e) {
+                        log.error("❌ FAILED to save question {}: {}", i + 1, question.getContent());
+                        log.error("❌ Question details that failed:");
+                        log.error("   - Question ID: {}", question.getQuestionId());
+                        log.error("   - Content: {}", question.getContent());
+                        log.error("   - Answer: {}", question.getAnswer());
+                        log.error("   - Reliability: {}", question.getReliability());
+                        log.error("   - Interview ID: {}", question.getInterview() != null ? question.getInterview().getInterviewId() : "NULL");
+                        log.error("   - User ID: {}", question.getUser() != null ? question.getUser().getUsername() : "NULL");
+                        log.error("   - Is Deleted: {}", question.isDeleted());
+                        log.error("❌ Error type: {}", e.getClass().getSimpleName());
+                        log.error("❌ Error message: {}", e.getMessage());
+
+                        // Check specific issues
+                        if (e.getMessage().contains("foreign key constraint")) {
+                            log.error("❌ ISSUE: Foreign key constraint - Interview or User doesn't exist in DB");
+                        } else if (e.getMessage().contains("Column") && e.getMessage().contains("cannot be null")) {
+                            log.error("❌ ISSUE: Required column is null");
+                        } else if (e.getMessage().contains("Duplicate entry")) {
+                            log.error("❌ ISSUE: Duplicate question ID");
+                        }
+
+                        throw e; // Stop at first error
+                    }
+                }
+
+                updatedInterview.setQuestions(savedQuestions);
+                log.info("✅ ALL {} questions saved successfully", savedQuestions.size());
+            } else {
+                log.info("No questions to process");
+            }
+
+            // NEW: Add files step by step
+            log.info("Step 9: Process files - START");
+            List<InterviewFile> interviewFiles = new ArrayList<>();
+
+            List<String> uploadedFilePaths = uploadFilesIfProvided(files);
+            if (!uploadedFilePaths.isEmpty()) {
+                log.info("Creating {} interview files", uploadedFilePaths.size());
+
+                for (String filePath : uploadedFilePaths) {
+                    log.info("Processing file: {}", filePath);
+
+                    InterviewFile interviewFile = new InterviewFile();
+                    interviewFile.setInterviewFileId(UUID.randomUUID().toString());
+                    interviewFile.setAttachedFile(filePath);
+                    interviewFile.setInterview(updatedInterview);
+                    interviewFile.setDeleted(false);
+
+                    interviewFiles.add(interviewFile);
+                    log.info("✅ File processed: {}", filePath);
+                }
+
+                log.info("Step 10: Save all files to database");
+                List<InterviewFile> savedFiles = interviewFileRepository.saveAll(interviewFiles);
+                updatedInterview.setInterviewFileList(savedFiles);
+                log.info("✅ Saved {} files successfully", savedFiles.size());
+            } else {
+                log.info("No files to process");
+            }
+
+            log.info("Step 11: Create final response");
+            InterviewResponseDto response = InterviewResponseDto.builder()
+                    .startTime(updatedInterview.getStartTime())
+                    .endTime(updatedInterview.getEndTime())
+                    .location(updatedInterview.getLocation())
+                    .interviewerName(updatedInterview.getUserInterviewer().getFullName())
+                    .intervieweeType(updatedInterview.getTypeInterviewee())
+                    .intervieweeName(getIntervieweeName(updatedInterview))
+                    .totalQuestions(updatedInterview.getQuestions() != null ? updatedInterview.getQuestions().size() : 0)
+                    .attachedFiles(getAttachedFileNames(updatedInterview))
+                    .createdAt(updatedInterview.getCreateAt())
+                    .build();
+
+            log.info("✅ Final response created successfully");
+            log.info("=== FINAL COMPLETE TEST SUCCESS ===");
+            return response;
+
+        } catch (Exception e) {
+            log.error("❌ Error at step: {}", e.getMessage());
+            log.error("❌ Error type: {}", e.getClass().getSimpleName());
+            log.error("❌ Stack trace: ", e);
+            throw e;
+        }
+    }
+    */
+
     // ================================
     // VALIDATION METHODS
     // ================================
-
     /**
      * Validate all interview data
      */
@@ -207,7 +545,9 @@ public class InterviewServiceImpl implements InterviewService {
         }
     }
 
-    // Helper methods for validation
+    // ================================
+    // HELPER METHOD FOR VALIDATION
+    // ================================
     private boolean isStringEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
@@ -228,7 +568,6 @@ public class InterviewServiceImpl implements InterviewService {
     // ================================
     // ENTITY FINDER METHODS
     // ================================
-
     /**
      * Find interviewer by ID
      */
@@ -241,7 +580,6 @@ public class InterviewServiceImpl implements InterviewService {
     // ================================
     // FILE UPLOAD METHODS
     // ================================
-
     /**
      * Upload files if provided
      */
@@ -337,6 +675,21 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     /**
+     * Get attached file name
+     */
+    private List<String> getAttachedFileNames(Interview interview) {
+        List<String> fileNames = new ArrayList<>();
+        if (interview.getInterviewFileList() != null) {
+            for (InterviewFile file : interview.getInterviewFileList()) {
+                if (!file.isDeleted() && file.getAttachedFile() != null) {
+                    fileNames.add(file.getAttachedFile());
+                }
+            }
+        }
+        return fileNames;
+    }
+
+    /**
      * Create unique filename to avoid conflicts
      */
     private String createUniqueFileName(String originalFileName) {
@@ -371,7 +724,6 @@ public class InterviewServiceImpl implements InterviewService {
     // ================================
     // INTERVIEWEE SETTER METHODS
     // ================================
-
     /**
      * Set interviewee based on type
      */
@@ -463,4 +815,37 @@ public class InterviewServiceImpl implements InterviewService {
         interview.setWitnessInterviewee(foundWitness);
         log.info("Set witness as interviewee: {}", foundWitness.getFullName());
     }
+
+    /**
+     * Helper method to get interviewee name
+     */
+    private String getIntervieweeName(Interview interview) {
+        String type = interview.getTypeInterviewee();
+        if ("SUSPECT".equals(type) && interview.getSuspectInterviewee() != null) {
+            return interview.getSuspectInterviewee().getFullname();
+        } else if ("VICTIM".equals(type) && interview.getVictimInterviewee() != null) {
+            return interview.getVictimInterviewee().getFullname();
+        } else if ("WITNESS".equals(type) && interview.getWitnessInterviewee() != null) {
+            return interview.getWitnessInterviewee().getFullName();
+        }
+        return "Unknown";
+    }
+
+    // ================================
+    // CONVERTER METHODS
+    // ================================
+    /**
+     * Convert level of trust to float
+     */
+    private Float convertLevelOfTrustToFloat(String levelOfTrust) {
+        if (levelOfTrust == null) return 0.4f;
+        String level = levelOfTrust.toLowerCase().trim();
+        switch (level) {
+            case "a": return 1.0f;
+            case "b": return 0.7f;
+            case "c": return 0.4f;
+            default: return 0.4f;
+        }
+    }
+
 }

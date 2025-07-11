@@ -11,6 +11,7 @@ import com.group3.MockProject.service.CaseService;
 import com.group3.MockProject.service.EvidenceService;
 import com.group3.MockProject.service.InterviewService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -193,49 +194,88 @@ public class CaseController {
     /**
      * Create new interview API
      *
-     * URL: POST /cases/{caseId}/interviews
-     * Content-Type: multipart/form-data
+     * URL: POST /api/cases/{caseId}/interviews
+     * Content-Type: multipart/form-data OR application/json
      * Authorization: Bearer Token (handled by security config)
      *
-     * Request Body:
+     * For multipart/form-data:
      * - data: JSON string containing interview data
      * - file: List of attached files (optional)
      *
-     * @param caseId Case ID from URL path
-     * @param dataJson JSON string containing interview data
-     * @param files List of attached files (optional)
-     * @return ResponseDto containing created interview information
+     * For application/json:
+     * - JSON body containing interview data
+     * - No file upload support
      *
+     * @param caseId Case ID from URL path
+     * @param dataJson JSON string containing interview data (for multipart)
+     * @param requestBody Interview data (for JSON)
+     * @param files List of attached files (optional, only for multipart)
+     * @return ResponseDto containing created interview information
      */
     @PostMapping(value = "/{caseId}/interviews",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<com.group3.MockProject.dto.ResponseDto<InterviewResponseDto>> createInterview(
             @PathVariable String caseId,
-            @RequestParam("data") String dataJson,
-            @RequestParam(value = "file", required = false) List<MultipartFile> files) {
+            @RequestParam(value = "data", required = false) String dataJson,
+            @RequestBody(required = false) CreateInterviewDto requestBody,
+            @RequestParam(value = "file", required = false) List<MultipartFile> files,
+            HttpServletRequest request) {
+
         try {
             log.info("Received request to create interview for case: {}", caseId);
-            log.debug("Request data: {}", dataJson);
-            log.debug("Files count: {}", files != null ? files.size() : 0);
+
+            // Get content type from request
+            String contentType = request.getContentType();
+            log.debug("Content-Type: {}", contentType);
 
             // STEP 1: Validate caseId
             if (caseId == null || caseId.trim().isEmpty()) {
                 throw new IllegalArgumentException("Case ID is required");
             }
 
-            // STEP 2: Parse JSON string to DTO
+            // STEP 2: Determine request type and parse DTO accordingly
             CreateInterviewDto dto;
-            try {
-                dto = objectMapper.readValue(dataJson, CreateInterviewDto.class);
-                log.debug("Successfully parsed JSON to DTO: {}", dto);
-            } catch (JsonProcessingException e) {
-                log.error("Failed to parse JSON data: {}", e.getMessage());
-                throw new IllegalArgumentException("Invalid JSON format: " + e.getMessage());
+            List<MultipartFile> uploadFiles = null;
+
+            if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                // Handle multipart/form-data request
+                log.debug("Processing multipart/form-data request");
+
+                if (dataJson == null || dataJson.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Data parameter is required for multipart request");
+                }
+
+                try {
+                    dto = objectMapper.readValue(dataJson, CreateInterviewDto.class);
+                    uploadFiles = files;
+                    log.debug("Successfully parsed JSON from form data: {}", dto);
+                    log.debug("Files count: {}", uploadFiles != null ? uploadFiles.size() : 0);
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to parse JSON data from form: {}", e.getMessage());
+                    throw new IllegalArgumentException("Invalid JSON format in data parameter: " + e.getMessage());
+                }
+
+            }
+            else if (contentType != null && contentType.startsWith("application/json")) {
+                // Handle application/json request
+                log.debug("Processing application/json request");
+
+                if (requestBody == null) {
+                    throw new IllegalArgumentException("Request body is required for JSON request");
+                }
+
+                dto = requestBody;
+                uploadFiles = null; // No file upload support for JSON requests
+                log.debug("Successfully received JSON request body: {}", dto);
+
+            }
+            else {
+                throw new IllegalArgumentException("Unsupported Content-Type. Use multipart/form-data or application/json");
             }
 
-            // STEP 3: Call service to handle interview creation logic
-            InterviewResponseDto interviewResponse = interviewService.createInterview(caseId, dto, files);
+            // STEP 3: Call service to handle interview creation logic (error here)
+            InterviewResponseDto interviewResponse = interviewService.createInterview(caseId, dto, uploadFiles);
             log.info("Service successfully created interview");
 
             // STEP 4: Build success response according to API spec
