@@ -10,6 +10,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users_cases",
@@ -45,5 +46,5 @@ public class UsersCases {
     Case caseEntity;
 
     @OneToMany(mappedBy = "caseUser")
-    List<Task> tasks;
+    Set<Task> tasks;
 } 

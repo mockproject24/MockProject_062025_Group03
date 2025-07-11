@@ -58,18 +58,18 @@ public class CaseController {
 
 
     /**
-     * Retrieves a specific case by its ID
+     * Retrieves detail a specific case by its ID
+     *
      * @param caseId The unique identifier of the case
-     * @return ResponseEntity containing the case data
+     * @return CaseDetailDto containing the case detail
      */
     @GetMapping("/{caseId}")
-    public ResponseEntity<ApiResponse<Case>> getCaseById(@PathVariable String caseId) {
+    public ApiResponse<CaseDetailDto> getCaseDetail(@PathVariable String caseId) {
         try {
-            Case foundCase = caseService.getCaseById(caseId);
-            return ResponseEntity.ok(ApiResponse.success(foundCase));
+            CaseDetailDto foundCase = caseService.getCaseDetailById(caseId);
+            return ApiResponse.success(foundCase);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error retrieving case: " + e.getMessage()));
+            return ApiResponse.internalServerError("Error retrieving case: " + e.getMessage());
         }
     }
 

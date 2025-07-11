@@ -2,6 +2,10 @@ package com.group3.MockProject.repository;
 
 import com.group3.MockProject.entity.Warrant;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 /**
  * WarrantRepository
@@ -20,4 +24,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 
 public interface WarrantRepository extends JpaRepository<Warrant, String> {
+    /**
+     * Finds all active warrants by case ID
+     *
+     * @param caseId The case identifier
+     * @return List of warrants for the case
+     */
+    @Query("SELECT w FROM Warrant w WHERE w.caseEntity.caseId = :caseId AND w.isDeleted = false")
+    List<Warrant> findByCaseEntityCaseId(@Param("caseId") String caseId);
 }

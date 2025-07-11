@@ -36,4 +36,11 @@ public interface CaseRepository extends JpaRepository<Case, String> {
     List<Case> findAllActiveCases();
 
     Page<Case> findByCaseNameContains(String search, Pageable pageable);
+
+    @Query("SELECT DISTINCT c FROM Case c " +
+            "LEFT JOIN FETCH c.usersCases uc " +
+            "LEFT JOIN FETCH uc.user u " +
+            "LEFT JOIN FETCH uc.tasks t " +
+            "WHERE c.caseId = :caseId AND c.isDeleted = false")
+    Case findByIdWithDetails(String caseId);
 }

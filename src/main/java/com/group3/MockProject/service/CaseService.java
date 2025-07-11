@@ -31,11 +31,11 @@ import com.group3.MockProject.entity.Suspect;
 public interface CaseService {
 
     /**
-     * Retrieves a case by its unique identifier
+     * Retrieves a case by its unique identifier with all related details
      * @param caseId The unique identifier of the case
-     * @return Case entity
+     * @return CaseDetailDto containing case details with tasks, suspects, warrants, and evidences
      */
-    Case getCaseById(String caseId);
+    CaseDetailDto getCaseDetailById(String caseId);
 
     /**
      * Retrieves paginated list of cases with optional search functionality
