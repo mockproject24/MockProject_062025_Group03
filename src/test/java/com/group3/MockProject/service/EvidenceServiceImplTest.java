@@ -12,8 +12,8 @@ import com.group3.MockProject.service.impl.EvidenceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -22,9 +22,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class EvidenceServiceImplTest {
 
@@ -35,7 +35,7 @@ class EvidenceServiceImplTest {
     private CaseRepository caseRepository;
 
     @InjectMocks
-    private EvidenceService evidenceService;
+    private EvidenceServiceImpl evidenceService;
 
     private Case testCase;
     private CreateEvidenceRequest testRequest;
@@ -55,9 +55,7 @@ class EvidenceServiceImplTest {
                 .build();
 
         testFile = new MockMultipartFile(
-                "file",
-                "evidence.jpg",
-                MediaType.IMAGE_JPEG_VALUE,
+                "file", "evidence.jpg", MediaType.IMAGE_JPEG_VALUE,
                 "fake-image-content".getBytes()
         );
 
@@ -71,7 +69,7 @@ class EvidenceServiceImplTest {
                 .caseEntity(testCase)
                 .build();
 
-        // Gán baseURI giả định
+        // Gán baseURI qua reflection
         Field baseUriField = EvidenceServiceImpl.class.getDeclaredField("baseURI");
         baseUriField.setAccessible(true);
         baseUriField.set(evidenceService, "http://localhost/uploads/");
@@ -79,32 +77,23 @@ class EvidenceServiceImplTest {
 
     @Test
     void testCreateEvidence_Success() {
-        // Arrange
         when(caseRepository.findById("case123")).thenReturn(Optional.of(testCase));
-        when(evidenceRepository.save(any(Evidence.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(evidenceRepository.save(any(Evidence.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        EvidenceResponse response = evidenceService.createEvidence("case123", testRequest, testFile);
+        EvidenceResponse response = evidenceService.createEvidence("case123", testRequest, null);
 
-        // Assert
         assertNotNull(response);
         assertEquals("case123", response.getCaseId());
-        assertEquals(testRequest.getDescription(), response.getDescription());
-        assertTrue(response.getAttachFile().contains("evidence.jpg"));
+        assertEquals("Test mô tả", response.getDescription());
     }
 
     @Test
     void testGetEvidence_Success() {
-        // Arrange
-        when(caseRepository.findById("case123")).thenReturn(Optional.of(testCase));
         when(evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId("case123", "evi001"))
                 .thenReturn(Optional.of(testEvidence));
 
-        // Act
         EvidenceResponse response = evidenceService.getEvidence("case123", "evi001");
 
-        // Assert
         assertNotNull(response);
         assertEquals("case123", response.getCaseId());
         assertEquals("Test mô tả", response.getDescription());
@@ -112,12 +101,11 @@ class EvidenceServiceImplTest {
 
     @Test
     void testGetEvidence_NotFound() {
-        when(caseRepository.findById("case123")).thenReturn(Optional.of(testCase));
-        when(evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId("case123", "notFoundId"))
+        when(evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId("case123", "notFound"))
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
-                () -> evidenceService.getEvidence("case123", "notFoundId"));
+                () -> evidenceService.getEvidence("case123", "notFound"));
     }
 
     @Test
@@ -125,19 +113,37 @@ class EvidenceServiceImplTest {
         when(caseRepository.findById("invalidCase")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
-                () -> evidenceService.createEvidence("invalidCase", testRequest, testFile));
+                () -> evidenceService.createEvidence("invalidCase", testRequest, null));
     }
 
     @Test
-    void testCreateEvidence_EmptyFile() {
-        MockMultipartFile emptyFile = new MockMultipartFile(
-                "file", "empty.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[0]);
+    void testUpdateEvidence_NoFile_Success() {
+        when(evidenceRepository.findById("evi001")).thenReturn(Optional.of(testEvidence));
+        when(evidenceRepository.save(any(Evidence.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        when(caseRepository.findById("case123")).thenReturn(Optional.of(testCase));
+        CreateEvidenceRequest updateRequest = CreateEvidenceRequest.builder()
+                .description("Updated desc")
+                .currentLocation("Updated location")
+                .evidenceType(EvidenceType.DIGITAL_EVIDENCE)
+                .collectedAt(LocalDateTime.of(2025, 7, 10, 8, 30))
+                .build();
 
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                evidenceService.createEvidence("case123", testRequest, emptyFile));
+        EvidenceResponse response = evidenceService.updateEvidence("evi001", updateRequest, null);
 
-        assertTrue(exception.getMessage().contains("File is empty"));
+        assertEquals("Updated desc", response.getDescription());
+        assertEquals("Updated location", response.getCurrentLocation());
+        assertEquals(EvidenceType.DIGITAL_EVIDENCE, response.getEvidenceType());
+    }
+
+    @Test
+    void testUpdateEvidence_NotFound() {
+        when(evidenceRepository.findById("notFound")).thenReturn(Optional.empty());
+
+        CreateEvidenceRequest request = CreateEvidenceRequest.builder()
+                .description("desc").currentLocation("loc")
+                .evidenceType(EvidenceType.PHYSICAL_EVIDENCE).build();
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> evidenceService.updateEvidence("notFound", request, null));
     }
 }

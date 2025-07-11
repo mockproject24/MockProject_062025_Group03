@@ -25,5 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 public interface EvidenceService {
     EvidenceResponse createEvidence(String caseId, CreateEvidenceRequest request, MultipartFile file);
     EvidenceResponse getEvidence(String caseId, String evidenceId);
+    EvidenceResponse updateEvidence(String evidenceId, CreateEvidenceRequest request, MultipartFile file);
 
 }

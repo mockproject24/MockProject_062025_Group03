@@ -1,15 +1,12 @@
 package com.group3.MockProject.service;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Suspect;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * CaseService
@@ -31,11 +28,11 @@ import com.group3.MockProject.entity.Suspect;
 public interface CaseService {
 
     /**
-     * Retrieves a case by its unique identifier
+     * Retrieves a case by its unique identifier with all related details
      * @param caseId The unique identifier of the case
-     * @return Case entity
+     * @return CaseDetailDto containing case details with tasks, suspects, warrants, and evidences
      */
-    Case getCaseById(String caseId);
+    CaseDetailDto getCaseDetailById(String caseId);
 
     /**
      * Retrieves paginated list of cases with optional search functionality

@@ -1,43 +1,24 @@
 package com.group3.MockProject.service.impl;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.entity.*;
+import com.group3.MockProject.exception.ResourceNotFoundException;
+import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.group3.MockProject.repository.*;
+import com.group3.MockProject.service.CaseService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.CaseDto;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.UserResponseDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Evidence;
-import com.group3.MockProject.entity.RecordInfo;
-import com.group3.MockProject.entity.Suspect;
-import com.group3.MockProject.entity.User;
-import com.group3.MockProject.repository.CaseRepository;
-import com.group3.MockProject.repository.EvidenceRepository;
-import com.group3.MockProject.repository.RecordInfoRepository;
-import com.group3.MockProject.repository.SuspectRepository;
-import com.group3.MockProject.repository.UserRepository;
-import com.group3.MockProject.service.CaseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CaseServiceImpl
@@ -64,24 +45,35 @@ public class CaseServiceImpl implements CaseService {
     private final CaseRepository caseRepository;
     private final EvidenceRepository evidenceRepository;
     private final SuspectRepository suspectRepository;
+    private final WarrantRepository warrantRepository;
     private final SuspectMapper suspectMapper;
+    private final CaseMapper caseMapper;
+
     /**
-     * Retrieves a case by its unique identifier
+     * Retrieves a case by its unique identifier with all related details
+     *
      * @param caseId The unique identifier of the case
-     * @return Case entity
+     * @return CaseDetailDto containing case details with tasks, suspects, warrants, and evidences
      * @throws RuntimeException if case is not found
      */
     @Override
-    public Case getCaseById(String caseId) {
-        return caseRepository.findById(caseId)
-                .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
+    public CaseDetailDto getCaseDetailById(String caseId) {
+        Case caseEntity = caseRepository.findByIdWithDetails(caseId);
+        if (caseEntity == null) throw new RuntimeException("Case not found: " + caseId);
+
+        List<Suspect> suspectEntities = suspectRepository.findByCaseEntityCaseId(caseId);
+        List<Warrant> warrantEntities = warrantRepository.findByCaseEntityCaseId(caseId);
+        List<Evidence> evidenceEntities = evidenceRepository.findByCaseEntityCaseId(caseId);
+
+        return caseMapper.toCaseDetailDto(caseEntity, suspectEntities, warrantEntities, evidenceEntities);
     }
 
     /**
      * Retrieves paginated list of cases with optional search functionality
-     * @param page Page number (0-based)
+     *
+     * @param page     Page number (0-based)
      * @param pageSize Number of items per page
-     * @param search Optional search term
+     * @param search   Optional search term
      * @return CaseListDto containing paginated case data
      */
     @Override
@@ -114,6 +106,7 @@ public class CaseServiceImpl implements CaseService {
 
     /**
      * Retrieves all evidences for a specific case
+     *
      * @param caseId The case identifier
      * @return List of evidence DTOs
      */
@@ -152,7 +145,8 @@ public class CaseServiceImpl implements CaseService {
 
     /**
      * Creates a new record for a specific case
-     * @param caseId The case identifier
+     *
+     * @param caseId     The case identifier
      * @param requestDto The record creation data
      * @return RecordInfoResponseDto containing created record data
      * @throws RuntimeException if case is not found or creation fails
@@ -192,7 +186,6 @@ public class CaseServiceImpl implements CaseService {
             responseDto.setSummary(saved.getSummary());
             responseDto.setIsDeleted(saved.isDeleted());
             responseDto.setEvidenceId(null);
-
             return responseDto;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -212,33 +205,33 @@ public class CaseServiceImpl implements CaseService {
      */
     @Override
     public SuspectsResponseDto getAllSuspectsByCaseId(String caseId,int page, int pageSize, String status, LocalDate date) {
-        try {
-            Pageable pageable = PageRequest.of(page - 1, pageSize);
-            LocalDateTime startOfDay = null;
-            LocalDateTime endOfDay = null;
 
-            if (date != null) {
-                startOfDay = date.atStartOfDay();
-                endOfDay = date.atTime(LocalTime.MAX);
-            }
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        LocalDateTime startOfDay = null;
+        LocalDateTime endOfDay = null;
 
-            Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
-                    caseId, status, date, startOfDay, endOfDay, pageable);
-
-            return SuspectsResponseDto.builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(suspectsPage.getTotalElements())
-                    .totalPages(suspectsPage.getTotalPages())
-                    .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Error retrieving suspects: " + e.getMessage(), e);
+        if (date != null) {
+            startOfDay = date.atStartOfDay();
+            endOfDay = date.atTime(LocalTime.MAX);
         }
+        boolean caseExists = caseRepository.existsById(caseId);
+        if (!caseExists) throw new ResourceNotFoundException("Case " + caseId + " not found");
+
+        Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
+                caseId, status, date, startOfDay, endOfDay, pageable);
+
+        return SuspectsResponseDto.builder()
+                .page(page)
+                .pageSize(pageSize)
+                .total(suspectsPage.getTotalElements())
+                .totalPages(suspectsPage.getTotalPages())
+                .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
+                .build();
     }
 
     /**
      * Converts Case entity to CaseDto for API response
+     *
      * @param caseEntity The case entity to convert
      * @return CaseDto containing formatted case data
      */

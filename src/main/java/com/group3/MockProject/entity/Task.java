@@ -1,7 +1,6 @@
 package com.group3.MockProject.entity;
 
 import com.group3.MockProject.constant.TaskStatus;
-import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

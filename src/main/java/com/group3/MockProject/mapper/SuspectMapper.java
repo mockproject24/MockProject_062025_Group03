@@ -1,10 +1,8 @@
 package com.group3.MockProject.mapper;
 
 import com.group3.MockProject.dto.response.SuspectDto;
-import org.springframework.stereotype.Component;
-
-import com.group3.MockProject.dto.response.SuspectsResponseDto;
 import com.group3.MockProject.entity.Suspect;
+import org.springframework.stereotype.Component;
 
 /**
  * SuspectMapper

@@ -26,76 +26,78 @@ import java.util.List;
 
 /**
  * InterviewServiceImpl
- * <p>
- * Provides business logic for managing employment details.
- * <p>
+ *
+ * Service implementation for managing interviews in the case management system.
+ * Handles interview creation with questions, file uploads, and participant management.
+ *
  * Version 1.0
  * Date: 7/4/2025
- * <p>
- * Copyright
- * <p>
+ *
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 7/4/2025      User      Create
- * 7/10/2025     User      Update to match API spec exactly
+ * 4/7/2025      FongFox      Create
+ * 10/7/2025     FongFox      Update to match API spec exactly
+ * 11/7/2025     FongFox      Fix and organize code
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class InterviewServiceImpl implements InterviewService {
-    // Repositories for database access
+
+    // ================================
+    // DEPENDENCIES
+    // ================================
+
     private final InterviewRepository interviewRepository;
     private final InterviewFileRepository interviewFileRepository;
     private final UserRepository userRepository;
     private final SuspectRepository suspectRepository;
     private final VictimRepository victimRepository;
     private final WitnessRepository witnessRepository;
-
-    // Mapper for DTO/Entity conversion
+    private final QuestionRepository questionRepository;
     private final InterviewMapper interviewMapper;
+
+    // ================================
+    // CONFIGURATION
+    // ================================
 
     @Value("${spring.upload-file.base-uri}")
     private String baseUri;
 
-    // Constants for file upload
     private static final List<String> ALLOWED_FILE_TYPES = Arrays.asList(
             "mp4", "mp3", "wav", "avi", "mov", "pdf", "doc", "docx", "jpg", "png"
     );
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+    // ================================
+    // PUBLIC API METHODS
+    // ================================
 
     @Override
     @Transactional
     public InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files) {
         log.info("Starting interview creation process for case: {}", caseId);
 
-        // STEP 1: Validate input data
+        // Step 1: Validate input data
         validateInterviewData(dto);
 
-        // STEP 2: Find interviewer by ID
+        // Step 2: Find interviewer by ID
         User interviewer = findInterviewerById(dto.getInterviewerId());
 
-        // STEP 3: Upload files if provided
+        // Step 3: Upload files if provided
         List<String> uploadedFilePaths = uploadFilesIfProvided(files);
 
-        // STEP 4: Create Interview entity from DTO
-        Interview interview = interviewMapper.convertToInterviewEntity(dto, interviewer);
+        // Step 4: Create and save interview entity
+        Interview savedInterview = createAndSaveInterview(dto, interviewer);
 
-        // STEP 5: Set interviewee based on type
-        setIntervieweeByType(interview, dto.getIntervieweeType(), dto.getIntervieweeIdCard());
+        // Step 5: Create and save questions
+        saveQuestionsForInterview(dto.getQuesAndAns(), savedInterview, interviewer);
 
-        // STEP 6: Create questions from DTO
-        List<Question> questions = interviewMapper.convertToQuestionEntities(dto.getQuesAndAns(), interview, interviewer);
-        interview.setQuestions(questions);
+        // Step 6: Create and save interview files
+        saveFilesForInterview(uploadedFilePaths, savedInterview);
 
-        // STEP 7: Create InterviewFile entities
-        List<InterviewFile> interviewFiles = interviewMapper.convertToInterviewFileEntities(uploadedFilePaths, interview);
-        interview.setInterviewFileList(interviewFiles);
-
-        // STEP 8: Save interview to database (cascade will save questions and files)
-        Interview savedInterview = interviewRepository.save(interview);
-
-        // STEP 9: Convert to Response DTO and return
+        // Step 7: Convert to response DTO
         InterviewResponseDto responseDto = interviewMapper.convertToResponseDto(savedInterview);
 
         log.info("Interview created successfully with ID: {}", savedInterview.getInterviewId());
@@ -103,11 +105,72 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     // ================================
+    // CORE BUSINESS LOGIC METHODS
+    // ================================
+
+    /**
+     * Create and save interview entity with interviewer and interviewee
+     */
+    private Interview createAndSaveInterview(CreateInterviewDto dto, User interviewer) {
+        // Create interview entity
+        Interview interview = interviewMapper.convertToInterviewEntity(dto, interviewer);
+
+        // Set interviewee based on type
+        setIntervieweeByType(interview, dto.getIntervieweeType(), dto.getIntervieweeIdCard());
+
+        // Save and return
+        Interview savedInterview = interviewRepository.save(interview);
+        log.info("Interview saved with ID: {}", savedInterview.getInterviewId());
+
+        return savedInterview;
+    }
+
+    /**
+     * Create and save questions for the interview
+     */
+    private void saveQuestionsForInterview(List<QuestionDto> questionDtos, Interview interview, User interviewer) {
+        if (questionDtos == null || questionDtos.isEmpty()) {
+            log.info("No questions to save for interview: {}", interview.getInterviewId());
+            return;
+        }
+
+        List<Question> questions = interviewMapper.convertToQuestionEntities(questionDtos, interview, interviewer);
+
+        // Ensure back references are set
+        questions.forEach(question -> question.setInterview(interview));
+
+        List<Question> savedQuestions = questionRepository.saveAll(questions);
+        interview.setQuestions(savedQuestions);
+
+        log.info("Saved {} questions for interview: {}", savedQuestions.size(), interview.getInterviewId());
+    }
+
+    /**
+     * Create and save interview files
+     */
+    private void saveFilesForInterview(List<String> filePaths, Interview interview) {
+        if (filePaths == null || filePaths.isEmpty()) {
+            log.info("No files to save for interview: {}", interview.getInterviewId());
+            return;
+        }
+
+        List<InterviewFile> interviewFiles = interviewMapper.convertToInterviewFileEntities(filePaths, interview);
+
+        // Ensure back references are set
+        interviewFiles.forEach(file -> file.setInterview(interview));
+
+        List<InterviewFile> savedFiles = interviewFileRepository.saveAll(interviewFiles);
+        interview.setInterviewFileList(savedFiles);
+
+        log.info("Saved {} files for interview: {}", savedFiles.size(), interview.getInterviewId());
+    }
+
+    // ================================
     // VALIDATION METHODS
     // ================================
 
     /**
-     * Validate all interview data
+     * Validate all interview input data
      */
     private void validateInterviewData(CreateInterviewDto dto) {
         log.debug("Validating interview data");
@@ -116,13 +179,8 @@ public class InterviewServiceImpl implements InterviewService {
             throw new IllegalArgumentException("Interview data is required");
         }
 
-        // Validate time fields
         validateTimeFields(dto);
-
-        // Validate required fields
         validateRequiredFields(dto);
-
-        // Validate questions list
         validateQuestionsList(dto.getQuesAndAns());
     }
 
@@ -133,11 +191,9 @@ public class InterviewServiceImpl implements InterviewService {
         if (dto.getStartTime() == null) {
             throw new IllegalArgumentException("Start time is required");
         }
-
         if (dto.getEndTime() == null) {
             throw new IllegalArgumentException("End time is required");
         }
-
         if (dto.getEndTime().isBefore(dto.getStartTime())) {
             throw new IllegalArgumentException("End time must be after start time");
         }
@@ -150,23 +206,18 @@ public class InterviewServiceImpl implements InterviewService {
         if (isStringEmpty(dto.getLocation())) {
             throw new IllegalArgumentException("Location is required");
         }
-
         if (isStringEmpty(dto.getInterviewerId())) {
             throw new IllegalArgumentException("Interviewer ID is required");
         }
-
         if (isStringEmpty(dto.getIntervieweeType())) {
             throw new IllegalArgumentException("Interviewee type is required");
         }
-
         if (!isValidIntervieweeType(dto.getIntervieweeType())) {
             throw new IllegalArgumentException("Interviewee type must be SUSPECT, VICTIM, or WITNESS");
         }
-
         if (isStringEmpty(dto.getIntervieweeIdCard())) {
             throw new IllegalArgumentException("Interviewee ID card is required");
         }
-
         if (!isValidIdCardFormat(dto.getIntervieweeIdCard())) {
             throw new IllegalArgumentException("Interviewee ID card must be 9-12 digits");
         }
@@ -180,7 +231,6 @@ public class InterviewServiceImpl implements InterviewService {
             throw new IllegalArgumentException("At least one question is required");
         }
 
-        // Validate each question
         for (int i = 0; i < questions.size(); i++) {
             validateSingleQuestion(questions.get(i), i + 1);
         }
@@ -193,28 +243,27 @@ public class InterviewServiceImpl implements InterviewService {
         if (question == null) {
             throw new IllegalArgumentException("Question " + questionNumber + " cannot be null");
         }
-
         if (isStringEmpty(question.getQuestion())) {
             throw new IllegalArgumentException("Question " + questionNumber + ": Question text is required");
         }
-
         if (isStringEmpty(question.getAnswer())) {
             throw new IllegalArgumentException("Question " + questionNumber + ": Answer is required");
         }
-
         if (!isValidLevelOfTrust(question.getLevelOfTrust())) {
             throw new IllegalArgumentException("Question " + questionNumber + ": Level of trust must be 'a', 'b', or 'c'");
         }
     }
 
-    // Helper methods for validation
+    // ================================
+    // HELPER METHODS FOR VALIDATION
+    // ================================
+
     private boolean isStringEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
 
     private boolean isValidIntervieweeType(String type) {
-        return type != null &&
-                (type.equals("SUSPECT") || type.equals("VICTIM") || type.equals("WITNESS"));
+        return type != null && (type.equals("SUSPECT") || type.equals("VICTIM") || type.equals("WITNESS"));
     }
 
     private boolean isValidIdCardFormat(String idCard) {
@@ -230,12 +279,80 @@ public class InterviewServiceImpl implements InterviewService {
     // ================================
 
     /**
-     * Find interviewer by ID
+     * Find interviewer user by ID
      */
     private User findInterviewerById(String interviewerId) {
         return userRepository.findById(interviewerId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Interviewer not found with ID: " + interviewerId));
+                .orElseThrow(() -> new EntityNotFoundException("Interviewer not found with ID: " + interviewerId));
+    }
+
+    // ================================
+    // INTERVIEWEE MANAGEMENT METHODS
+    // ================================
+
+    /**
+     * Set interviewee based on type and ID card
+     */
+    private void setIntervieweeByType(Interview interview, String intervieweeType, String intervieweeIdCard) {
+        Long idCardNumber = Long.parseLong(intervieweeIdCard);
+        String type = intervieweeType.toUpperCase();
+
+        switch (type) {
+            case "SUSPECT":
+                setSuspectAsInterviewee(interview, idCardNumber);
+                break;
+            case "VICTIM":
+                setVictimAsInterviewee(interview, idCardNumber);
+                break;
+            case "WITNESS":
+                setWitnessAsInterviewee(interview, idCardNumber);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid interviewee type: " + intervieweeType);
+        }
+    }
+
+    /**
+     * Set suspect as interviewee
+     */
+    private void setSuspectAsInterviewee(Interview interview, Long idCard) {
+        Suspect suspect = suspectRepository.findAll().stream()
+                .filter(s -> s.getSuspectIdCard() != null &&
+                        s.getSuspectIdCard().equals(idCard) &&
+                        !s.getIsDeleted())
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Suspect not found with ID card: " + idCard));
+
+        interview.setSuspectInterviewee(suspect);
+        log.info("Set suspect as interviewee: {}", suspect.getFullname());
+    }
+
+    /**
+     * Set victim as interviewee
+     */
+    private void setVictimAsInterviewee(Interview interview, Long idCard) {
+        Victim victim = victimRepository.findAll().stream()
+                .filter(v -> v.getVictimId().equals(idCard.toString()) && !v.isDeleted())
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Victim not found with ID card: " + idCard));
+
+        interview.setVictimInterviewee(victim);
+        log.info("Set victim as interviewee: {}", victim.getFullname());
+    }
+
+    /**
+     * Set witness as interviewee
+     */
+    private void setWitnessAsInterviewee(Interview interview, Long idCard) {
+        Witness witness = witnessRepository.findAll().stream()
+                .filter(w -> w.getWitnessIdCard() != null &&
+                        w.getWitnessIdCard().equals(idCard) &&
+                        !w.isDeleted())
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Witness not found with ID card: " + idCard));
+
+        interview.setWitnessInterviewee(witness);
+        log.info("Set witness as interviewee: {}", witness.getFullName());
     }
 
     // ================================
@@ -255,7 +372,6 @@ public class InterviewServiceImpl implements InterviewService {
 
         log.info("Uploading {} files", files.size());
 
-        // Upload each file
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
                 try {
@@ -276,23 +392,17 @@ public class InterviewServiceImpl implements InterviewService {
      * Upload single file
      */
     private String uploadSingleFile(MultipartFile file) throws IOException {
-        // Validate file before upload
         validateFileBeforeUpload(file);
 
-        // Create unique filename
         String uniqueFileName = createUniqueFileName(file.getOriginalFilename());
-
-        // Parse baseUri to get the actual directory path
         String uploadDirectory = extractDirectoryFromBaseUri(baseUri);
 
-        // Create upload directory if not exists
         Path uploadPath = Paths.get(uploadDirectory);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
             log.info("Created upload directory: {}", uploadPath.toAbsolutePath());
         }
 
-        // Save file to the configured directory
         Path filePath = uploadPath.resolve(uniqueFileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -310,23 +420,19 @@ public class InterviewServiceImpl implements InterviewService {
             throw new IllegalArgumentException("File name cannot be empty");
         }
 
-        // Check file extension
         String fileExtension = getFileExtension(originalFileName);
         if (!ALLOWED_FILE_TYPES.contains(fileExtension.toLowerCase())) {
             throw new IllegalArgumentException(
-                    "File type not allowed: " + fileExtension +
-                            ". Allowed types: " + ALLOWED_FILE_TYPES
-            );
+                    "File type not allowed: " + fileExtension + ". Allowed types: " + ALLOWED_FILE_TYPES);
         }
 
-        // Check file size
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("File size too large. Maximum allowed: 50MB");
         }
     }
 
     /**
-     * Get file extension
+     * Get file extension from filename
      */
     private String getFileExtension(String fileName) {
         int lastDotIndex = fileName.lastIndexOf(".");
@@ -344,7 +450,7 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     /**
-     * Extract directory path from baseUri config
+     * Extract directory path from baseUri configuration
      */
     private String extractDirectoryFromBaseUri(String baseUri) {
         if (baseUri == null || baseUri.isEmpty()) {
@@ -355,112 +461,14 @@ public class InterviewServiceImpl implements InterviewService {
         if (directory.startsWith("file:")) {
             directory = directory.substring(5);
         }
-
         if (directory.endsWith("/")) {
             directory = directory.substring(0, directory.length() - 1);
         }
-
         if (directory.isEmpty()) {
             directory = "uploads";
         }
 
         log.debug("Extracted upload directory from baseUri '{}': '{}'", baseUri, directory);
         return directory;
-    }
-
-    // ================================
-    // INTERVIEWEE SETTER METHODS
-    // ================================
-
-    /**
-     * Set interviewee based on type
-     */
-    private void setIntervieweeByType(Interview interview, String intervieweeType, String intervieweeIdCard) {
-        Long idCardNumber = Long.parseLong(intervieweeIdCard);
-
-        String type = intervieweeType.toUpperCase();
-        switch (type) {
-            case "SUSPECT":
-                setSuspectAsInterviewee(interview, idCardNumber);
-                break;
-            case "VICTIM":
-                setVictimAsInterviewee(interview, idCardNumber);
-                break;
-            case "WITNESS":
-                setWitnessAsInterviewee(interview, idCardNumber);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid interviewee type: " + intervieweeType);
-        }
-    }
-
-    /**
-     * Set suspect as interviewee
-     */
-    private void setSuspectAsInterviewee(Interview interview, Long idCard) {
-        List<Suspect> allSuspects = suspectRepository.findAll();
-
-        Suspect foundSuspect = null;
-        for (Suspect suspect : allSuspects) {
-            if (suspect.getSuspectIdCard() != null &&
-                    suspect.getSuspectIdCard().equals(idCard) &&
-                    !suspect.getIsDeleted()) {
-                foundSuspect = suspect;
-                break;
-            }
-        }
-
-        if (foundSuspect == null) {
-            throw new EntityNotFoundException("Suspect not found with ID card: " + idCard);
-        }
-
-        interview.setSuspectInterviewee(foundSuspect);
-        log.info("Set suspect as interviewee: {}", foundSuspect.getFullname());
-    }
-
-    /**
-     * Set victim as interviewee
-     */
-    private void setVictimAsInterviewee(Interview interview, Long idCard) {
-        List<Victim> allVictims = victimRepository.findAll();
-
-        Victim foundVictim = null;
-        for (Victim victim : allVictims) {
-            if (victim.getVictimId().equals(idCard.toString()) && !victim.isDeleted()) {
-                foundVictim = victim;
-                break;
-            }
-        }
-
-        if (foundVictim == null) {
-            throw new EntityNotFoundException("Victim not found with ID card: " + idCard);
-        }
-
-        interview.setVictimInterviewee(foundVictim);
-        log.info("Set victim as interviewee: {}", foundVictim.getFullname());
-    }
-
-    /**
-     * Set witness as interviewee
-     */
-    private void setWitnessAsInterviewee(Interview interview, Long idCard) {
-        List<Witness> allWitnesses = witnessRepository.findAll();
-
-        Witness foundWitness = null;
-        for (Witness witness : allWitnesses) {
-            if (witness.getWitnessIdCard() != null &&
-                    witness.getWitnessIdCard().equals(idCard) &&
-                    !witness.isDeleted()) {
-                foundWitness = witness;
-                break;
-            }
-        }
-
-        if (foundWitness == null) {
-            throw new EntityNotFoundException("Witness not found with ID card: " + idCard);
-        }
-
-        interview.setWitnessInterviewee(foundWitness);
-        log.info("Set witness as interviewee: {}", foundWitness.getFullName());
     }
 }

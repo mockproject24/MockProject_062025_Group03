@@ -54,6 +54,6 @@ public class Question {
     Interview interview;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     User user;
 } 
