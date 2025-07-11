@@ -31,17 +31,15 @@ import java.util.List;
  * Provides business logic for managing details.
  *
  * Version 1.0
- *
  * Date: 08-07-2025
- *
- * Copyright
  *
  * Modification Logs:
  * DATE               AUTHOR           DESCRIPTION
  * -------------------------------------------------------------
  * 04/07/2025        Nguyễn Bảo Kha      Create
- * 7/4/2025          FongFox            Create
- * 7/10/2025         FongFox             Fix URL path and response format to match API spec
+ * 7/4/2025          FongFox             Create interview api (post)
+ * 10/7/2025         FongFox             Fix URL path and response format to match API spec
+ * 11/7/2025         FongFox             Fix URL path and response format to match API spec (update)
  */
 @RestController
 @RequiredArgsConstructor
