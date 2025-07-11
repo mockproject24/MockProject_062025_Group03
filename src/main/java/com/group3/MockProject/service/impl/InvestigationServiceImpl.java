@@ -1,15 +1,35 @@
 package com.group3.MockProject.service.impl;
 
+import com.group3.MockProject.dto.request.CreateInvestigationRequest;
+import com.group3.MockProject.dto.response.InvestigationFileDto;
 import com.group3.MockProject.dto.response.InvestigationPlanResponseDto;
+import com.group3.MockProject.dto.response.InvestigationResponseDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.InvestigationPlan;
+import com.group3.MockProject.exception.ResourceNotFoundException;
+import com.group3.MockProject.exception.StorageException;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.InvestigationPlanRepository;
 import com.group3.MockProject.service.InvestigationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * InvestigationServiceImpl
@@ -29,12 +49,22 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
+@Slf4j
 public class InvestigationServiceImpl implements InvestigationService {
     @Autowired
     private InvestigationPlanRepository investigationPlanRepository;
 
     @Autowired
     private CaseRepository caseRepository;
+    
+    @Value("${spring.upload-file.base-uri}")
+    private String baseURI;
+    
+    // Constants for file upload
+    private static final List<String> ALLOWED_FILE_TYPES = Arrays.asList(
+            "png", "jpg", "jpeg", "gif", "pdf", "doc", "docx", "mp4", "avi", "mov"
+    );
+    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
     @Override
     public Page<InvestigationPlanResponseDto> getInvestigations(Pageable pageable) {
@@ -56,5 +86,166 @@ public class InvestigationServiceImpl implements InvestigationService {
                     plan.isDeleted()
             );
         });
+    }
+    
+    @Override
+    public InvestigationResponseDto createInvestigation(String caseId, CreateInvestigationRequest request, List<MultipartFile> files) {
+        log.info("Starting investigation creation for case: {}", caseId);
+        
+        try {
+            // Validate case exists
+            Case caseEntity = caseRepository.findById(caseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Case not found with ID: " + caseId));
+            
+            // Upload files if provided
+            List<InvestigationFileDto> uploadedFiles = uploadFiles(files);
+            
+            // Build response
+            InvestigationResponseDto response = InvestigationResponseDto.builder()
+                    .type(request.getType())
+                    .analysist(request.getAnalysist())
+                    .files(uploadedFiles)
+                    .build();
+                    
+            log.info("Investigation created successfully for case: {}", caseId);
+            return response;
+            
+        } catch (Exception e) {
+            log.error("Error creating investigation for case {}: {}", caseId, e.getMessage(), e);
+            throw new RuntimeException("Failed to create investigation: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Upload multiple files and return file information
+     */
+    private List<InvestigationFileDto> uploadFiles(List<MultipartFile> files) {
+        List<InvestigationFileDto> fileResults = new ArrayList<>();
+        
+        if (files == null || files.isEmpty()) {
+            log.info("No files provided for upload");
+            return fileResults;
+        }
+        
+        log.info("Uploading {} files", files.size());
+        
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                try {
+                    String savedFileName = uploadSingleFile(file);
+                    String fileUrl = baseURI + savedFileName;
+                    
+                    InvestigationFileDto fileDto = InvestigationFileDto.builder()
+                            .filename(file.getOriginalFilename())
+                            .url(fileUrl)
+                            .build();
+                            
+                    fileResults.add(fileDto);
+                    log.info("File uploaded successfully: {}", savedFileName);
+                    
+                } catch (Exception e) {
+                    log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
+                    throw new StorageException("Failed to upload file: " + file.getOriginalFilename());
+                }
+            }
+        }
+        
+        return fileResults;
+    }
+    
+    /**
+     * Upload single file
+     */
+    private String uploadSingleFile(MultipartFile file) throws URISyntaxException, IOException {
+        // Validate file before upload
+        validateFileBeforeUpload(file);
+        
+        // Create unique filename
+        String uniqueFileName = createUniqueFileName(file.getOriginalFilename());
+        
+        // Parse baseURI to get the actual directory path
+        String uploadDirectory = extractDirectoryFromBaseURI(baseURI);
+        
+        // Create upload directory if not exists
+        Path uploadPath = Paths.get(uploadDirectory);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+            log.info("Created upload directory: {}", uploadPath.toAbsolutePath());
+        }
+        
+        // Save file to the configured directory
+        Path filePath = uploadPath.resolve(uniqueFileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        
+        log.info("File saved to: {}", filePath.toAbsolutePath());
+        return uniqueFileName;
+    }
+    
+    /**
+     * Validate file before upload
+     */
+    private void validateFileBeforeUpload(MultipartFile file) {
+        String originalFileName = file.getOriginalFilename();
+        
+        if (originalFileName == null || originalFileName.isEmpty()) {
+            throw new IllegalArgumentException("File name cannot be empty");
+        }
+        
+        // Check file extension
+        String fileExtension = getFileExtension(originalFileName);
+        if (!ALLOWED_FILE_TYPES.contains(fileExtension.toLowerCase())) {
+            throw new IllegalArgumentException(
+                    "File type not allowed: " + fileExtension +
+                            ". Allowed types: " + ALLOWED_FILE_TYPES
+            );
+        }
+        
+        // Check file size
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File size too large. Maximum allowed: 50MB");
+        }
+    }
+    
+    /**
+     * Get file extension
+     */
+    private String getFileExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
+            return fileName.substring(lastDotIndex + 1);
+        }
+        return "";
+    }
+    
+    /**
+     * Create unique filename to avoid conflicts
+     */
+    private String createUniqueFileName(String originalFileName) {
+        return System.currentTimeMillis() + "-" + originalFileName;
+    }
+    
+    /**
+     * Extract directory path from baseURI config
+     */
+    private String extractDirectoryFromBaseURI(String baseURI) {
+        if (baseURI == null || baseURI.isEmpty()) {
+            return "uploads";
+        }
+        
+        String directory = baseURI;
+        if (directory.startsWith("file:")) {
+            directory = directory.substring(5);
+        }
+        
+        if (directory.endsWith("/")) {
+            directory = directory.substring(0, directory.length() - 1);
+        }
+        
+        if (directory.isEmpty()) {
+            directory = "uploads";
+        }
+        
+        log.debug("Extracted upload directory from baseURI '{}': '{}'", baseURI, directory);
+        return directory;
     }
 }

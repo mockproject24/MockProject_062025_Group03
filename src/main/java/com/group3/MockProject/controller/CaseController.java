@@ -7,9 +7,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.request.CreateInterviewDto;
+import com.group3.MockProject.dto.request.CreateInvestigationRequest;
 import com.group3.MockProject.dto.request.CreateSuspectRequest;
 import com.group3.MockProject.dto.response.*;
 import com.group3.MockProject.service.EvidenceService;
+import com.group3.MockProject.service.InvestigationService;
 import com.group3.MockProject.service.ISuspectService;
 import com.group3.MockProject.service.InterviewService;
 import jakarta.persistence.EntityNotFoundException;
@@ -59,6 +61,7 @@ public class CaseController {
     private final SuspectMapper suspectMapper;
     private final EvidenceService evidenceService;
     private final InterviewService interviewService;
+    private final InvestigationService investigationService;
     private final ObjectMapper objectMapper;
     private final ISuspectService suspectService;
 
@@ -327,5 +330,57 @@ public class CaseController {
                 .message("Suspect created successfully")
                 .data(suspectService.createSuspect(caseId, request, file))
                 .build();
+    }
+
+    /**
+     * Create new investigation
+     * 
+     * URL: POST /cases/{caseId}/investigations
+     * Content-Type: multipart/form-data
+     * 
+     * Request Body:
+     * - data: JSON string containing investigation data (type, analysist)
+     * - file: List of attached files (optional)
+     * 
+     * @param caseId Case ID from URL path
+     * @param dataJson JSON string containing investigation data
+     * @param files List of attached files (optional)
+     * @return ApiResponse containing created investigation information
+     */
+    @PostMapping(value = "/{caseId}/investigations",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<InvestigationResponseDto>> createInvestigation(
+            @PathVariable String caseId,
+            @RequestParam("data") String dataJson,
+            @RequestParam(value = "file", required = false) List<MultipartFile> files) {
+
+        try {
+            log.info("Creating investigation for case: {}", caseId);
+            
+            // Parse JSON data to DTO
+            CreateInvestigationRequest request = objectMapper.readValue(dataJson, CreateInvestigationRequest.class);
+            
+            // Create investigation through service
+            InvestigationResponseDto response = investigationService.createInvestigation(caseId, request, files);
+            
+            log.info("Investigation created successfully for case: {}", caseId);
+            return ResponseEntity.ok(ApiResponse.success("Success", response));
+            
+        } catch (JsonProcessingException e) {
+            log.error("Invalid JSON format in data parameter: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("Invalid JSON format in data parameter"));
+                    
+        } catch (IllegalArgumentException e) {
+            log.error("Validation error: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest(e.getMessage()));
+                    
+        } catch (Exception e) {
+            log.error("Unexpected error occurred while creating investigation: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.internalServerError("Error creating investigation: " + e.getMessage()));
+        }
     }
 }
