@@ -1,7 +1,7 @@
 package com.group3.MockProject.entity;
 
 import com.group3.MockProject.constant.WarrantStatus;
-import com.group3.MockProject.util.StringListJsonConverter;
+import com.group3.MockProject.util.AttachedFileJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -31,7 +31,7 @@ public class Warrant {
 //    String policeResponse;
 
     @Column(name = "attached_file", columnDefinition = "json")
-    @Convert(converter = StringListJsonConverter.class)
+    @Convert(converter = AttachedFileJsonConverter.class)
     List<String> attachedFile;
 
     @Column(name = "time_publish")
