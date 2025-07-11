@@ -27,8 +27,8 @@ public class ProsecutionsUser implements Serializable {
     Prosecution prosecution;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    @MapsId("userId")
+    @JoinColumn(name = "username")
+    @MapsId("username")
     User user;
 
     @Column(name = "is_deleted")

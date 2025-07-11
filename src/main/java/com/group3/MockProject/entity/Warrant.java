@@ -1,6 +1,5 @@
 package com.group3.MockProject.entity;
 
-import com.group3.MockProject.constant.TaskStatus;
 import com.group3.MockProject.constant.WarrantStatus;
 import com.group3.MockProject.util.StringListJsonConverter;
 import jakarta.persistence.*;
@@ -50,7 +49,7 @@ public class Warrant {
     WarrantStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "police_response")
+    @JoinColumn(name = "username")
     User user;
 
     @ManyToOne

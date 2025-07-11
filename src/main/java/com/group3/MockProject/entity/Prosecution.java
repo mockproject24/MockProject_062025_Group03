@@ -41,7 +41,7 @@ public class Prosecution {
     Case caseEntity;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     User user;
 
     @OneToMany(mappedBy = "prosecution")

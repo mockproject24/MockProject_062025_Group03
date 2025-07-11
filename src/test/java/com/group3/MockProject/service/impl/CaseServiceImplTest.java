@@ -4,10 +4,12 @@ import com.group3.MockProject.constant.CaseSeverity;
 import com.group3.MockProject.constant.CaseStatus;
 import com.group3.MockProject.constant.CaseType;
 import com.group3.MockProject.dto.response.CaseDetailDto;
+import com.group3.MockProject.dto.response.SuspectDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
 import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.entity.Warrant;
+import com.group3.MockProject.exception.ResourceNotFoundException;
 import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.repository.CaseRepository;
@@ -19,12 +21,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -51,6 +61,20 @@ class CaseServiceImplTest {
     private List<Warrant> mockWarrants;
     private List<Evidence> mockEvidences;
     private CaseDetailDto mockCaseDetailDto;
+
+    // DQMinh CaseServiceImplTest
+    private String caseId;
+    private int page;
+    private int pageSize;
+    private String status;
+    private LocalDate date;
+    private LocalDateTime startOfDay;
+    private LocalDateTime endOfDay;
+    private Pageable pageable;
+
+    private SuspectDto suspectDto;
+    private Suspect suspect;
+    private Page<Suspect> suspectsPage;
 
     @BeforeEach
     void setUp() {
@@ -99,6 +123,61 @@ class CaseServiceImplTest {
                 .warrants(new ArrayList<>())
                 .evidences(new ArrayList<>())
                 .build();
+
+
+        // DQMinh CaseServiceImplTest
+        caseId = "3b7f2d9e-4c6a-4f2e-9a1d-8e2b6c7f9a3d";
+        page = 1;
+        pageSize = 10;
+        status = "In custody";
+        date = LocalDate.of(2025,7,1);
+        startOfDay = date.atStartOfDay();
+        endOfDay = date.atTime(LocalTime.MAX);
+        pageable = PageRequest.of(page-1,pageSize);
+
+        Case caseEntity = Case.builder()
+                .caseId(caseId)
+                .build();
+        suspect = Suspect.builder()
+                .suspectId("fae43618-58b3-11f0-b0c4-8c04ba3cebd5")
+                .address("123 Le Loi, Hanoi")
+                .catchTime(LocalDateTime.of(2025,7,1,14, 30,0))
+                .description("Suspect was caught near the border.")
+                .dob(LocalDateTime.of(1990,5,12,0,0,0))
+                .fingerprintsHash("fingerprintHash")
+                .fullname("Le Van A")
+                .gender("Male")
+                .healthStatus("Healthy")
+                .identification("123456789")
+                .mugshotUrl("https://example.com/mugshots/nguyenvana.jpg")
+                .national("Vietnam")
+                .notes("No prior criminal record.")
+                .phoneNumber("0909123456")
+                .status("In custody")
+                .caseEntity(caseEntity)
+                .build();
+
+        suspectDto = SuspectDto.builder()
+                .suspectId("fae43618-58b3-11f0-b0c4-8c04ba3cebd5")
+                .address("123 Le Loi, Hanoi")
+                .catchTime(LocalDateTime.of(2025,7,1,14, 30,0))
+                .description("Suspect was caught near the border.")
+                .dob(LocalDateTime.of(1990,5,12,0,0,0))
+                .fingerprintsHash("fingerprintHash")
+                .fullname("Le Van A")
+                .gender("Male")
+                .healthStatus("Healthy")
+                .identification("123456789")
+                .mugshotUrl("https://example.com/mugshots/nguyenvana.jpg")
+                .national("Vietnam")
+                .notes("No prior criminal record.")
+                .phoneNumber("0909123456")
+                .status("In custody")
+                .caseId(caseId)
+                .build();
+
+        suspectsPage = new PageImpl<Suspect>(List.of(suspect), pageable, 1);
+
     }
 
     @Test
@@ -148,5 +227,39 @@ class CaseServiceImplTest {
 
         assertEquals("Case not found: null", exception.getMessage());
         verify(caseRepository).findByIdWithDetails(null);
+    }
+
+    @Test
+    void getAllSuspectsByCaseId_success(){
+        // GIVEN
+        Mockito.when(caseRepository.existsById(caseId)).thenReturn(true);
+        Mockito.when(suspectRepository.findByCaseIdAndStatusAndCatchTime(caseId,status,date,startOfDay,endOfDay,pageable))
+                .thenReturn(suspectsPage);
+        Mockito.when(suspectMapper.toSuspectDto(suspect)).thenReturn(suspectDto);
+        // when
+        var suspectsResponseDto = caseService.getAllSuspectsByCaseId(caseId, page,pageSize,status,date);
+
+        // then
+
+        assertThat(suspectsResponseDto.getPage()).isEqualTo(1);
+        assertThat(suspectsResponseDto.getTotal()).isEqualTo(1);
+        assertThat(suspectsResponseDto.getTotalPages()).isEqualTo(1);
+        assertThat(suspectsResponseDto.getPageSize()).isEqualTo(10);
+        assertThat(suspectsResponseDto.getSuspects().get(0)).isEqualTo(suspectDto);
+    }
+
+    @Test
+    void getAllSuspectsByCaseId_CaseNotFound_fail(){
+        //GIVEN
+        String nonExistentCaseId = "nonExistentCaseId";
+        Mockito.when(caseRepository.existsById(nonExistentCaseId))
+                .thenReturn(false);
+        String expectedMessage = "Case " + nonExistentCaseId + " not found";
+        //when & then
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, ()->{
+            caseService.getAllSuspectsByCaseId(nonExistentCaseId, page,pageSize,status,date);
+        });
+
+        assertEquals(expectedMessage, ex.getMessage());
     }
 }

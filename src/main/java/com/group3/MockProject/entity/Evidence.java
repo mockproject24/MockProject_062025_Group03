@@ -1,7 +1,6 @@
 package com.group3.MockProject.entity;
 
 import com.group3.MockProject.constant.EvidenceType;
-import com.group3.MockProject.constant.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -72,7 +71,7 @@ public class Evidence {
     Case caseEntity;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     User user;
 
     @OneToOne(mappedBy = "evidence")

@@ -2,7 +2,6 @@ package com.group3.MockProject.entity;
 
 import com.group3.MockProject.constant.CrimeType;
 import com.group3.MockProject.constant.ReportStatus;
-import com.group3.MockProject.constant.ReporterIncidentRelationshipType;
 import com.group3.MockProject.constant.SeverityType;
 import com.group3.MockProject.enums.ReporterIncidentRelationship;
 import jakarta.persistence.*;
@@ -76,7 +75,7 @@ public class Report {
     ReporterIncidentRelationship reporterIncidentRelationship;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     User user;
 
     @ManyToOne

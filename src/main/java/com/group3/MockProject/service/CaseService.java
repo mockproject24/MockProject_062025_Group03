@@ -1,15 +1,12 @@
 package com.group3.MockProject.service;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Suspect;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * CaseService

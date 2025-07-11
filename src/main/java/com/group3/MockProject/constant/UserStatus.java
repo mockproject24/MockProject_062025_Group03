@@ -1,6 +1,5 @@
 package com.group3.MockProject.constant;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**

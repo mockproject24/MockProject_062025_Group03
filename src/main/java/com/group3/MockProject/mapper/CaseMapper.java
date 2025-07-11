@@ -3,11 +3,9 @@ package com.group3.MockProject.mapper;
 import com.group3.MockProject.dto.response.CaseDetailDto;
 import com.group3.MockProject.dto.response.CaseDto;
 import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.UsersCases;
+import com.group3.MockProject.entity.*;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import com.group3.MockProject.entity.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,7 @@ public class CaseMapper {
         }
         return new CaseDto(
                 entity.getCaseId(),
-                "#" + entity.getCaseId(), // Use caseId since caseNumber doesn't exist
+                entity.getCaseName(),
                 entity.getTypeCase().getLabel(),
                 entity.getSeverity().getLabel(),
                 entity.getStatus().getLabel(),

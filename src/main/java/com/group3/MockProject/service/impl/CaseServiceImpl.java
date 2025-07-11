@@ -1,48 +1,36 @@
 package com.group3.MockProject.service.impl;
 
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
+import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.entity.*;
+import com.group3.MockProject.exception.ResourceNotFoundException;
+import com.group3.MockProject.mapper.CaseMapper;
+import com.group3.MockProject.mapper.SuspectMapper;
+import com.group3.MockProject.repository.*;
+import com.group3.MockProject.service.CaseService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.group3.MockProject.dto.response.*;
-import com.group3.MockProject.entity.*;
-import com.group3.MockProject.mapper.CaseMapper;
-import com.group3.MockProject.mapper.SuspectMapper;
-import com.group3.MockProject.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.CaseDto;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
-import com.group3.MockProject.dto.response.UserResponseDto;
-import com.group3.MockProject.service.CaseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
-
 /**
  * CaseServiceImpl
- * <p>
+ *
  * Provides business logic implementation for case management operations.
- * <p>
+ *
  * Version 1.0
- * <p>
+ *
  * Date: 08-07-2025
- * <p>
+ *
  * Copyright
- * <p>
+ *
  * Modification Logs:
  * DATE        AUTHOR        DESCRIPTION
  * -------------------------------------------------------------
@@ -134,8 +122,7 @@ public class CaseServiceImpl implements CaseService {
 
     /**
      * Retrieves assigned officers for a specific case with pagination
-     *
-     * @param caseId   The case identifier
+     * @param caseId The case identifier
      * @param pageable Pagination information
      * @return Page of UserResponseDto containing officer data
      */
@@ -199,7 +186,6 @@ public class CaseServiceImpl implements CaseService {
             responseDto.setSummary(saved.getSummary());
             responseDto.setIsDeleted(saved.isDeleted());
             responseDto.setEvidenceId(null);
-
             return responseDto;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -210,39 +196,37 @@ public class CaseServiceImpl implements CaseService {
 
     /**
      * Retrieves suspects for a specific case with filtering options
-     *
-     * @param caseId   The case identifier
-     * @param page     the page to get
+     * @param caseId The case identifier
+     * @param page the page to get
      * @param pageSize number of elements in a page
-     * @param status   Optional status filter
-     * @param date     Optional date filter
+     * @param status Optional status filter
+     * @param date Optional date filter
      * @return Page of suspects matching the criteria
      */
     @Override
-    public SuspectsResponseDto getAllSuspectsByCaseId(String caseId, int page, int pageSize, String status, LocalDate date) {
-        try {
-            Pageable pageable = PageRequest.of(page - 1, pageSize);
-            LocalDateTime startOfDay = null;
-            LocalDateTime endOfDay = null;
+    public SuspectsResponseDto getAllSuspectsByCaseId(String caseId,int page, int pageSize, String status, LocalDate date) {
 
-            if (date != null) {
-                startOfDay = date.atStartOfDay();
-                endOfDay = date.atTime(LocalTime.MAX);
-            }
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        LocalDateTime startOfDay = null;
+        LocalDateTime endOfDay = null;
 
-            Page<Suspect> suspectsPage = suspectRepository.findByCaseIdAndStatusAndCatchTime(
-                    caseId, status, date, startOfDay, endOfDay, pageable);
-
-            return SuspectsResponseDto.builder()
-                    .page(page)
-                    .pageSize(pageSize)
-                    .total(suspectsPage.getTotalElements())
-                    .totalPages(suspectsPage.getTotalPages())
-                    .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Error retrieving suspects: " + e.getMessage(), e);
+        if (date != null) {
+            startOfDay = date.atStartOfDay();
+            endOfDay = date.atTime(LocalTime.MAX);
         }
+        boolean caseExists = caseRepository.existsById(caseId);
+        if (!caseExists) throw new ResourceNotFoundException("Case " + caseId + " not found");
+
+        Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
+                caseId, status, date, startOfDay, endOfDay, pageable);
+
+        return SuspectsResponseDto.builder()
+                .page(page)
+                .pageSize(pageSize)
+                .total(suspectsPage.getTotalElements())
+                .totalPages(suspectsPage.getTotalPages())
+                .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
+                .build();
     }
 
     /**

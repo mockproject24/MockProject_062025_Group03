@@ -1,11 +1,6 @@
 package com.group3.MockProject.dto.response;
 
-import com.group3.MockProject.constant.CaseSeverity;
-import com.group3.MockProject.constant.CaseStatus;
-import com.group3.MockProject.constant.CaseType;
-import com.group3.MockProject.constant.TaskStatus;
-import com.group3.MockProject.constant.WarrantStatus;
-import com.group3.MockProject.constant.EvidenceType;
+import com.group3.MockProject.constant.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

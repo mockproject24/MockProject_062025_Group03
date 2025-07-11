@@ -1,31 +1,28 @@
 package com.group3.MockProject.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.request.CreateInterviewDto;
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.mapper.SuspectMapper;
+import com.group3.MockProject.service.CaseService;
 import com.group3.MockProject.service.EvidenceService;
 import com.group3.MockProject.service.InterviewService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.mapper.SuspectMapper;
-import com.group3.MockProject.service.CaseService;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * CaseController
@@ -93,7 +90,7 @@ public class CaseController {
         try {
             return ApiResponse.<SuspectsResponseDto>builder()
                     .code(HttpStatus.OK.value())
-                    .message("Get suspects succesfully")
+                    .message("Get suspects successfully")
                     .result(caseService.getAllSuspectsByCaseId(caseId,page,pageSize, status, date))
                     .build();
         } catch (Exception e) {

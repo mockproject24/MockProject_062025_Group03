@@ -1,5 +1,6 @@
 package com.group3.MockProject.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -50,6 +51,7 @@ public class SuspectDto {
     /**
      * Date of birth
      */
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dob;
 
     /**
@@ -75,6 +77,7 @@ public class SuspectDto {
     /**
      * Catch time
      */
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime catchTime;
 
     /**
