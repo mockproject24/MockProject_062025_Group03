@@ -3,10 +3,7 @@ package com.group3.MockProject.mapper;
 import com.group3.MockProject.dto.request.CreateInterviewRequest;
 import com.group3.MockProject.dto.request.QuestionRequest;
 import com.group3.MockProject.dto.response.InterviewResponse;
-import com.group3.MockProject.entity.Interview;
-import com.group3.MockProject.entity.InterviewFile;
-import com.group3.MockProject.entity.Question;
-import com.group3.MockProject.entity.User;
+import com.group3.MockProject.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneOffset;
@@ -15,253 +12,131 @@ import java.util.List;
 
 /**
  * InterviewMapper
- *
  * Mapper component for converting between Interview DTOs and Entities.
- * Handles all mapping logic for interviews, questions, and files.
  *
+ * <p>
+ * Responsibilities:
+ * - Maps request DTOs to entity objects
+ * - Converts trust level strings to numeric values
+ * - Builds response DTOs from entities
+ * - Handles interviewee name extraction by type
+ * </p>
+ *
+ * <p>
+ * Trust Level Conversion:
+ * - "a" (high trust) → 1.0
+ * - "b" (medium trust) → 0.7
+ * - "c" (low trust) → 0.4
+ * </p>
+ *
+ * <p>
  * Version 1.0
  * Date: 7/10/2025
+ * </p>
  *
  * Modification Logs:
  * DATE          AUTHOR       DESCRIPTION
  * -------------------------------------
  * 10/7/2025     FongFox      Create complete mapper
  * 11/7/2025     FongFox      Fix and organize code
+ * 12/7/2025     FongFox      Fix and organize code (2)
  */
 @Component
 public class InterviewMapper {
-
-    // ================================
-    // MAIN CONVERSION METHODS
-    // ================================
-
     /**
-     * Convert CreateInterviewDto to Interview entity
-     *
-     * @param dto CreateInterviewDto from client request
-     * @param interviewer User who conducts the interview
-     * @return Interview entity (without questions and files)
+     * Creates Interview entity from request data
+     * Maps timestamp conversion and sets appropriate interviewee reference
      */
-    public Interview convertToInterviewEntity(CreateInterviewRequest dto, User interviewer) {
+    public Interview createInterviewEntity(
+            CreateInterviewRequest request, Case caseEntity, User interviewer, Object interviewee
+    ) {
         Interview interview = new Interview();
-
-        // Set basic interview information
-        interview.setStartTime(dto.getStartTime().atZone(ZoneOffset.UTC).toLocalDateTime());
-        interview.setEndTime(dto.getEndTime().atZone(ZoneOffset.UTC).toLocalDateTime());
-        interview.setLocation(dto.getLocation());
-        interview.setTypeInterviewee(dto.getIntervieweeType());
+        interview.setStartTime(request.getStartTime().atOffset(ZoneOffset.UTC).toLocalDateTime());
+        interview.setEndTime(request.getEndTime().atOffset(ZoneOffset.UTC).toLocalDateTime());
+        interview.setLocation(request.getLocation());
+        interview.setTypeInterviewee(request.getIntervieweeType());
         interview.setUserInterviewer(interviewer);
-        interview.setDeleted(false);
+        interview.setCaseInterview(caseEntity);
 
-        // Note: createAt and updateAt are set automatically by @CreationTimestamp and @UpdateTimestamp
-        // Note: interviewee will be set separately based on type
+        // Set appropriate interviewee reference based on type
+        if (interviewee instanceof Suspect) {
+            interview.setSuspectInterviewee((Suspect) interviewee);
+        } else if (interviewee instanceof Victim) {
+            interview.setVictimInterviewee((Victim) interviewee);
+        } else if (interviewee instanceof Witness) {
+            interview.setWitnessInterviewee((Witness) interviewee);
+        }
 
         return interview;
     }
 
     /**
-     * Convert Interview entity to Response DTO
-     *
-     * @param interview Complete interview entity with all relationships
-     * @return InterviewResponseDto for client response
+     * Creates list of Question entities from request data
+     * Converts trust levels and links questions to interview and user
      */
-    public InterviewResponse convertToResponseDto(Interview interview) {
-        return InterviewResponse.builder()
-                .startTime(interview.getStartTime())
-                .endTime(interview.getEndTime())
-                .location(interview.getLocation())
-                .interviewerName(interview.getUserInterviewer().getFullName())
-                .intervieweeType(interview.getTypeInterviewee())
-                .intervieweeName(getIntervieweeName(interview))
-                .totalQuestions(getQuestionCount(interview))
-                .attachedFiles(getAttachedFileNames(interview))
-                .createdAt(interview.getCreateAt())
-                .build();
-    }
-
-    // ================================
-    // QUESTION CONVERSION METHODS
-    // ================================
-
-    /**
-     * Convert list of QuestionDto to list of Question entities
-     *
-     * @param questionDtos List of QuestionDto from client request
-     * @param interview Interview entity that owns these questions
-     * @param user User who created the questions
-     * @return List of Question entities
-     */
-    public List<Question> convertToQuestionEntities(List<QuestionRequest> questionDtos, Interview interview, User user) {
+    public List<Question> createQuestions(
+            List<QuestionRequest> questionRequests, Interview interview, User interviewer
+    ) {
         List<Question> questions = new ArrayList<>();
 
-        if (questionDtos != null && !questionDtos.isEmpty()) {
-            for (QuestionRequest questionDto : questionDtos) {
-                Question question = convertSingleQuestionToEntity(questionDto, interview, user);
-                questions.add(question);
-            }
+        for (QuestionRequest qr : questionRequests) {
+            Question question = new Question();
+            question.setContent(qr.getQuestion());
+            question.setAnswer(qr.getAnswer());
+            question.setReliability(convertLevelOfTrust(qr.getLevelOfTrust()));
+            question.setInterview(interview);
+            question.setUser(interviewer);
+            questions.add(question);
         }
 
         return questions;
     }
 
     /**
-     * Convert single QuestionDto to Question entity
-     *
-     * @param dto QuestionDto from client request
-     * @param interview Interview entity that owns this question
-     * @param user User who created the question
-     * @return Question entity
+     * Converts trust level from string to float value
+     * "a" -> 1.0 (high trust), "b" -> 0.7 (medium trust), "c" -> 0.4 (low trust)
      */
-    private Question convertSingleQuestionToEntity(QuestionRequest dto, Interview interview, User user) {
-        Question question = new Question();
-
-        // Note: questionId is auto-generated by Hibernate, don't set manually
-        question.setContent(dto.getQuestion());
-        question.setAnswer(dto.getAnswer());
-        question.setReliability(convertLevelOfTrustToFloat(dto.getLevelOfTrust()));
-        question.setInterview(interview);
-        question.setUser(user);
-        question.setDeleted(false);
-
-        return question;
-    }
-
-    // ================================
-    // FILE CONVERSION METHODS
-    // ================================
-
-    /**
-     * Convert uploaded file paths to InterviewFile entities
-     *
-     * @param filePaths List of uploaded file paths
-     * @param interview Interview entity that owns these files
-     * @return List of InterviewFile entities
-     */
-    public List<InterviewFile> convertToInterviewFileEntities(List<String> filePaths, Interview interview) {
-        List<InterviewFile> interviewFiles = new ArrayList<>();
-
-        if (filePaths != null && !filePaths.isEmpty()) {
-            for (String filePath : filePaths) {
-                InterviewFile interviewFile = convertSingleFileToEntity(filePath, interview);
-                interviewFiles.add(interviewFile);
-            }
-        }
-
-        return interviewFiles;
-    }
-
-    /**
-     * Convert single file path to InterviewFile entity
-     *
-     * @param filePath Uploaded file path
-     * @param interview Interview entity that owns this file
-     * @return InterviewFile entity
-     */
-    private InterviewFile convertSingleFileToEntity(String filePath, Interview interview) {
-        InterviewFile interviewFile = new InterviewFile();
-
-        // Note: interviewFileId is auto-generated by Hibernate, don't set manually
-        interviewFile.setAttachedFile(filePath);
-        interviewFile.setInterview(interview);
-        interviewFile.setDeleted(false);
-
-        // Note: createAt is set automatically by @CreationTimestamp
-
-        return interviewFile;
-    }
-
-    // ================================
-    // HELPER METHODS FOR RESPONSE DTO
-    // ================================
-
-    /**
-     * Get interviewee name based on interview type
-     *
-     * @param interview Interview entity with interviewee relationship
-     * @return Interviewee full name or "Unknown" if not found
-     */
-    private String getIntervieweeName(Interview interview) {
-        String typeInterviewee = interview.getTypeInterviewee();
-
-        if (typeInterviewee == null || typeInterviewee.trim().isEmpty()) {
-            return "Unknown";
-        }
-
-        switch (typeInterviewee.toUpperCase()) {
-            case "SUSPECT":
-                return interview.getSuspectInterviewee() != null
-                        ? interview.getSuspectInterviewee().getFullname()
-                        : "Unknown";
-
-            case "VICTIM":
-                return interview.getVictimInterviewee() != null
-                        ? interview.getVictimInterviewee().getFullname()
-                        : "Unknown";
-
-            case "WITNESS":
-                return interview.getWitnessInterviewee() != null
-                        ? interview.getWitnessInterviewee().getFullName()
-                        : "Unknown";
-
-            default:
-                return "Unknown";
+    public Float convertLevelOfTrust(String levelOfTrust) {
+        switch (levelOfTrust.toLowerCase()) {
+            case "a": return 1.0f;
+            case "b": return 0.7f;
+            case "c": return 0.4f;
+            default: return 0.0f; // Default value for invalid input
         }
     }
 
     /**
-     * Get total question count for the interview
-     *
-     * @param interview Interview entity with questions
-     * @return Number of questions
+     * Builds InterviewResponse DTO from interview entity and related data
+     * Includes interviewer/interviewee names, question count, and file list
      */
-    private int getQuestionCount(Interview interview) {
-        return interview.getQuestions() != null ? interview.getQuestions().size() : 0;
+    public InterviewResponse buildInterviewResponse(
+            Interview interview, User interviewer, Object interviewee, int totalQuestions, List<String> attachedFiles
+    ) {
+        return InterviewResponse.builder()
+                .startTime(interview.getStartTime())
+                .endTime(interview.getEndTime())
+                .location(interview.getLocation())
+                .interviewerName(interviewer.getFullName())
+                .intervieweeType(interview.getTypeInterviewee())
+                .intervieweeName(getIntervieweeName(interviewee))
+                .totalQuestions(totalQuestions)
+                .attachedFiles(attachedFiles)
+                .createdAt(interview.getCreateAt())
+                .build();
     }
 
     /**
-     * Get attached file names from InterviewFile entities
-     *
-     * @param interview Interview entity with files
-     * @return List of file names (non-deleted files only)
+     * Extracts interviewee name based on entity type
+     * Handles different name field patterns across Suspect, Victim, and Witness entities
      */
-    private List<String> getAttachedFileNames(Interview interview) {
-        List<String> fileNames = new ArrayList<>();
-
-        if (interview.getInterviewFileList() != null && !interview.getInterviewFileList().isEmpty()) {
-            for (InterviewFile interviewFile : interview.getInterviewFileList()) {
-                if (!interviewFile.isDeleted() && interviewFile.getAttachedFile() != null) {
-                    fileNames.add(interviewFile.getAttachedFile());
-                }
-            }
+    public String getIntervieweeName(Object interviewee) {
+        if (interviewee instanceof Suspect) {
+            return ((Suspect) interviewee).getFullname();
+        } else if (interviewee instanceof Victim) {
+            return ((Victim) interviewee).getFullname();
+        } else if (interviewee instanceof Witness) {
+            return ((Witness) interviewee).getFullName();
         }
-
-        return fileNames;
-    }
-
-    // ================================
-    // UTILITY CONVERSION METHODS
-    // ================================
-
-    /**
-     * Convert level of trust string to float value
-     *
-     * @param levelOfTrust String value: "a", "b", "c" (case insensitive)
-     * @return Float value: a=1.0 (high), b=0.7 (medium), c=0.4 (low)
-     */
-    private Float convertLevelOfTrustToFloat(String levelOfTrust) {
-        if (levelOfTrust == null || levelOfTrust.trim().isEmpty()) {
-            return 0.4f; // Default to low trust for invalid input
-        }
-
-        switch (levelOfTrust.toLowerCase().trim()) {
-            case "a":
-                return 1.0f; // High trust
-            case "b":
-                return 0.7f; // Medium trust
-            case "c":
-                return 0.4f; // Low trust
-            default:
-                return 0.4f; // Default to low trust for invalid values
-        }
+        return "Unknown";
     }
 }
