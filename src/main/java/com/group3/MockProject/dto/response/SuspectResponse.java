@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * CreateSuspectResponse
@@ -25,12 +26,12 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SuspectResponse {
-    String caseId;
-    String fullName;
-    String address;
-    String moreInfo;
-    String mugshotUrl;
-    Instant uploadedAt;
+    private String caseId;
+    private String suspectId;
+    private String fullName;
+    private String address;
+    private String moreInfo;
+    private String mugshotUrl;
+    private Instant uploadedAt;
 }

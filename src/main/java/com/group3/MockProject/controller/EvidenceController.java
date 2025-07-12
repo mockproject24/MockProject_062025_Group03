@@ -18,28 +18,29 @@ package com.group3.MockProject.controller;
  */
 
 import com.group3.MockProject.dto.request.CreateEvidenceRequest;
+import com.group3.MockProject.dto.response.ApiResponse;
 import com.group3.MockProject.dto.response.EvidenceResponse;
-import com.group3.MockProject.service.EvidenceService;
+import com.group3.MockProject.service.IEvidenceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/evidences")
+@RequestMapping("api/evidences")
 @RequiredArgsConstructor
 public class EvidenceController {
 
-    private final EvidenceService evidenceService;
+    private final IEvidenceService IEvidenceService;
 
     @PutMapping("/{evidenceId}")
-    public ResponseEntity<EvidenceResponse> updateEvidence(
+    public ResponseEntity<ApiResponse<EvidenceResponse>> updateEvidence(
             @PathVariable String evidenceId,
             @ModelAttribute CreateEvidenceRequest request,
             @RequestPart(required = false) MultipartFile file
     ) {
-        EvidenceResponse response = evidenceService.updateEvidence(evidenceId, request, file);
-        return ResponseEntity.ok(response);
+        EvidenceResponse response = IEvidenceService.updateEvidence(evidenceId, request, file);
+        return ResponseEntity.ok(ApiResponse.success("Update evidence by id successfully!",response));
     }
 }
 

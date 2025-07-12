@@ -1,7 +1,7 @@
 package com.group3.MockProject.service;
 
-import com.group3.MockProject.dto.request.CreateInterviewDto;
-import com.group3.MockProject.dto.response.InterviewResponseDto;
+import com.group3.MockProject.dto.request.CreateInterviewRequest;
+import com.group3.MockProject.dto.response.InterviewResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,5 +30,5 @@ public interface IInterviewService {
      * @param files Attached files (optional)
      * @return Created interview information
      */
-    InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files);
+    InterviewResponse createInterview(String caseId, CreateInterviewRequest dto, List<MultipartFile> files);
 }

@@ -1,6 +1,5 @@
 package com.group3.MockProject.exception;
 
-import com.group3.MockProject.dto.ResponseDto;
 import com.group3.MockProject.dto.response.ErrorMessageResponse;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;

@@ -8,9 +8,10 @@ import com.group3.MockProject.entity.User;
 import com.group3.MockProject.exception.ResourceNotFoundException;
 import com.group3.MockProject.exception.StorageException;
 import com.group3.MockProject.repository.CaseRepository;
-import com.group3.MockProject.repository.EvidenceRepository;
+import com.group3.MockProject.repository.EvidenceReposit
 import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.service.EvidenceService;
+import com.group3.MockProject.service.IEvidenceService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

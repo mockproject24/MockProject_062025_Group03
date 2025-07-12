@@ -42,8 +42,8 @@ public interface SuspectRepository extends JpaRepository<Suspect, String> {
     @Query("SELECT s FROM Suspect s WHERE " +
            "(:caseId IS NULL OR s.caseEntity.caseId = :caseId) AND " +
            "(:status IS NULL OR s.status = :status) AND " +
-           "(:startOfDay IS NULL OR s.catchTime >= :startOfDay) AND " +
-           "(:endOfDay IS NULL OR s.catchTime <= :endOfDay)" +
+           "(:startOfDay IS NULL OR s.uploadedAt >= :startOfDay) AND " +
+           "(:endOfDay IS NULL OR s.uploadedAt <= :endOfDay)" +
             "AND s.isDeleted = false ")
     Page<Suspect> findByCaseIdAndStatusAndCatchTime(
             @Param("caseId") String caseId,

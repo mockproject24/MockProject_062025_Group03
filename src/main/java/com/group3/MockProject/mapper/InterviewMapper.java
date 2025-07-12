@@ -1,8 +1,8 @@
 package com.group3.MockProject.mapper;
 
-import com.group3.MockProject.dto.request.CreateInterviewDto;
-import com.group3.MockProject.dto.request.QuestionDto;
-import com.group3.MockProject.dto.response.InterviewResponseDto;
+import com.group3.MockProject.dto.request.CreateInterviewRequest;
+import com.group3.MockProject.dto.request.QuestionRequest;
+import com.group3.MockProject.dto.response.InterviewResponse;
 import com.group3.MockProject.entity.Interview;
 import com.group3.MockProject.entity.InterviewFile;
 import com.group3.MockProject.entity.Question;
@@ -37,7 +37,7 @@ public class InterviewMapper {
      * @param interviewer User who conducts the interview
      * @return Interview entity (without files and questions)
      */
-    public Interview convertToInterviewEntity(CreateInterviewDto dto, User interviewer) {
+    public Interview convertToInterviewEntity(CreateInterviewRequest dto, User interviewer) {
         Interview interview = new Interview();
 
         // Set basic information
@@ -80,18 +80,18 @@ public class InterviewMapper {
 
     /**
      * Convert list of QuestionDto to list of Question entities
-     * @param questionDtos List of QuestionDto from client
+     * @param questionRequests List of QuestionDto from client
      * @param interview Interview entity that was created
      * @param user User who created the questions
      * @return List of Question entities
      */
-    public List<Question> convertToQuestionEntities(List<QuestionDto> questionDtos, Interview interview, User user) {
+    public List<Question> convertToQuestionEntities(List<QuestionRequest> questionRequests, Interview interview, User user) {
         List<Question> questions = new ArrayList<>();
 
-        if (questionDtos != null && !questionDtos.isEmpty()) {
+        if (questionRequests != null && !questionRequests.isEmpty()) {
             // Convert each question
-            for (QuestionDto questionDto : questionDtos) {
-                Question question = convertToQuestionEntity(questionDto, interview, user);
+            for (QuestionRequest questionRequest : questionRequests) {
+                Question question = convertToQuestionEntity(questionRequest, interview, user);
                 questions.add(question);
             }
         }
@@ -106,7 +106,7 @@ public class InterviewMapper {
      * @param user User who created the question
      * @return Question entity
      */
-    private Question convertToQuestionEntity(QuestionDto dto, Interview interview, User user) {
+    private Question convertToQuestionEntity(QuestionRequest dto, Interview interview, User user) {
         Question question = new Question();
 
         question.setQuestionId(UUID.randomUUID().toString());
@@ -126,7 +126,7 @@ public class InterviewMapper {
      * @param interview Interview entity that was saved
      * @return InterviewResponseDto
      */
-    public InterviewResponseDto convertToResponseDto(Interview interview) {
+    public InterviewResponse convertToResponseDto(Interview interview) {
         // Get interviewee name based on type
         String intervieweeName = getIntervieweeName(interview);
 
@@ -134,7 +134,7 @@ public class InterviewMapper {
         List<String> attachedFiles = getAttachedFilesFromEntities(interview);
 
         // Build response DTO
-        return InterviewResponseDto.builder()
+        return InterviewResponse.builder()
                 .startTime(interview.getStartTime())
                 .endTime(interview.getEndTime())
                 .location(interview.getLocation())

@@ -1,9 +1,9 @@
 package com.group3.MockProject.service.impl;
 
 import com.group3.MockProject.dto.request.CreateInvestigationRequest;
-import com.group3.MockProject.dto.response.InvestigationFileDto;
-import com.group3.MockProject.dto.response.InvestigationPlanResponseDto;
-import com.group3.MockProject.dto.response.InvestigationResponseDto;
+import com.group3.MockProject.dto.response.InvestigationFile;
+import com.group3.MockProject.dto.response.InvestigationPlanResponse;
+import com.group3.MockProject.dto.response.InvestigationResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.InvestigationPlan;
 import com.group3.MockProject.exception.ResourceNotFoundException;
@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,14 +65,14 @@ public class InvestigationServiceImpl implements InvestigationService {
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
     @Override
-    public Page<InvestigationPlanResponseDto> getInvestigations(Pageable pageable) {
+    public Page<InvestigationPlanResponse> getInvestigations(Pageable pageable) {
         Page<InvestigationPlan> plansPage = investigationPlanRepository.findAllActivePlans(pageable);
         return plansPage.map(plan -> {
             // Fetch related Case
             Case caseEntity = caseRepository.findById(plan.getCaseEntity().getCaseId())
                     .orElseThrow(() -> new RuntimeException("Case not found for plan: " + plan.getInvestigationPlanId()));
 
-            return new InvestigationPlanResponseDto(
+            return new InvestigationPlanResponse(
                     plan.getInvestigationPlanId(),
                     caseEntity.getCaseId(),
                     caseEntity.getSeverity().getLabel(),
@@ -89,7 +87,7 @@ public class InvestigationServiceImpl implements InvestigationService {
     }
     
     @Override
-    public InvestigationResponseDto createInvestigation(String caseId, CreateInvestigationRequest request, List<MultipartFile> files) {
+    public InvestigationResponse createInvestigation(String caseId, CreateInvestigationRequest request, List<MultipartFile> files) {
         log.info("Starting investigation creation for case: {}", caseId);
         
         try {
@@ -98,10 +96,10 @@ public class InvestigationServiceImpl implements InvestigationService {
                     .orElseThrow(() -> new ResourceNotFoundException("Case not found with ID: " + caseId));
             
             // Upload files if provided
-            List<InvestigationFileDto> uploadedFiles = uploadFiles(files);
+            List<InvestigationFile> uploadedFiles = uploadFiles(files);
             
             // Build response
-            InvestigationResponseDto response = InvestigationResponseDto.builder()
+            InvestigationResponse response = InvestigationResponse.builder()
                     .type(request.getType())
                     .analysist(request.getAnalysist())
                     .files(uploadedFiles)
@@ -119,8 +117,8 @@ public class InvestigationServiceImpl implements InvestigationService {
     /**
      * Upload multiple files and return file information
      */
-    private List<InvestigationFileDto> uploadFiles(List<MultipartFile> files) {
-        List<InvestigationFileDto> fileResults = new ArrayList<>();
+    private List<InvestigationFile> uploadFiles(List<MultipartFile> files) {
+        List<InvestigationFile> fileResults = new ArrayList<>();
         
         if (files == null || files.isEmpty()) {
             log.info("No files provided for upload");
@@ -135,7 +133,7 @@ public class InvestigationServiceImpl implements InvestigationService {
                     String savedFileName = uploadSingleFile(file);
                     String fileUrl = baseURI + savedFileName;
                     
-                    InvestigationFileDto fileDto = InvestigationFileDto.builder()
+                    InvestigationFile fileDto = InvestigationFile.builder()
                             .filename(file.getOriginalFilename())
                             .url(fileUrl)
                             .build();

@@ -71,6 +71,9 @@ public class Suspect {
     @ColumnDefault(value = "false")
     Boolean isDeleted;
 
+    @Column(name="uploaded_at")
+    LocalDateTime uploadedAt;
+
     @ManyToOne
     @JoinColumn(name = "case_id")
     Case caseEntity;

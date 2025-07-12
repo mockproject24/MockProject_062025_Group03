@@ -1,44 +1,51 @@
 package com.group3.MockProject.controller;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group3.MockProject.dto.request.CreateEvidenceRequest;
-import com.group3.MockProject.dto.request.CreateInterviewDto;
+import com.group3.MockProject.dto.request.CreateInterviewRequest;
 import com.group3.MockProject.dto.request.CreateInvestigationRequest;
 import com.group3.MockProject.dto.request.CreateSuspectRequest;
 import com.group3.MockProject.dto.response.*;
-import com.group3.MockProject.service.*;
-import com.group3.MockProject.service.IInterviewService;
+import com.group3.MockProject.service.IEvidenceService;
+import com.group3.MockProject.service.InvestigationService;
+import com.group3.MockProject.service.ISuspectService;
+import com.group3.MockProject.service.InterviewService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
+import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.mapper.SuspectMapper;
+import com.group3.MockProject.service.ICaseService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
  * CaseController
- *
+ * <p>
  * Provides business logic for managing details.
- *
+ * <p>
  * Version 1.0
- *
+ * <p>
  * Date: 08-07-2025
- *
+ * <p>
  * Copyright
- *
+ * <p>
  * Modification Logs:
  * DATE               AUTHOR           DESCRIPTION
  * -------------------------------------------------------------
@@ -51,43 +58,58 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RequestMapping("/api/cases")
 public class CaseController {
-    private final CaseService caseService;
+    private final ICaseService caseService;
     private final SuspectMapper suspectMapper;
-    private final EvidenceService evidenceService;
-    private final IInterviewService interviewService;
+    private final IEvidenceService evidenceService;
+    private final InterviewService interviewService;
     private final InvestigationService investigationService;
     private final ObjectMapper objectMapper;
     private final ISuspectService suspectService;
 
 
+    @GetMapping
+    public ApiResponse<CaseListResponse> getCaseLists(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String search) {
+
+
+        if (page < 0 || pageSize <= 0) {
+            return ApiResponse.badRequest("Page and pageSize must be greater than 0");
+        }
+
+        CaseListResponse caseListDtos = caseService.getListCase(page, pageSize, search);
+        return ApiResponse.success(caseListDtos);
+
+    }
 
     /**
      * Retrieves a specific case by its ID
+     *
      * @param caseId The unique identifier of the case
      * @return ResponseEntity containing the case data
      */
     @GetMapping("/{caseId}")
-    public ResponseEntity<ApiResponse<Case>> getCaseById(@PathVariable String caseId) {
-        try {
-            Case foundCase = caseService.getCaseById(caseId);
-            return ResponseEntity.ok(ApiResponse.success(foundCase));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error retrieving case: " + e.getMessage()));
-        }
+    public ApiResponse<CaseDetailResponse> getCaseById(@PathVariable String caseId) {
+        return ApiResponse.<CaseDetailResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get case detail")
+                .result(caseService.getCaseById(caseId))
+                .build();
     }
 
     /**
      * Retrieves all suspects for a specific case with pagination and filtering
-     * @param caseId The case identifier
-     * @param page Page number (default: 1)
+     *
+     * @param caseId   The case identifier
+     * @param page     Page number (default: 1)
      * @param pageSize Number of items per page (default: 10)
-     * @param status Optional status filter
-     * @param date Optional date filter
+     * @param status   Optional status filter
+     * @param date     Optional date filter
      * @return ApiResponse containing paginated suspects data
      */
     @GetMapping("/{caseId}/suspects")
-    public ApiResponse<?> getAllSuspects(
+    public ApiResponse<> getAllSuspects(
             @PathVariable("caseId") String caseId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
@@ -98,7 +120,7 @@ public class CaseController {
             return ApiResponse.<SuspectsResponseDto>builder()
                     .code(HttpStatus.OK.value())
                     .message("Get suspects succesfully")
-                    .result(caseService.getAllSuspectsByCaseId(caseId,page,pageSize, status, date))
+                    .result(caseService.getAllSuspectsByCaseId(caseId, page, pageSize, status, date))
                     .build();
         } catch (Exception e) {
             return ApiResponse.<Void>builder()
@@ -111,13 +133,14 @@ public class CaseController {
 
     /**
      * Retrieves officer case details for a specific case with pagination
-     * @param caseId The case identifier
-     * @param page Page number (default: 0)
+     *
+     * @param caseId   The case identifier
+     * @param page     Page number (default: 0)
      * @param pageSize Number of items per page (default: 10)
      * @return ResponseEntity containing officer case details data
      */
     @GetMapping("/{caseId}/officer")
-    public ResponseEntity<ApiResponse<List<OfficerCaseDetailDto>>> getOfficerCaseDetails(
+    public ResponseEntity<ApiResponse<List<OfficerCaseDetailResponse>>> getOfficerCaseDetails(
             @PathVariable String caseId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
@@ -128,8 +151,8 @@ public class CaseController {
                         .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
             }
 
-            List<OfficerCaseDetailDto> officers = caseService.getOfficerCaseDetails(caseId, page, pageSize);
-            
+            List<OfficerCaseDetailResponse> officers = caseService.getOfficerCaseDetails(caseId, page, pageSize);
+
             return ResponseEntity.ok(ApiResponse.success("Successfully retrieved officer case details", officers));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -147,63 +170,71 @@ public class CaseController {
      * @param search Optional search term
      * @return ResponseEntity containing paginated cases data
      */
-    @GetMapping("")
-    public ResponseEntity<ApiResponse<CaseListDto>> getCaseLists(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String search) {
 
-
-        if (page < 0 || pageSize <= 0) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
-        }
-
-        CaseListDto caseListDtos = caseService.getListCase(page, pageSize, search);
-        return ResponseEntity.ok(ApiResponse.success(caseListDtos));
-
-    }
 
     /**
      * Creates a new record for a specific case
-     * @param caseId The case identifier
+     *
+     * @param caseId     The case identifier
      * @param requestDto The record creation data
      * @return ResponseEntity containing the created record data
      */
     @PostMapping("/{caseId}/records")
-    public ResponseEntity<ApiResponse<RecordInfoResponseDto>> createRecord(
+    public ApiResponse<RecordInfoResponseResponse> createRecord(
             @PathVariable String caseId,
-            @RequestBody CreateRecordInfoDto requestDto) {
+            @RequestBody CreateRecordInfoRequest requestDto) {
 
-        try {
-            RecordInfoResponseDto createdRecord = caseService.createRecord(caseId, requestDto);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Record created successfully", createdRecord));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error creating record: " + e.getMessage()));
+        RecordInfoResponseResponse createdRecord = caseService.createRecord(caseId, requestDto);
+        return ApiResponse.success("Record created successfully", createdRecord);
+    }
+
+
+    /**
+     * Retrieves paginated list of officers assigned to a specific case
+     *
+     * @param caseId   The unique identifier of the case
+     * @param page     Page number (default: 0)
+     * @param pageSize Number of items per page (default: 10)
+     * @return ResponseEntity containing paginated officers data
+     */
+    @GetMapping("/{caseId}/assigned-officers")
+    public ApiResponse<Map<String, Object>> getAssignedOfficers(
+            @PathVariable String caseId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+
+        if (page < 0 || pageSize <= 0) {
+            throw new IllegalArgumentException("Page and pageSize must be greater than 0");
         }
+
+        Page<UserResponseDto> officerPage = caseService.getAssignedOfficers(caseId, PageRequest.of(page, pageSize));
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", officerPage.getContent());
+        result.put("totalElements", officerPage.getTotalElements());
+        result.put("totalPages", officerPage.getTotalPages());
+        result.put("size", officerPage.getSize());
+        result.put("number", officerPage.getNumber());
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Assigned officers retrieved successfully", result);
     }
 
     /**
      * Retrieves all evidences for a specific case
+     *
      * @param caseId The case identifier
      * @return ResponseEntity containing case evidences data
      */
     @GetMapping("/{caseId}/evidences")
-    public ResponseEntity<ApiResponse<List<EvidentDto<?>>>> getEvidences(@PathVariable String caseId) {
-        try {
-            List<EvidentDto<?>> evidences = caseService.getEvidences(caseId);
+    public ApiResponse<List<EvidentResponse<?>>> getEvidences(@PathVariable String caseId) {
 
-            if (evidences.isEmpty()) {
-                return ResponseEntity.ok(ApiResponse.success("No evidences found", evidences));
-            }
+        List<EvidentResponse<?>> evidences = caseService.getEvidences(caseId);
 
-            return ResponseEntity.ok(ApiResponse.success(evidences));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error retrieving evidences: " + e.getMessage()));
+        if (evidences.isEmpty()) {
+            return ApiResponse.success("No evidences found", evidences);
         }
+
+        return ApiResponse.success(evidences);
+
     }
 
     @PostMapping(value = "/{caseId}/evidences", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -213,39 +244,38 @@ public class CaseController {
             @RequestPart(value = "file", required = false) MultipartFile file) {
 
         return ResponseEntity.ok(ApiResponse.success("Get evidence by id successfully!",
-                evidenceService.createEvidence(caseId,request,file)));
+                evidenceService.createEvidence(caseId, request, file)));
     }
 
     @GetMapping("/{caseId}/evidence/{evidenceId}")
     public ResponseEntity<ApiResponse<EvidenceResponse>> getEvidence(
             @PathVariable String caseId,
             @PathVariable String evidenceId
-    ){
-        EvidenceResponse evidenceResponse = evidenceService.getEvidence(caseId,evidenceId);
-        return ResponseEntity.ok(ApiResponse.success("Get evidence by id successfully!",evidenceResponse));
+    ) {
+        EvidenceResponse evidenceResponse = evidenceService.getEvidence(caseId, evidenceId);
+        return ResponseEntity.ok(ApiResponse.success("Get evidence by id successfully!", evidenceResponse));
     }
 
     /**
      * Create new interview API
-     *
+     * <p>
      * URL: POST /cases/{caseId}/interviews
      * Content-Type: multipart/form-data
      * Authorization: Bearer Token (handled by security config)
-     *
+     * <p>
      * Request Body:
      * - data: JSON string containing interview data
      * - file: List of attached files (optional)
      *
-     * @param caseId Case ID from URL path
+     * @param caseId   Case ID from URL path
      * @param dataJson JSON string containing interview data
-     * @param files List of attached files (optional)
+     * @param files    List of attached files (optional)
      * @return ResponseDto containing created interview information
-     *
      */
     @PostMapping(value = "/{caseId}/interviews",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<com.group3.MockProject.dto.ResponseDto<InterviewResponseDto>> createInterview(
+    public ResponseEntity<ApiResponse<InterviewResponse>> createInterview(
             @PathVariable String caseId,
             @RequestParam("data") String dataJson,
             @RequestParam(value = "file", required = false) List<MultipartFile> files) {
@@ -260,9 +290,9 @@ public class CaseController {
             }
 
             // STEP 2: Parse JSON string to DTO
-            CreateInterviewDto dto;
+            CreateInterviewRequest dto;
             try {
-                dto = objectMapper.readValue(dataJson, CreateInterviewDto.class);
+                dto = objectMapper.readValue(dataJson, CreateInterviewRequest.class);
                 log.debug("Successfully parsed JSON to DTO: {}", dto);
             } catch (JsonProcessingException e) {
                 log.error("Failed to parse JSON data: {}", e.getMessage());
@@ -270,11 +300,11 @@ public class CaseController {
             }
 
             // STEP 3: Call service to handle interview creation logic
-            InterviewResponseDto interviewResponse = interviewService.createInterview(caseId, dto, files);
+            InterviewResponse interviewResponse = interviewService.createInterview(caseId, dto, files);
             log.info("Service successfully created interview");
 
             // STEP 4: Build success response according to API spec
-            com.group3.MockProject.dto.ResponseDto<InterviewResponseDto> response = new com.group3.MockProject.dto.ResponseDto<>(
+            ApiResponse<InterviewResponse> response = new ApiResponse<>(
                     201,
                     "Interview created successfully",
                     interviewResponse
@@ -300,8 +330,8 @@ public class CaseController {
     /**
      * Create error response when exception occurs
      */
-    private ResponseEntity<com.group3.MockProject.dto.ResponseDto<InterviewResponseDto>> createErrorResponse(Exception e, HttpStatus status) {
-        com.group3.MockProject.dto.ResponseDto<InterviewResponseDto> errorResponse = new com.group3.MockProject.dto.ResponseDto<>(
+    private ResponseEntity<ApiResponse<InterviewResponse>> createErrorResponse(Exception e, HttpStatus status) {
+        ApiResponse<InterviewResponse> errorResponse = new ApiResponse<>(
                 status.value(),
                 e.getMessage(),
                 null
@@ -312,62 +342,62 @@ public class CaseController {
 
 
     @PostMapping(value = "/{caseId}/suspects", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    com.group3.MockProject.dto.ApiResponse<SuspectResponse> createSuspect(
+    ApiResponse<SuspectResponse> createSuspect(
             @PathVariable String caseId,
             @RequestPart("request") @Valid CreateSuspectRequest request,
             @RequestPart(name = "file", required = false) MultipartFile file) {
-        return com.group3.MockProject.dto.ApiResponse.<SuspectResponse>builder()
+        return ApiResponse.<SuspectResponse>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Suspect created successfully")
-                .data(suspectService.createSuspect(caseId, request, file))
+                .result(suspectService.createSuspect(caseId, request, file))
                 .build();
     }
 
     /**
      * Create new investigation
-     * 
+     * <p>
      * URL: POST /cases/{caseId}/investigations
      * Content-Type: multipart/form-data
-     * 
+     * <p>
      * Request Body:
      * - data: JSON string containing investigation data (type, analysist)
      * - file: List of attached files (optional)
-     * 
-     * @param caseId Case ID from URL path
+     *
+     * @param caseId   Case ID from URL path
      * @param dataJson JSON string containing investigation data
-     * @param files List of attached files (optional)
+     * @param files    List of attached files (optional)
      * @return ApiResponse containing created investigation information
      */
     @PostMapping(value = "/{caseId}/investigations",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<InvestigationResponseDto>> createInvestigation(
+    public ResponseEntity<ApiResponse<InvestigationResponse>> createInvestigation(
             @PathVariable String caseId,
             @RequestParam("data") String dataJson,
             @RequestParam(value = "file", required = false) List<MultipartFile> files) {
 
         try {
             log.info("Creating investigation for case: {}", caseId);
-            
+
             // Parse JSON data to DTO
             CreateInvestigationRequest request = objectMapper.readValue(dataJson, CreateInvestigationRequest.class);
-            
+
             // Create investigation through service
-            InvestigationResponseDto response = investigationService.createInvestigation(caseId, request, files);
-            
+            InvestigationResponse response = investigationService.createInvestigation(caseId, request, files);
+
             log.info("Investigation created successfully for case: {}", caseId);
             return ResponseEntity.ok(ApiResponse.success("Success", response));
-            
+
         } catch (JsonProcessingException e) {
             log.error("Invalid JSON format in data parameter: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.badRequest("Invalid JSON format in data parameter"));
-                    
+
         } catch (IllegalArgumentException e) {
             log.error("Validation error: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.badRequest(e.getMessage()));
-                    
+
         } catch (Exception e) {
             log.error("Unexpected error occurred while creating investigation: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

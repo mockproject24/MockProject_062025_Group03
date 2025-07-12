@@ -1,9 +1,12 @@
 package com.group3.MockProject.service;
 
-import com.group3.MockProject.dto.response.CaseDto;
-import com.group3.MockProject.dto.response.CaseListDto;
+import com.group3.MockProject.dto.response.CaseResponse;
+import com.group3.MockProject.dto.response.CaseListResponse;
+import com.group3.MockProject.dto.response.SuspectResponse;
 import com.group3.MockProject.elasticsearch.document.EsCase;
 import com.group3.MockProject.elasticsearch.service.CaseIndexService;
+import com.group3.MockProject.entity.Case;
+import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.service.impl.CaseServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,8 +55,22 @@ class CaseServiceImplTest {
 
     private EsCase esCase1;
     private EsCase esCase2;
-    private CaseDto caseDto1;
-    private CaseDto caseDto2;
+    private CaseResponse caseResponse1;
+    private CaseResponse caseResponse2;
+
+
+    private String caseId;
+    private int page;
+    private int pageSize;
+    private String status;
+    private LocalDate date;
+    private LocalDateTime startOfDay;
+    private LocalDateTime endOfDay;
+    private Pageable pageable;
+
+    private SuspectResponse suspectResponse;
+    private Suspect suspect;
+    private Page<Suspect> suspectsPage;
 
     @BeforeEach
     void setUp() {
@@ -79,7 +102,7 @@ class CaseServiceImplTest {
                 .caseLocation("Uptown")
                 .build();
 
-        caseDto1 = CaseDto.builder()
+        caseResponse1 = CaseResponse.builder()
                 .caseId("case-001")
                 .caseNumber("#case-001")
                 .typeCase("Fraud Investigation")
@@ -94,7 +117,7 @@ class CaseServiceImplTest {
                 .reporterFullname("John Doe")
                 .build();
 
-        caseDto2 = CaseDto.builder()
+        caseResponse2 = CaseResponse.builder()
                 .caseId("case-002")
                 .caseNumber("#case-002")
                 .typeCase("Theft Investigation")
@@ -108,6 +131,59 @@ class CaseServiceImplTest {
                 .location("Uptown")
                 .reporterFullname("Jane Smith")
                 .build();
+        
+        // initialize mock case and suspects
+        caseId = "case-003";
+        page = 1;
+        pageSize = 10;
+        status = "In custody";
+        date = LocalDate.of(2025,7,1);
+        startOfDay = date.atStartOfDay();
+        endOfDay = date.atTime(LocalTime.MAX);
+        pageable = PageRequest.of(page-1,pageSize);
+
+        Case caseEntity = Case.builder()
+                .caseId(caseId)
+                .build();
+        suspect = Suspect.builder()
+                .suspectId("fae43618-58b3-11f0-b0c4-8c04ba3cebd5")
+                .address("123 Le Loi, Hanoi")
+                .catchTime(LocalDateTime.of(2025,7,1,14, 30,0))
+                .description("Suspect was caught near the border.")
+                .dob(LocalDateTime.of(1990,5,12,0,0,0))
+                .fingerprintsHash("fingerprintHash")
+                .fullname("Le Van A")
+                .gender("Male")
+                .healthStatus("Healthy")
+                .identification("123456789")
+                .mugshotUrl("https://example.com/mugshots/nguyenvana.jpg")
+                .national("Vietnam")
+                .notes("No prior criminal record.")
+                .phoneNumber("0909123456")
+                .status("In custody")
+                .caseEntity(caseEntity)
+                .build();
+
+        suspectResponse = SuspectResponse.builder()
+                .suspectId("fae43618-58b3-11f0-b0c4-8c04ba3cebd5")
+                .address("123 Le Loi, Hanoi")
+                .catchTime(LocalDateTime.of(2025,7,1,14, 30,0))
+                .description("Suspect was caught near the border.")
+                .dob(LocalDateTime.of(1990,5,12,0,0,0))
+                .fingerprintsHash("fingerprintHash")
+                .fullname("Le Van A")
+                .gender("Male")
+                .healthStatus("Healthy")
+                .identification("123456789")
+                .mugshotUrl("https://example.com/mugshots/nguyenvana.jpg")
+                .national("Vietnam")
+                .notes("No prior criminal record.")
+                .phoneNumber("0909123456")
+                .status("In custody")
+                .caseId(caseId)
+                .build();
+
+        suspectsPage = new PageImpl<Suspect>(List.of(suspect), pageable, 1);
     }
 
     @Test
@@ -123,10 +199,10 @@ class CaseServiceImplTest {
         when(searchHits.getSearchHits()).thenReturn(searchHitList);
         when(searchHits.getTotalHits()).thenReturn(1L);
         when(searchHit1.getContent()).thenReturn(esCase1);
-        when(caseMapper.toDto(esCase1)).thenReturn(caseDto1);
+        when(caseMapper.toDto(esCase1)).thenReturn(caseResponse1);
 
         // When
-        CaseListDto result = caseService.getListCase(page, pageSize, search);
+        CaseListResponse result = caseService.getListCase(page, pageSize, search);
 
         // Then
         assertNotNull(result);
@@ -155,11 +231,11 @@ class CaseServiceImplTest {
         when(searchHits.getTotalHits()).thenReturn(2L);
         when(searchHit1.getContent()).thenReturn(esCase1);
         when(searchHit2.getContent()).thenReturn(esCase2);
-        when(caseMapper.toDto(esCase1)).thenReturn(caseDto1);
-        when(caseMapper.toDto(esCase2)).thenReturn(caseDto2);
+        when(caseMapper.toDto(esCase1)).thenReturn(caseResponse1);
+        when(caseMapper.toDto(esCase2)).thenReturn(caseResponse2);
 
         // When
-        CaseListDto result = caseService.getListCase(page, pageSize, search);
+        CaseListResponse result = caseService.getListCase(page, pageSize, search);
 
         // Then
         assertNotNull(result);
@@ -184,7 +260,7 @@ class CaseServiceImplTest {
         when(searchHits.getSearchHits()).thenReturn(emptySearchHitList);
         when(searchHits.getTotalHits()).thenReturn(0L);
 
-        CaseListDto result = caseService.getListCase(page, pageSize, search);
+        CaseListResponse result = caseService.getListCase(page, pageSize, search);
 
         assertNotNull(result);
         assertEquals(1, result.getPage());
@@ -209,10 +285,10 @@ class CaseServiceImplTest {
         when(searchHits.getSearchHits()).thenReturn(searchHitList);
         when(searchHits.getTotalHits()).thenReturn(10L);
         when(searchHit1.getContent()).thenReturn(esCase1);
-        when(caseMapper.toDto(esCase1)).thenReturn(caseDto1);
+        when(caseMapper.toDto(esCase1)).thenReturn(caseResponse1);
 
         // When
-        CaseListDto result = caseService.getListCase(page, pageSize, search);
+        CaseListResponse result = caseService.getListCase(page, pageSize, search);
 
         // Then
         assertNotNull(result);

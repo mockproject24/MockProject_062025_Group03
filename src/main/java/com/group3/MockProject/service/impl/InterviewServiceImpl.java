@@ -1,8 +1,8 @@
 package com.group3.MockProject.service.impl;
 
-import com.group3.MockProject.dto.request.CreateInterviewDto;
-import com.group3.MockProject.dto.request.QuestionDto;
-import com.group3.MockProject.dto.response.InterviewResponseDto;
+import com.group3.MockProject.dto.request.CreateInterviewRequest;
+import com.group3.MockProject.dto.request.QuestionRequest;
+import com.group3.MockProject.dto.response.InterviewResponse;
 import com.group3.MockProject.entity.*;
 import com.group3.MockProject.mapper.InterviewMapper;
 import com.group3.MockProject.repository.*;
@@ -66,7 +66,7 @@ public class InterviewServiceImpl implements IInterviewService {
 
     @Override
     @Transactional
-    public InterviewResponseDto createInterview(String caseId, CreateInterviewDto dto, List<MultipartFile> files) {
+    public InterviewResponse createInterview(String caseId, CreateInterviewRequest dto, List<MultipartFile> files) {
         log.info("Starting interview creation process for case: {}", caseId);
 
         // STEP 1: Validate input data
@@ -96,7 +96,7 @@ public class InterviewServiceImpl implements IInterviewService {
         Interview savedInterview = interviewRepository.save(interview);
 
         // STEP 9: Convert to Response DTO and return
-        InterviewResponseDto responseDto = interviewMapper.convertToResponseDto(savedInterview);
+        InterviewResponse responseDto = interviewMapper.convertToResponseDto(savedInterview);
 
         log.info("Interview created successfully with ID: {}", savedInterview.getInterviewId());
         return responseDto;
@@ -109,7 +109,7 @@ public class InterviewServiceImpl implements IInterviewService {
     /**
      * Validate all interview data
      */
-    private void validateInterviewData(CreateInterviewDto dto) {
+    private void validateInterviewData(CreateInterviewRequest dto) {
         log.debug("Validating interview data");
 
         if (dto == null) {
@@ -129,7 +129,7 @@ public class InterviewServiceImpl implements IInterviewService {
     /**
      * Validate start and end time
      */
-    private void validateTimeFields(CreateInterviewDto dto) {
+    private void validateTimeFields(CreateInterviewRequest dto) {
         if (dto.getStartTime() == null) {
             throw new IllegalArgumentException("Start time is required");
         }
@@ -146,7 +146,7 @@ public class InterviewServiceImpl implements IInterviewService {
     /**
      * Validate required fields
      */
-    private void validateRequiredFields(CreateInterviewDto dto) {
+    private void validateRequiredFields(CreateInterviewRequest dto) {
         if (isStringEmpty(dto.getLocation())) {
             throw new IllegalArgumentException("Location is required");
         }
@@ -175,7 +175,7 @@ public class InterviewServiceImpl implements IInterviewService {
     /**
      * Validate questions list
      */
-    private void validateQuestionsList(List<QuestionDto> questions) {
+    private void validateQuestionsList(List<QuestionRequest> questions) {
         if (questions == null || questions.isEmpty()) {
             throw new IllegalArgumentException("At least one question is required");
         }
@@ -189,7 +189,7 @@ public class InterviewServiceImpl implements IInterviewService {
     /**
      * Validate single question
      */
-    private void validateSingleQuestion(QuestionDto question, int questionNumber) {
+    private void validateSingleQuestion(QuestionRequest question, int questionNumber) {
         if (question == null) {
             throw new IllegalArgumentException("Question " + questionNumber + " cannot be null");
         }

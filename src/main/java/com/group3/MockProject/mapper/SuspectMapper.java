@@ -1,9 +1,9 @@
 package com.group3.MockProject.mapper;
 
 import com.group3.MockProject.dto.response.SuspectDto;
+import com.group3.MockProject.dto.response.SuspectResponse;
 import org.springframework.stereotype.Component;
 
-import com.group3.MockProject.dto.response.SuspectsResponseDto;
 import com.group3.MockProject.entity.Suspect;
 
 /**
@@ -30,7 +30,7 @@ public class SuspectMapper {
      * @param suspect The suspect entity to convert
      * @return SuspectResponseDto containing suspect data
      */
-    public SuspectDto toSuspectDto(Suspect suspect) {
+    public SuspectResponse toSuspectResponse(Suspect suspect) {
         if (suspect == null) {
             return null;
         }
