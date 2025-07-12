@@ -45,9 +45,13 @@ public class DataInitializer {
 
     private void initDefaultRoles() {
         // Generate dummy data
-        roleRepository.save(new Role("ADMIN", "System Administrator", false, null, null));
-        roleRepository.save(new Role("OFFICER", "Investigation Officer", false, null, null));
-        roleRepository.save(new Role("USER", "Regular User", false, null, null));
-        log.info("Role data initialized!");
+        if (roleRepository.count() == 0) {
+            roleRepository.save(new Role("ADMIN", "System Administrator", false, null, null));
+            roleRepository.save(new Role("OFFICER", "Investigation Officer", false, null, null));
+            roleRepository.save(new Role("USER", "Regular User", false, null, null));
+            log.info("Role data initialized!");
+        } else {
+            log.info("Role data already initialized!");
+        }
     }
 }

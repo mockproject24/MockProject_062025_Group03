@@ -23,14 +23,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateSuspectRequest {
 
-    @NotBlank(message = "fullName must be not blank")
-    String fullName;
+    @NotBlank(message = "SUSPECT_INVALID_NAME")
+    private String fullName;
 
-    @NotBlank(message = "address must be not blank")
-    String address;
-    String mugshotUrl;
-    String moreInfo;
+    @NotBlank(message = "SUSPECT_INVALID_ADDRESS")
+    private String address;
+    private String moreInfo;
 }

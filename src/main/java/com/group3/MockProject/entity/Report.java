@@ -4,7 +4,6 @@ import com.group3.MockProject.constant.CrimeType;
 import com.group3.MockProject.constant.ReportStatus;
 import com.group3.MockProject.constant.ReporterIncidentRelationshipType;
 import com.group3.MockProject.constant.SeverityType;
-import com.group3.MockProject.enums.ReporterIncidentRelationship;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -73,7 +72,7 @@ public class Report {
 
     @Column(name="reporter_incident_relationship")
     @Enumerated(EnumType.STRING)
-    ReporterIncidentRelationship reporterIncidentRelationship;
+    ReporterIncidentRelationshipType reporterIncidentRelationship;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

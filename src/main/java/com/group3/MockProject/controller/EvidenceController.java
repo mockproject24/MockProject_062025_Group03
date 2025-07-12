@@ -1,0 +1,46 @@
+package com.group3.MockProject.controller;
+
+
+
+import com.group3.MockProject.dto.request.CreateEvidenceRequest;
+import com.group3.MockProject.dto.response.ApiResponse;
+import com.group3.MockProject.dto.response.EvidenceResponse;
+import com.group3.MockProject.service.IEvidenceService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * EvidenceController
+ * <p>
+ * Provides business logic for managing employment details.
+ * <p>
+ * Version 1.0
+ * Date: 7/10/2025
+ * <p>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 7/10/2025      DBD      Create
+ */
+@RestController
+@RequestMapping("api/evidences")
+@RequiredArgsConstructor
+public class EvidenceController {
+
+    private final IEvidenceService IEvidenceService;
+
+    @PutMapping("/{evidenceId}")
+    public ResponseEntity<ApiResponse<EvidenceResponse>> updateEvidence(
+            @PathVariable String evidenceId,
+            @ModelAttribute CreateEvidenceRequest request,
+            @RequestPart(required = false) MultipartFile file
+    ) {
+        EvidenceResponse response = IEvidenceService.updateEvidence(evidenceId, request, file);
+        return ResponseEntity.ok(ApiResponse.success("Update evidence by id successfully!",response));
+    }
+}
+

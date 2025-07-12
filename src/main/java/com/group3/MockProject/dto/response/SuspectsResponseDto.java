@@ -22,5 +22,5 @@ public class SuspectsResponseDto {
     Integer pageSize;
     Long total;
     Integer totalPages;
-    List<SuspectDto> suspects;
+    List<SuspectResponse> suspects;
 }

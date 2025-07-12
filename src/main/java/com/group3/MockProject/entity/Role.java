@@ -64,4 +64,5 @@ public class Role {
 
     @OneToMany(mappedBy = "role")
     List<RolesPermissions> rolesPermissions;
+
 }
