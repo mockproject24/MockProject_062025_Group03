@@ -1,13 +1,18 @@
 package com.group3.MockProject.config;
 
 import com.group3.MockProject.entity.Role;
+import com.group3.MockProject.entity.User;
 import com.group3.MockProject.repository.RoleRepository;
+import com.group3.MockProject.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.LocalDateTime;
 
 /**
  * DataInitializer
@@ -39,7 +44,7 @@ public class DataInitializer {
         return args -> {
             initDefaultRoles();
             log.info("Application Still running at: ");
-            log.info("localhost:8080/api");
+            log.info("localhost:8081/api");
         };
     }
 
