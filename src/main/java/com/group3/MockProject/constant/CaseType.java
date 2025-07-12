@@ -1,28 +1,22 @@
 package com.group3.MockProject.constant;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-/**
- * CaseType
- * Version 1.0
- * Date: 08/07/2025
- * Copyright
- * Modification Logs:
- * DATE        AUTHOR        DESCRIPTION
- */
+@Getter
+@RequiredArgsConstructor
 public enum CaseType {
-    ROBBERY("Robbery"),
-    MURDER("Murder"),
-    RAPE("Rape");
+    ROBBERY("Robbery Case"),
+    MURDER("Murder Case"),
+    ASSAULT("Assault Case"),
+    FRAUD("Fraud Case"),
+    DRUG("Drug-Related Case"),
+    KIDNAPPING("Kidnapping Case"),
+    VANDALISM("Vandalism Case"),
+    THEFT("Theft Case"),
+    CYBERCRIME("Cybercrime Case"),
+    PUBLIC_DISTURBANCE("Public Disturbance Case"),
+    EMBEZZLEMENT("Embezzlement Case");
 
     private final String label;
-
-    CaseType(String label) {
-        this.label = label;
-    }
-
-    @JsonValue
-    public String getLabel() {
-        return label;
-    }
 }

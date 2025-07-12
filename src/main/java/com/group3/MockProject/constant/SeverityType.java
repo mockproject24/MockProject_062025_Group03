@@ -1,7 +1,7 @@
 package com.group3.MockProject.constant;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 /**
  * SeverityType
  * <p>
@@ -17,20 +17,14 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * -------------------------------------
  * 07/07/2025    Hải Đăng      Create
  */
+
+@Getter
+@RequiredArgsConstructor
 public enum SeverityType {
-    MINOR("Minor"),
-    MODERATE("Moderate"),
-    SERIOUS("Serious"),
-    CRITICAL("Critical");
+    LOW("Low Severity"),
+    MEDIUM("Medium Severity"),
+    HIGH("High Severity"),
+    CRITICAL("Critical Severity");
 
     private final String label;
-
-    SeverityType(String label) {
-        this.label = label;
-    }
-
-    @JsonValue
-    public String getLabel() {
-        return label;
-    }
 }

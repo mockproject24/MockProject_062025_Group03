@@ -1,15 +1,16 @@
 package com.group3.MockProject.service;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import com.group3.MockProject.constant.CaseType;
+import com.group3.MockProject.constant.SeverityType;
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.entity.Case;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Suspect;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * CaseService
@@ -39,13 +40,18 @@ public interface CaseService {
 
     /**
      * Retrieves paginated list of cases with optional search functionality
-     * @param page Page number (0-based)
-     * @param pageSize Number of items per page
-     * @param search Optional search term
+     *
+     * @param page        Page number (0-based)
+     * @param pageSize    Number of items per page
+     * @param search      Optional search term
+     * @param severitType
+     * @param caseType
+     * @param date
      * @return CaseListDto containing paginated case data
      */
-    CaseListDto getListCase(int page, int pageSize, String search);
+    CaseListDto getListCase(int page, int pageSize, String search, SeverityType severitType, CaseType caseType, LocalDateTime date);
 
+    CaseListMeta getCaseMeta();
     /**
      * Retrieves all evidences for a specific case
      * @param caseId The case identifier

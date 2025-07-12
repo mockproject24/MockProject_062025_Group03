@@ -1,31 +1,32 @@
 package com.group3.MockProject.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group3.MockProject.constant.CaseType;
+import com.group3.MockProject.constant.SeverityType;
 import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.request.CreateInterviewDto;
+import com.group3.MockProject.dto.request.CreateRecordInfoDto;
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.entity.Case;
+import com.group3.MockProject.mapper.SuspectMapper;
+import com.group3.MockProject.service.CaseService;
 import com.group3.MockProject.service.EvidenceService;
 import com.group3.MockProject.service.InterviewService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.mapper.SuspectMapper;
-import com.group3.MockProject.service.CaseService;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * CaseController
@@ -106,6 +107,22 @@ public class CaseController {
     }
 
     /**
+     * Retrieves case metadata including case types and severities
+     * @return ResponseEntity containing case metadata
+     */
+    @GetMapping("/case-meta")
+    public ResponseEntity<ApiResponse<CaseListMeta>> getCaseMeta() {
+        try {
+            CaseListMeta caseMeta = caseService.getCaseMeta();
+            return ResponseEntity.ok(ApiResponse.success(caseMeta));
+        } catch (Exception e) {
+            log.error("Error retrieving case metadata: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.internalServerError("Error retrieving case metadata: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Retrieves paginated list of cases with optional search
      * @param page Page number (default: 0)
      * @param pageSize Number of items per page (default: 10)
@@ -114,9 +131,12 @@ public class CaseController {
      */
     @GetMapping("")
     public ResponseEntity<ApiResponse<CaseListDto>> getCaseLists(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String search) {
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) SeverityType severitType,
+            @RequestParam(required = false) CaseType caseType,
+            @RequestParam(required = false) LocalDateTime date) {
 
 
         if (page < 0 || pageSize <= 0) {
@@ -124,7 +144,7 @@ public class CaseController {
                     .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
         }
 
-        CaseListDto caseListDtos = caseService.getListCase(page, pageSize, search);
+        CaseListDto caseListDtos = caseService.getListCase(page, pageSize, search, severitType, caseType, date);
         return ResponseEntity.ok(ApiResponse.success(caseListDtos));
 
     }
@@ -149,6 +169,9 @@ public class CaseController {
                     .body(ApiResponse.internalServerError("Error creating record: " + e.getMessage()));
         }
     }
+
+
+
 
     /**
      * Retrieves all evidences for a specific case

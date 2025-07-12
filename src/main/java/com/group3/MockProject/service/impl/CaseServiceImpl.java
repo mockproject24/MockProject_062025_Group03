@@ -4,9 +4,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.group3.MockProject.constant.CaseType;
+import com.group3.MockProject.constant.SeverityType;
 import com.group3.MockProject.dto.response.*;
 import com.group3.MockProject.elasticsearch.document.EsCase;
 import com.group3.MockProject.elasticsearch.service.CaseIndexService;
@@ -15,7 +18,6 @@ import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.mapper.EvidentMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,12 +37,6 @@ import com.group3.MockProject.entity.RecordInfo;
 import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.entity.User;
 import com.group3.MockProject.service.CaseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -66,7 +62,6 @@ public class CaseServiceImpl implements CaseService {
     private final UserRepository userRepository;
     private final RecordInfoRepository recordInfoRepository;
     private final CaseRepository caseRepository;
-    private final EvidenceRepository evidenceRepository;
     private final SuspectRepository suspectRepository;
     private final SuspectMapper suspectMapper;
 
@@ -88,14 +83,18 @@ public class CaseServiceImpl implements CaseService {
 
     /**
      * Retrieves paginated list of cases with optional search functionality
-     * @param page Page number (0-based)
-     * @param pageSize Number of items per page
-     * @param search Optional search term
+     *
+     * @param page        Page number (0-based)
+     * @param pageSize    Number of items per page
+     * @param search      Optional search term
+     * @param severitType
+     * @param caseType
+     * @param date
      * @return CaseListDto containing paginated case data
      */
     @Override
-    public CaseListDto getListCase(int page, int pageSize, String search) {
-        SearchHits<EsCase> searchHits = caseIndexService.searchCases(search, page, pageSize);
+    public CaseListDto getListCase(int page, int pageSize, String search, SeverityType severitType, CaseType caseType, LocalDateTime date) {
+        SearchHits<EsCase> searchHits = caseIndexService.searchCases(search, page, pageSize, severitType, caseType, date);
 
         List<CaseDto> caseDtos = searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
@@ -107,6 +106,31 @@ public class CaseServiceImpl implements CaseService {
                 .pageSize(pageSize)
                 .total(searchHits.getTotalHits())
                 .data(caseDtos)
+                .build();
+    }
+
+    /**
+     * Retrieves case metadata including all available case types and severities
+     * @return CaseListMeta containing lists of case types and severities
+     */
+    public CaseListMeta getCaseMeta() {
+        List<MetaDto> caseTypes = Arrays.stream(CaseType.values())
+                .map(caseType -> MetaDto.builder()
+                        .key(caseType.name())
+                        .label(caseType.getLabel())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<MetaDto> severities = Arrays.stream(SeverityType.values())
+                .map(severity -> MetaDto.builder()
+                        .key(severity.name())
+                        .label(severity.getLabel())
+                        .build())
+                .collect(Collectors.toList());
+
+        return CaseListMeta.builder()
+                .caseTypes(caseTypes)
+                .severities(severities)
                 .build();
     }
 
