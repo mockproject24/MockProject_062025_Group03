@@ -19,6 +19,7 @@ import com.group3.MockProject.exception.AppException;
 import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.service.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -292,30 +293,65 @@ public class CaseController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<InterviewResponse>> createInterview(
             @PathVariable String caseId,
-            @RequestParam("data") String dataJson,
-            @RequestParam(value = "file", required = false) List<MultipartFile> files) {
+            @RequestParam(value = "data", required = false) String dataJson,
+            @RequestBody(required = false) CreateInterviewRequest requestBody,
+            @RequestParam(value = "file", required = false) List<MultipartFile> files,
+            HttpServletRequest request) {
+
         try {
             log.info("Received request to create interview for case: {}", caseId);
-            log.debug("Request data: {}", dataJson);
-            log.debug("Files count: {}", files != null ? files.size() : 0);
+
+            // Get content type from request
+            String contentType = request.getContentType();
+            log.debug("Content-Type: {}", contentType);
 
             // STEP 1: Validate caseId
             if (caseId == null || caseId.trim().isEmpty()) {
                 throw new AppException(ErrorCode.CASE_NOT_EXISTED);
             }
 
-            // STEP 2: Parse JSON string to DTO
+            // STEP 2: Determine request type and parse DTO accordingly
             CreateInterviewRequest dto;
-            try {
-                dto = objectMapper.readValue(dataJson, CreateInterviewRequest.class);
-                log.debug("Successfully parsed JSON to DTO: {}", dto);
-            } catch (JsonProcessingException e) {
-                log.error("Failed to parse JSON data: {}", e.getMessage());
-                throw new IllegalArgumentException("Invalid JSON format: " + e.getMessage());
+            List<MultipartFile> uploadFiles = null;
+
+            if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                // Handle multipart/form-data request
+                log.debug("Processing multipart/form-data request");
+
+                if (dataJson == null || dataJson.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Data parameter is required for multipart request");
+                }
+
+                try {
+                    dto = objectMapper.readValue(dataJson, CreateInterviewRequest.class);
+                    uploadFiles = files;
+                    log.debug("Successfully parsed JSON from form data: {}", dto);
+                    log.debug("Files count: {}", uploadFiles != null ? uploadFiles.size() : 0);
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to parse JSON data from form: {}", e.getMessage());
+                    throw new IllegalArgumentException("Invalid JSON format in data parameter: " + e.getMessage());
+                }
+
+            }
+            else if (contentType != null && contentType.startsWith("application/json")) {
+                // Handle application/json request
+                log.debug("Processing application/json request");
+
+                if (requestBody == null) {
+                    throw new IllegalArgumentException("Request body is required for JSON request");
+                }
+
+                dto = requestBody;
+                uploadFiles = null; // No file upload support for JSON requests
+                log.debug("Successfully received JSON request body: {}", dto);
+
+            }
+            else {
+                throw new IllegalArgumentException("Unsupported Content-Type. Use multipart/form-data or application/json");
             }
 
-            // STEP 3: Call service to handle interview creation logic
-            InterviewResponse interviewResponse = interviewService.createInterview(caseId, dto, files);
+            // STEP 3: Call service to handle interview creation logic (error here)
+            InterviewResponse interviewResponse = interviewService.createInterview(caseId, dto, uploadFiles);
             log.info("Service successfully created interview");
 
             // STEP 4: Build success response according to API spec
@@ -331,9 +367,11 @@ public class CaseController {
         } catch (IllegalArgumentException e) {
             log.error("Validation error: {}", e.getMessage());
             throw new AppException(ErrorCode.INVALID_INTERVIEW_DATA);
+
         } catch (EntityNotFoundException e) {
             log.error("Entity not found: {}", e.getMessage());
             throw new AppException(ErrorCode.INTERVIEW_NOT_FOUND);
+
         } catch (Exception e) {
             log.error("Unexpected error occurred while creating interview: {}", e.getMessage(), e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
