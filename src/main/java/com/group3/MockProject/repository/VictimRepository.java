@@ -9,7 +9,8 @@ import java.util.Optional;
 /**
  * VictimRepository
  * <p>
- * Provides business logic for managing employment details.
+ * Repository for Victim entity operations.
+ * Provides data access methods for victim management and identification.
  * <p>
  * Version 1.0
  * Date: 7/5/2025
@@ -19,9 +20,16 @@ import java.util.Optional;
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 7/5/2025      User      Create
+ * 5/7/2025      User         Create
+ * 12/7/2025     FongFox      Update
  */
 @Repository
 public interface VictimRepository extends JpaRepository<Victim, String> {
     Optional<Victim> findVictimByFullname(String fullname);
+
+    /**
+     * Finds victim by ID card number
+     * Used for interview participant verification
+     */
+    Optional<Victim> findByVictimIdCard(Long victimIdCard);
 }

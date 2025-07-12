@@ -22,20 +22,40 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * InterviewServiceImpl
+ *
+ * Service implementation for managing interview operations.
+ *
  * <p>
- * Provides business logic for managing employment details.
+ * Main Features:
+ * - Creates interviews for suspects, victims, or witnesses
+ * - Validates interview data and checks for scheduling conflicts
+ * - Manages question and answer records with trust levels
+ * - Handles file uploads for interview recordings/documents
+ * - Converts trust levels from letters (a,b,c) to numeric values (1.0, 0.7, 0.4)
+ * Business Rules:
+ * - Start time must be before end time
+ * - Interviewer cannot have overlapping interview schedules
+ * - Interviewee must exist in the system (by ID card number)
+ * - Files are stored with UUID naming to prevent conflicts
+ * - Trust levels: 'a' = 1.0 (high), 'b' = 0.7 (medium), 'c' = 0.4 (low)
  * <p>
+ *
  * Version 1.0
  * Date: 7/4/2025
+ *
  * <p>
  * Copyright
  * <p>
+ *
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
@@ -46,419 +66,135 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class InterviewServiceImpl implements IInterviewService {
-    // Repositories for database access
     private final InterviewRepository interviewRepository;
+    private final QuestionRepository questionRepository;
     private final InterviewFileRepository interviewFileRepository;
     private final UserRepository userRepository;
     private final SuspectRepository suspectRepository;
     private final VictimRepository victimRepository;
     private final WitnessRepository witnessRepository;
-
-    // Mapper for DTO/Entity conversion
+    private final CaseRepository caseRepository;
     private final InterviewMapper interviewMapper;
 
     @Value("${spring.upload-file.base-uri}")
-    private String baseUri;
-
-    // Constants for file upload
-    private static final List<String> ALLOWED_FILE_TYPES = Arrays.asList(
-            "mp4", "mp3", "wav", "avi", "mov", "pdf", "doc", "docx", "jpg", "png"
-    );
-    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    private String uploadBasePath;
 
     @Override
     @Transactional
-    public InterviewResponse createInterview(String caseId, CreateInterviewRequest dto, List<MultipartFile> files) {
-        log.info("Starting interview creation process for case: {}", caseId);
+    public InterviewResponse createInterview(String caseId, CreateInterviewRequest request, List<MultipartFile> files) {
+        log.info("Creating interview for case: {}", caseId);
 
-        // STEP 1: Validate input data
-        validateInterviewData(dto);
+        // Step 1: Validate basic interview data
+        validateInterviewData(request);
 
-        // STEP 2: Find interviewer by ID
-        User interviewer = findInterviewerById(dto.getInterviewerId());
+        // Step 2: Check if case exists
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
-        // STEP 3: Upload files if provided
-        List<String> uploadedFilePaths = uploadFilesIfProvided(files);
+        // Step 3: Find interviewer user
+        User interviewer = userRepository.findById(request.getInterviewerId())
+                .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWER_NOT_FOUND));
 
-        // STEP 4: Create Interview entity from DTO
-        Interview interview = interviewMapper.convertToInterviewEntity(dto, interviewer);
+        // Step 4: Check for time conflicts with existing interviews
+        LocalDateTime startTime = request.getStartTime().atOffset(ZoneOffset.UTC).toLocalDateTime();
+        LocalDateTime endTime = request.getEndTime().atOffset(ZoneOffset.UTC).toLocalDateTime();
+        checkTimeConflict(request.getInterviewerId(), startTime, endTime);
 
-        // STEP 5: Set interviewee based on type
-        setIntervieweeByType(interview, dto.getIntervieweeType(), dto.getIntervieweeIdCard());
+        // Step 5: Find interviewee based on type and ID card
+        Object interviewee = findInterviewee(request.getIntervieweeType(), request.getIntervieweeIdCard());
 
-        // STEP 6: Create questions from DTO
-        List<Question> questions = interviewMapper.convertToQuestionEntities(dto.getQuesAndAns(), interview, interviewer);
-        interview.setQuestions(questions);
-
-        // STEP 7: Create InterviewFile entities
-        List<InterviewFile> interviewFiles = interviewMapper.convertToInterviewFileEntities(uploadedFilePaths, interview);
-        interview.setInterviewFileList(interviewFiles);
-
-        // STEP 8: Save interview to database (cascade will save questions and files)
+        // Step 6: Create interview entity using mapper
+        Interview interview = interviewMapper.createInterviewEntity(request, caseEntity, interviewer, interviewee);
         Interview savedInterview = interviewRepository.save(interview);
 
-        // STEP 9: Convert to Response DTO and return
-        InterviewResponse responseDto = interviewMapper.convertToResponseDto(savedInterview);
+        // Step 7: Create questions using mapper
+        List<Question> questions = interviewMapper.createQuestions(request.getQuesAndAns(), savedInterview, interviewer);
+        questionRepository.saveAll(questions);
 
-        log.info("Interview created successfully with ID: {}", savedInterview.getInterviewId());
-        return responseDto;
+        // Step 8: Upload files if provided
+        List<String> uploadedFileNames = uploadFiles(files, savedInterview);
+
+        // Step 9: Build response using mapper
+        return interviewMapper.buildInterviewResponse(savedInterview, interviewer, interviewee, questions.size(), uploadedFileNames);
     }
 
-    // ================================
-    // VALIDATION METHODS
-    // ================================
-
-    /**
-     * Validate all interview data
-     */
-    private void validateInterviewData(CreateInterviewRequest dto) {
-        log.debug("Validating interview data");
-
-        if (dto == null) {
-            throw new AppException(ErrorCode.INVALID_INTERVIEW_DATA);
-        }
-
-        // Validate time fields
-        validateTimeFields(dto);
-
-        // Validate required fields
-        validateRequiredFields(dto);
-
-        // Validate questions list
-        validateQuestionsList(dto.getQuesAndAns());
-    }
-
-    /**
-     * Validate start and end time
-     */
-    private void validateTimeFields(CreateInterviewRequest dto) {
-        if (dto.getStartTime() == null) {
-            throw new AppException(ErrorCode.INVALID_PARAMETERS, "Start time is required");
-        }
-
-        if (dto.getEndTime() == null) {
-            throw new AppException(ErrorCode.INVALID_PARAMETERS, "End time is required");
-        }
-
-        if (dto.getEndTime().isBefore(dto.getStartTime())) {
+    // Validates interview request data
+    private void validateInterviewData(CreateInterviewRequest request) {
+        // Check time range: start time must be before end time
+        if (request.getStartTime().isAfter(request.getEndTime())) {
             throw new AppException(ErrorCode.INVALID_TIME_RANGE);
         }
     }
 
-    /**
-     * Validate required fields
-     */
-    private void validateRequiredFields(CreateInterviewRequest dto) {
-        if (isStringEmpty(dto.getLocation())) {
-            throw new AppException(ErrorCode.INVALID_LOCATION);
-        }
+    // Checks for interviewer schedule conflicts
+    private void checkTimeConflict(String interviewerId, LocalDateTime startTime, LocalDateTime endTime) {
+        // Query for interviews with overlapping time slots for same interviewer
+        List<Interview> conflictInterviews = interviewRepository.findConflictingInterviews(
+                interviewerId, startTime, endTime);
 
-        if (isStringEmpty(dto.getInterviewerId())) {
-            throw new AppException(ErrorCode.INTERVIEWER_NOT_FOUND);
-        }
-
-        if (isStringEmpty(dto.getIntervieweeType())) {
-            throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
-        }
-
-        if (!isValidIntervieweeType(dto.getIntervieweeType())) {
-            throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
-        }
-
-        if (isStringEmpty(dto.getIntervieweeIdCard())) {
-            throw new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND);
-        }
-
-        if (!isValidIdCardFormat(dto.getIntervieweeIdCard())) {
-            throw new AppException(ErrorCode.INVALID_PARAMETERS, "Interviewee ID card must be 9-12 digits");
+        if (!conflictInterviews.isEmpty()) {
+            throw new AppException(ErrorCode.INTERVIEW_SCHEDULING_CONFLICT);
         }
     }
 
-    /**
-     * Validate questions list
-     */
-    private void validateQuestionsList(List<QuestionRequest> questions) {
-        if (questions == null || questions.isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "At least one question is required");
-        }
+    // Finds interviewee entity based on type and ID card number
+    private Object findInterviewee(String intervieweeType, String intervieweeIdCard) {
+        Long idCard = Long.parseLong(intervieweeIdCard);
 
-        // Validate each question
-        for (int i = 0; i < questions.size(); i++) {
-            validateSingleQuestion(questions.get(i), i + 1);
-        }
+        return switch (intervieweeType.toUpperCase()) {
+            case "SUSPECT" -> suspectRepository.findBySuspectIdCard(idCard)
+                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
+            case "VICTIM" -> victimRepository.findByVictimIdCard(idCard)
+                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
+            case "WITNESS" -> witnessRepository.findByWitnessIdCard(idCard)
+                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
+            default -> throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
+        };
     }
 
-    /**
-     * Validate single question
-     */
-    private void validateSingleQuestion(QuestionRequest question, int questionNumber) {
-        if (question == null) {
-            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "Question " + questionNumber + " cannot be null");
-        }
-
-        if (isStringEmpty(question.getQuestion())) {
-            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "Question " + questionNumber + ": Question text is required");
-        }
-
-        if (isStringEmpty(question.getAnswer())) {
-            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "Question " + questionNumber + ": Answer is required");
-        }
-
-        if (!isValidLevelOfTrust(question.getLevelOfTrust())) {
-            throw new AppException(ErrorCode.INVALID_LEVEL_OF_TRUST, "Question " + questionNumber + ": Level of trust must be 'a', 'b', or 'c'");
-        }
-    }
-
-    // Helper methods for validation
-    private boolean isStringEmpty(String str) {
-        return str == null || str.trim().isEmpty();
-    }
-
-    private boolean isValidIntervieweeType(String type) {
-        return type != null &&
-                (type.equals("SUSPECT") || type.equals("VICTIM") || type.equals("WITNESS"));
-    }
-
-    private boolean isValidIdCardFormat(String idCard) {
-        return idCard != null && idCard.matches("^\\d{9,12}$");
-    }
-
-    private boolean isValidLevelOfTrust(String level) {
-        return level != null && level.matches("^[aAbBcC]$");
-    }
-
-    // ================================
-    // ENTITY FINDER METHODS
-    // ================================
-
-    /**
-     * Find interviewer by ID
-     */
-    private User findInterviewerById(String interviewerId) {
-        return userRepository.findById(interviewerId)
-                .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWER_NOT_FOUND));
-    }
-
-    // ================================
-    // FILE UPLOAD METHODS
-    // ================================
-
-    /**
-     * Upload files if provided
-     */
-    private List<String> uploadFilesIfProvided(List<MultipartFile> files) {
+    // Uploads files and saves file information to database
+    private List<String> uploadFiles(List<MultipartFile> files, Interview interview) {
         List<String> uploadedFileNames = new ArrayList<>();
 
         if (files == null || files.isEmpty()) {
-            log.info("No files provided for upload");
             return uploadedFileNames;
         }
 
-        log.info("Uploading {} files", files.size());
+        // Create upload directory if not exists
+        Path uploadDir = Paths.get(uploadBasePath.replace("file:", ""));
+        try {
+            Files.createDirectories(uploadDir);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
 
-        // Upload each file
         for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                try {
-                    String savedFileName = uploadSingleFile(file);
-                    uploadedFileNames.add(savedFileName);
-                    log.info("File uploaded successfully: {}", savedFileName);
-                } catch (Exception e) {
-                    log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
-                    throw new AppException(ErrorCode.FILE_UPLOAD_FAILED, "Failed to upload file: " + file.getOriginalFilename(), e);
-                }
+            if (file.isEmpty()) continue;
+
+            try {
+                // Generate unique filename: UUID + original extension
+                String originalFileName = file.getOriginalFilename();
+                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String uniqueFileName = UUID.randomUUID().toString() + extension;
+
+                // Save file to disk
+                Path filePath = uploadDir.resolve(uniqueFileName);
+                Files.copy(file.getInputStream(), filePath);
+
+                // Save file information to database
+                InterviewFile interviewFile = new InterviewFile();
+                interviewFile.setAttachedFile(uniqueFileName);
+                interviewFile.setInterview(interview);
+                interviewFileRepository.save(interviewFile);
+
+                uploadedFileNames.add(originalFileName); // Return original name for response
+
+            } catch (IOException e) {
+                log.error("File upload error: {}", e.getMessage());
+                throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
             }
         }
 
         return uploadedFileNames;
-    }
-
-    /**
-     * Upload single file
-     */
-    private String uploadSingleFile(MultipartFile file) throws IOException {
-        // Validate file before upload
-        validateFileBeforeUpload(file);
-
-        // Create unique filename
-        String uniqueFileName = createUniqueFileName(file.getOriginalFilename());
-
-        // Parse baseUri to get the actual directory path
-        String uploadDirectory = extractDirectoryFromBaseUri(baseUri);
-
-        // Create upload directory if not exists
-        Path uploadPath = Paths.get(uploadDirectory);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-            log.info("Created upload directory: {}", uploadPath.toAbsolutePath());
-        }
-
-        // Save file to the configured directory
-        Path filePath = uploadPath.resolve(uniqueFileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        log.info("File saved to: {}", filePath.toAbsolutePath());
-        return uniqueFileName;
-    }
-
-    /**
-     * Validate file before upload
-     */
-    private void validateFileBeforeUpload(MultipartFile file) {
-        String originalFileName = file.getOriginalFilename();
-
-        if (originalFileName == null || originalFileName.isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_FILE_NAME);
-        }
-
-        // Check file extension
-        String fileExtension = getFileExtension(originalFileName);
-        if (!ALLOWED_FILE_TYPES.contains(fileExtension.toLowerCase())) {
-            throw new AppException(ErrorCode.FILE_INVALID_EXTENSION);
-        }
-
-        // Check file size
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new AppException(ErrorCode.FILE_TOO_LARGE);
-        }
-    }
-
-    /**
-     * Get file extension
-     */
-    private String getFileExtension(String fileName) {
-        int lastDotIndex = fileName.lastIndexOf(".");
-        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
-            return fileName.substring(lastDotIndex + 1);
-        }
-        return "";
-    }
-
-    /**
-     * Create unique filename to avoid conflicts
-     */
-    private String createUniqueFileName(String originalFileName) {
-        return System.currentTimeMillis() + "-" + originalFileName;
-    }
-
-    /**
-     * Extract directory path from baseUri config
-     */
-    private String extractDirectoryFromBaseUri(String baseUri) {
-        if (baseUri == null || baseUri.isEmpty()) {
-            return "uploads";
-        }
-
-        String directory = baseUri;
-        if (directory.startsWith("file:")) {
-            directory = directory.substring(5);
-        }
-
-        if (directory.endsWith("/")) {
-            directory = directory.substring(0, directory.length() - 1);
-        }
-
-        if (directory.isEmpty()) {
-            directory = "uploads";
-        }
-
-        log.debug("Extracted upload directory from baseUri '{}': '{}'", baseUri, directory);
-        return directory;
-    }
-
-    // ================================
-    // INTERVIEWEE SETTER METHODS
-    // ================================
-
-    /**
-     * Set interviewee based on type
-     */
-    private void setIntervieweeByType(Interview interview, String intervieweeType, String intervieweeIdCard) {
-        Long idCardNumber = Long.parseLong(intervieweeIdCard);
-
-        String type = intervieweeType.toUpperCase();
-        switch (type) {
-            case "SUSPECT":
-                setSuspectAsInterviewee(interview, idCardNumber);
-                break;
-            case "VICTIM":
-                setVictimAsInterviewee(interview, idCardNumber);
-                break;
-            case "WITNESS":
-                setWitnessAsInterviewee(interview, idCardNumber);
-                break;
-            default:
-                throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
-        }
-    }
-
-    /**
-     * Set suspect as interviewee
-     */
-    private void setSuspectAsInterviewee(Interview interview, Long idCard) {
-        List<Suspect> allSuspects = suspectRepository.findAll();
-
-        Suspect foundSuspect = null;
-        for (Suspect suspect : allSuspects) {
-            if (suspect.getSuspectIdCard() != null &&
-                    suspect.getSuspectIdCard().equals(idCard) &&
-                    !suspect.getIsDeleted()) {
-                foundSuspect = suspect;
-                break;
-            }
-        }
-
-        if (foundSuspect == null) {
-            throw new AppException(ErrorCode.SUSPECT_NOT_EXISTED);
-        }
-
-        interview.setSuspectInterviewee(foundSuspect);
-        log.info("Set suspect as interviewee: {}", foundSuspect.getFullname());
-    }
-
-    /**
-     * Set victim as interviewee
-     */
-    private void setVictimAsInterviewee(Interview interview, Long idCard) {
-        List<Victim> allVictims = victimRepository.findAll();
-
-        Victim foundVictim = null;
-        for (Victim victim : allVictims) {
-            if (victim.getVictimId().equals(idCard.toString()) && !victim.isDeleted()) {
-                foundVictim = victim;
-                break;
-            }
-        }
-
-        if (foundVictim == null) {
-            throw new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND);
-        }
-
-        interview.setVictimInterviewee(foundVictim);
-        log.info("Set victim as interviewee: {}", foundVictim.getFullname());
-    }
-
-    /**
-     * Set witness as interviewee
-     */
-    private void setWitnessAsInterviewee(Interview interview, Long idCard) {
-        List<Witness> allWitnesses = witnessRepository.findAll();
-
-        Witness foundWitness = null;
-        for (Witness witness : allWitnesses) {
-            if (witness.getWitnessIdCard() != null &&
-                    witness.getWitnessIdCard().equals(idCard) &&
-                    !witness.isDeleted()) {
-                foundWitness = witness;
-                break;
-            }
-        }
-
-        if (foundWitness == null) {
-            throw new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND);
-        }
-
-        interview.setWitnessInterviewee(foundWitness);
-        log.info("Set witness as interviewee: {}", foundWitness.getFullName());
     }
 }

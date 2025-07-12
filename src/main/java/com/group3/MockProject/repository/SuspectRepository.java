@@ -10,11 +10,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * SuspectRepository
  *
- * Provides data access layer for Suspect entity operations.
+ * Repository for Suspect entity operations.
+ * Provides data access methods for suspect management and filtering.
  *
  * Version 1.0
  *
@@ -26,6 +28,7 @@ import java.time.LocalDateTime;
  * DATE                 AUTHOR          DESCRIPTION
  * -----------------------------------------------------------------------
  * 08-07-2025         Group3            Create
+ * 12-07-2025         FongFox           Update
  */
 @Repository
 public interface SuspectRepository extends JpaRepository<Suspect, String> {
@@ -52,4 +55,10 @@ public interface SuspectRepository extends JpaRepository<Suspect, String> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay,
             Pageable pageable);
+
+    /**
+     * Finds suspect by ID card number
+     * Used for interview participant verification
+     */
+    Optional<Suspect> findBySuspectIdCard(Long suspectIdCard);
 }
