@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.elasticsearch.ResourceNotFoundException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,7 +56,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
     @Override
     public EvidenceResponse getEvidence(String caseId, String evidenceId) {
         Evidence evidence = evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId(caseId, evidenceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evidence not found with ID: " + evidenceId));
+                .orElseThrow(() -> new AppException(ErrorCode.EVIDENCE_NOT_FOUND));
 
         return toEvidenceResponse(evidence, evidence.getAttachFile());
     }
@@ -72,7 +72,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
     public EvidenceResponse createEvidence(String caseId, CreateEvidenceRequest request, MultipartFile file) {
         try {
             var caseEntity = caseRepository.findById(caseId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Case not found with ID: " + caseId));
+                    .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
             String fileUrl = null;
             if (file != null && !file.isEmpty()) {
@@ -142,7 +142,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
         try {
             // Tìm evidence theo evidenceId
             var evidence = evidenceRepository.findById(evidenceId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Evidence not found with ID: " + evidenceId));
+                    .orElseThrow(() -> new AppException(ErrorCode.EVIDENCE_NOT_FOUND));
 
             // Nếu có file mới, thực hiện lưu file và cập nhật đường dẫn
             String fileUrl = evidence.getAttachFile();

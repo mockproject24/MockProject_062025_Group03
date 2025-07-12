@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.elasticsearch.ResourceNotFoundException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,7 +71,7 @@ public class InvestigationServiceImpl implements InvestigationService {
         return plansPage.map(plan -> {
             // Fetch related Case
             Case caseEntity = caseRepository.findById(plan.getCaseEntity().getCaseId())
-                    .orElseThrow(() -> new RuntimeException("Case not found for plan: " + plan.getInvestigationPlanId()));
+                    .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
             return new InvestigationPlanResponse(
                     plan.getInvestigationPlanId(),
@@ -94,7 +94,7 @@ public class InvestigationServiceImpl implements InvestigationService {
         try {
             // Validate case exists
             Case caseEntity = caseRepository.findById(caseId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Case not found with ID: " + caseId));
+                    .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
             
             // Upload files if provided
             List<InvestigationFile> uploadedFiles = uploadFiles(files);
@@ -111,7 +111,7 @@ public class InvestigationServiceImpl implements InvestigationService {
             
         } catch (Exception e) {
             log.error("Error creating investigation for case {}: {}", caseId, e.getMessage(), e);
-            throw new RuntimeException("Failed to create investigation: " + e.getMessage());
+            throw new AppException(ErrorCode.INVESTIGATION_PLAN_CREATION_FAILED, "Failed to create investigation: " + e.getMessage(), e);
         }
     }
     
@@ -187,21 +187,18 @@ public class InvestigationServiceImpl implements InvestigationService {
         String originalFileName = file.getOriginalFilename();
         
         if (originalFileName == null || originalFileName.isEmpty()) {
-            throw new IllegalArgumentException("File name cannot be empty");
+            throw new AppException(ErrorCode.INVALID_FILE_NAME);
         }
         
         // Check file extension
         String fileExtension = getFileExtension(originalFileName);
         if (!ALLOWED_FILE_TYPES.contains(fileExtension.toLowerCase())) {
-            throw new IllegalArgumentException(
-                    "File type not allowed: " + fileExtension +
-                            ". Allowed types: " + ALLOWED_FILE_TYPES
-            );
+            throw new AppException(ErrorCode.FILE_INVALID_EXTENSION);
         }
         
         // Check file size
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File size too large. Maximum allowed: 50MB");
+            throw new AppException(ErrorCode.FILE_TOO_LARGE);
         }
     }
     

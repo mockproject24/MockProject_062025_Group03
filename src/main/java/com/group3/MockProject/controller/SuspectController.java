@@ -14,17 +14,18 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * SuspectController
  * <p>
- * Provides business logic for managing employment details.
+ * Provides business logic for managing details.
  * <p>
  * Version 1.0
- * Date: 7/12/2025
+ * <p>
+ * Date: 08-07-2025
  * <p>
  * Copyright
  * <p>
  * Modification Logs:
- * DATE         AUTHOR       DESCRIPTION
- * -------------------------------------
- * 7/12/2025      Ngoc Nghia      Create
+ * DATE               AUTHOR           DESCRIPTION
+ * -------------------------------------------------------------
+ * 08/07/2025         Ngoc Nghia       Create
  */
 @RestController
 @RequestMapping("/cases")
@@ -32,6 +33,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class SuspectController {
     private final ISuspectService suspectService;
 
+    /**
+     * Creates a new suspect for a specific case
+     * @param caseId The unique identifier of the case
+     * @param request The suspect creation request data
+     * @param file Optional suspect photo file
+     * @return ApiResponse containing the created suspect data
+     */
     @PostMapping(value = "/{caseId}/suspects", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<SuspectResponse> createSuspect(@PathVariable String caseId,
             @RequestPart(name = "request") @Valid CreateSuspectRequest request,

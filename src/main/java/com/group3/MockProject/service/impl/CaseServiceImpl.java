@@ -9,7 +9,6 @@ import com.group3.MockProject.elasticsearch.service.CaseIndexService;
 import com.group3.MockProject.entity.*;
 import com.group3.MockProject.exception.AppException;
 import com.group3.MockProject.exception.ErrorCode;
-import com.group3.MockProject.exception.MockProjectException;
 import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.mapper.EvidentMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
@@ -102,11 +101,11 @@ public class CaseServiceImpl implements ICaseService {
                 .build();
     }
 
-    @Override
     /**
      * Retrieves case metadata including all available case types and severities
      * @return CaseListMeta containing lists of case types and severities
      */
+    @Override
     public CaseListMetaResponse getCaseMeta() {
         List<MetaDto> caseTypes = Arrays.stream(CaseType.values())
                 .map(caseType -> MetaDto.builder()
@@ -201,7 +200,7 @@ public class CaseServiceImpl implements ICaseService {
                     user.getRole() != null ? user.getRole().getRoleId() : null
             ));
         } catch (Exception e) {
-            throw new RuntimeException("Error retrieving assigned officers: " + e.getMessage(), e);
+            throw new AppException(ErrorCode.DATABASE_ERROR, "Error retrieving assigned officers: " + e.getMessage(), e);
         }
     }
 
@@ -225,7 +224,7 @@ public class CaseServiceImpl implements ICaseService {
                     .map(user -> convertToOfficerCaseDetailDto(user, caseEntity))
                     .toList();
         } catch (Exception e) {
-            throw new RuntimeException("Error retrieving officer case details: " + e.getMessage(), e);
+            throw new AppException(ErrorCode.DATABASE_ERROR, "Error retrieving officer case details: " + e.getMessage(), e);
         }
     }
 
@@ -261,7 +260,7 @@ public class CaseServiceImpl implements ICaseService {
     public RecordInfoResponseResponse createRecord(String caseId, CreateRecordInfoRequest requestDto) {
         try {
             Case caseEntity = caseRepository.findById(caseId)
-                    .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
+                    .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
             Evidence evidence = null;
 //            if (requestDto.getEvidenceId() != null) {
@@ -296,7 +295,7 @@ public class CaseServiceImpl implements ICaseService {
             return responseDto;
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
+            throw new AppException(ErrorCode.DATABASE_ERROR, "Error creating record: " + ex.getMessage(), ex);
         }
     }
 
@@ -336,7 +335,7 @@ public class CaseServiceImpl implements ICaseService {
                     .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectResponse).toList())
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("Error retrieving suspects: " + e.getMessage(), e);
+            throw new AppException(ErrorCode.DATABASE_ERROR, "Error retrieving suspects: " + e.getMessage(), e);
         }
     }
 

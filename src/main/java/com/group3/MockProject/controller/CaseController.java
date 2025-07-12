@@ -160,27 +160,16 @@ public class CaseController {
      * @return ResponseEntity containing officer case details data
      */
     @GetMapping("/{caseId}/officer")
-    public ResponseEntity<ApiResponse<List<OfficerCaseDetailResponse>>> getOfficerCaseDetails(
+    public ApiResponse<List<OfficerCaseDetailResponse>> getOfficerCaseDetails(
             @PathVariable String caseId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
 
-        try {
-            if (page < 0 || pageSize <= 0) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
-            }
-
-            List<OfficerCaseDetailResponse> officers = caseService.getOfficerCaseDetails(caseId, page, pageSize);
-
-            return ResponseEntity.ok(ApiResponse.success("Successfully retrieved officer case details", officers));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(404, e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error retrieving officer case details: " + e.getMessage()));
-        }
+        return ApiResponse.<List<OfficerCaseDetailResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get Officer Case Details succesfully")
+                .result(caseService.getOfficerCaseDetails(caseId, page, pageSize))
+                .build();
     }
 
     /**
@@ -205,7 +194,11 @@ public class CaseController {
             @RequestBody CreateRecordInfoRequest requestDto) {
 
         RecordInfoResponseResponse createdRecord = caseService.createRecord(caseId, requestDto);
-        return ApiResponse.success("Record created successfully", createdRecord);
+        return ApiResponse.<RecordInfoResponseResponse>builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Record created successfully")
+                .result(createdRecord)
+                .build();
     }
 
 
@@ -247,29 +240,58 @@ public class CaseController {
     @GetMapping("/{caseId}/evidences")
     public ApiResponse<List<EvidentResponse<?>>> getEvidences(@PathVariable String caseId) {
         List<EvidentResponse<?>> evidences = caseService.getEvidences(caseId);
-        if (evidences.isEmpty())
-            return ApiResponse.success("No evidences found", evidences);
-        return ApiResponse.success(evidences);
+        if (evidences.isEmpty()) {
+            return ApiResponse.<List<EvidentResponse<?>>>builder()
+                    .code(HttpStatus.OK.value())
+                    .message("No evidences found")
+                    .result(evidences)
+                    .build();
+        }
+        return ApiResponse.<List<EvidentResponse<?>>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get evidences successfully")
+                .result(evidences)
+                .build();
 
     }
 
+    /**
+     * Creates a new evidence for a specific case
+     * @param caseId The unique identifier of the case
+     * @param request The evidence creation request data
+     * @param file Optional evidence file
+     * @return ResponseEntity containing the created evidence data
+     */
     @PostMapping(value = "/{caseId}/evidences", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<EvidenceResponse>> createEvidence(
+    public ApiResponse<EvidenceResponse> createEvidence(
             @PathVariable String caseId,
             @RequestPart("request") @Valid CreateEvidenceRequest request,
             @RequestPart(value = "file", required = false) MultipartFile file) {
 
-        return ResponseEntity.ok(ApiResponse.success("Get evidence by id successfully!",
-                evidenceService.createEvidence(caseId, request, file)));
+        return ApiResponse.<EvidenceResponse>builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Evidence created successfully!")
+                .result(evidenceService.createEvidence(caseId, request, file))
+                .build();
     }
 
+    /**
+     * Retrieves a specific evidence by case ID and evidence ID
+     * @param caseId The unique identifier of the case
+     * @param evidenceId The unique identifier of the evidence
+     * @return ApiResponse containing the evidence data
+     */
     @GetMapping("/{caseId}/evidence/{evidenceId}")
-    public ResponseEntity<ApiResponse<EvidenceResponse>> getEvidence(
+    public ApiResponse<EvidenceResponse> getEvidence(
             @PathVariable String caseId,
             @PathVariable String evidenceId
     ) {
         EvidenceResponse evidenceResponse = evidenceService.getEvidence(caseId, evidenceId);
-        return ResponseEntity.ok(ApiResponse.success("Get evidence by id successfully!", evidenceResponse));
+        return ApiResponse.<EvidenceResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get evidence by id successfully!")
+                .result(evidenceResponse)
+                .build();
     }
 
     /**
@@ -286,12 +308,12 @@ public class CaseController {
      * @param caseId   Case ID from URL path
      * @param dataJson JSON string containing interview data
      * @param files    List of attached files (optional)
-     * @return ResponseDto containing created interview information
+     * @return ApiResponse containing created interview information
      */
     @PostMapping(value = "/{caseId}/interviews",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<InterviewResponse>> createInterview(
+    public ApiResponse<InterviewResponse> createInterview(
             @PathVariable String caseId,
             @RequestParam(value = "data", required = false) String dataJson,
             @RequestBody(required = false) CreateInterviewRequest requestBody,
@@ -355,14 +377,12 @@ public class CaseController {
             log.info("Service successfully created interview");
 
             // STEP 4: Build success response according to API spec
-            ApiResponse<InterviewResponse> response = new ApiResponse<>(
-                    201,
-                    "Interview created successfully",
-                    interviewResponse
-            );
-
             log.info("Returning success response to client");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ApiResponse.<InterviewResponse>builder()
+                    .code(HttpStatus.CREATED.value())
+                    .message("Interview created successfully")
+                    .result(interviewResponse)
+                    .build();
 
         } catch (IllegalArgumentException e) {
             log.error("Validation error: {}", e.getMessage());
@@ -379,6 +399,13 @@ public class CaseController {
     }
 
 
+    /**
+     * Creates a new suspect for a specific case
+     * @param caseId The unique identifier of the case
+     * @param request The suspect creation request data
+     * @param file Optional suspect photo file
+     * @return ApiResponse containing the created suspect data
+     */
     @PostMapping(value = "/{caseId}/suspects", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<SuspectResponse> createSuspect(
             @PathVariable String caseId,
@@ -409,7 +436,7 @@ public class CaseController {
     @PostMapping(value = "/{caseId}/investigations",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<InvestigationResponse>> createInvestigation(
+    public ApiResponse<InvestigationResponse> createInvestigation(
             @PathVariable String caseId,
             @RequestParam("data") String dataJson,
             @RequestParam(value = "file", required = false) List<MultipartFile> files) {
@@ -424,22 +451,23 @@ public class CaseController {
             InvestigationResponse response = investigationService.createInvestigation(caseId, request, files);
 
             log.info("Investigation created successfully for case: {}", caseId);
-            return ResponseEntity.ok(ApiResponse.success("Success", response));
+            return ApiResponse.<InvestigationResponse>builder()
+                    .code(HttpStatus.OK.value())
+                    .message("Investigation created successfully")
+                    .result(response)
+                    .build();
 
         } catch (JsonProcessingException e) {
             log.error("Invalid JSON format in data parameter: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.badRequest("Invalid JSON format in data parameter"));
+            throw new AppException(ErrorCode.INVALID_KEY, "Invalid JSON format in data parameter");
 
         } catch (IllegalArgumentException e) {
             log.error("Validation error: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.badRequest(e.getMessage()));
+            throw new AppException(ErrorCode.INVALID_KEY, e.getMessage());
 
         } catch (Exception e) {
             log.error("Unexpected error occurred while creating investigation: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error creating investigation: " + e.getMessage()));
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION, "Error creating investigation: " + e.getMessage());
         }
     }
 }

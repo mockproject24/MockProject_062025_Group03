@@ -11,36 +11,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * UserDetailsServiceImpl - Spring Security UserDetailsService implementation
+ * UserDetailsServiceImpl
  * <p>
- * Implements Spring Security's UserDetailsService interface to load user details
- * from the database for authentication purposes. Provides user information to
- * the security framework during login process.
- * </p>
- *
- * @version 1.0
- * @since 2025-07-08
- * @author Group3
- * 
+ * Provides business logic for managing employment details.
  * <p>
- * Copyright (c) 2025 Group3. All rights reserved.
- * </p>
- * 
+ * Version 1.0
+ * Date: 04/07/2025
  * <p>
- * Modification Log:
- * </p>
- * <table border="1">
- * <tr>
- * <th>DATE</th>
- * <th>AUTHOR</th>
- * <th>DESCRIPTION</th>
- * </tr>
- * <tr>
- * <td>08-07-2025</td>
- * <td>Group3</td>
- * <td>Create</td>
- * </tr>
- * </table>
+ * Copyright
+ * <p>
+ * Modification Logs:
+ * DATE         AUTHOR       DESCRIPTION
+ * -------------------------------------
+ * 04/07/2025   Hải Đăng      Create
+ * 7/12/2025      Ngoc Nghia      update
  */
 @Service
 @RequiredArgsConstructor
