@@ -1,6 +1,7 @@
 package com.group3.MockProject.mapper;
 
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.dto.response.MeasureSurvey;
 import com.group3.MockProject.entity.*;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +14,11 @@ public class EvidentMapper {
      * @param entity the Evidence entity to convert
      * @return the converted EvidentDto
      */
-    public EvidentDto toDto(Evidence entity) {
+    public EvidentResponse toDto(Evidence entity) {
         if (entity == null) {
             return null;
         }
-        return new EvidentDto(
+        return new EvidentResponse(
                 entity.getEvidenceId(),
                 entity.getDescription(),
                 entity.getCollectedAt(),
@@ -41,11 +42,11 @@ public class EvidentMapper {
      * @param entity the DigitalInvest entity to convert
      * @return the converted DigitalInvestDto
      */
-    public DigitalInvestDto toDto(DigitalInvest entity) {
+    public DigitalInvestResponse toDto(DigitalInvest entity) {
         if (entity == null) {
             return null;
         }
-        return new DigitalInvestDto(
+        return new DigitalInvestResponse(
                 entity.getDeviceType(),
                 entity.getAnalystTool(),
                 entity.getResult()
@@ -58,11 +59,11 @@ public class EvidentMapper {
      * @param entity the FinancialInvest entity to convert
      * @return the converted FinancialInvestDto
      */
-    public FinancialInvestDto toDto(FinancialInvest entity) {
+    public FinancialInvestResponse toDto(FinancialInvest entity) {
         if (entity == null) {
             return null;
         }
-        return new FinancialInvestDto(
+        return new FinancialInvestResponse(
                 entity.getSummary()
         );
     }
@@ -73,11 +74,11 @@ public class EvidentMapper {
      * @param entity the ForensicInvest entity to convert
      * @return the converted ForensicInvestDto
      */
-    public ForensicInvestDto toDto(ForensicInvest entity) {
+    public ForensicInvestResponse toDto(ForensicInvest entity) {
         if (entity == null) {
             return null;
         }
-        return new ForensicInvestDto(
+        return new ForensicInvestResponse(
                 entity.getLabName(),
                 entity.getReport(),
                 entity.getReceivedAt()
@@ -90,11 +91,11 @@ public class EvidentMapper {
      * @param entity the PhysicalInvest entity to convert
      * @return the converted PhysicalInvestDto
      */
-    public PhysicalInvestDto toDto(PhysicalInvest entity) {
+    public PhysicalInvestResponse toDto(PhysicalInvest entity) {
         if (entity == null) {
             return null;
         }
-        return new PhysicalInvestDto(
+        return new PhysicalInvestResponse(
                 entity.getImageUrl()
         );
     }
@@ -105,11 +106,11 @@ public class EvidentMapper {
      * @param entity the MeasureSurvey entity to convert
      * @return the converted MeasureSurveyDto
      */
-    public MeasureSurveyDto toDto(MeasureSurvey entity) {
+    public MeasureSurvey toDto(com.group3.MockProject.entity.MeasureSurvey entity) {
         if (entity == null) {
             return null;
         }
-        return new MeasureSurveyDto(
+        return new MeasureSurvey(
                 entity.getMeasureSurveyId(),
                 entity.getTypeName(),
                 entity.getSource(),
@@ -123,11 +124,11 @@ public class EvidentMapper {
      * @param entity the RecordInfo entity to convert
      * @return the converted RecordInfoDto
      */
-    public RecordInfoDto toDto(RecordInfo entity) {
+    public RecordInfoResponse toDto(RecordInfo entity) {
         if (entity == null) {
             return null;
         }
-        return new RecordInfoDto(
+        return new RecordInfoResponse(
                 entity.getRecordInfoId(),
                 entity.getTypeName(),
                 entity.getSource(),

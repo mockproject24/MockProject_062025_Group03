@@ -94,12 +94,12 @@ public class AuthController {
      * </p>
      *
      * @param loginRequest the login request containing username and password
-     * @return ResponseEntity containing user information or error message
+     * @return ApiResponse containing user information or error message
      *
      * @throws Exception if authentication fails
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ApiResponse<JwtResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -122,11 +122,10 @@ public class AuthController {
                     userDetails.getFullname(),
                     role);
 
-            return ResponseEntity.ok(ApiResponse.success(jwtResponse));
+            return ApiResponse.success(jwtResponse);
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.badRequest("Authentication failed: " + e.getMessage()));
+            return ApiResponse.badRequest("Authentication failed: " + e.getMessage());
         }
     }
 
@@ -143,12 +142,11 @@ public class AuthController {
      * @throws Exception if registration fails
      */
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<MessageResponse>> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ApiResponse<MessageResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             // Check if username already exists
             if (userRepository.existsByUsername(registerRequest.getUsername())) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.badRequest("Username is already taken"));
+                return ApiResponse.badRequest("Username is already taken");
             }
 
             // Create new user
@@ -173,11 +171,10 @@ public class AuthController {
             userRepository.save(user);
 
             MessageResponse response = new MessageResponse("User registered successfully!");
-            return ResponseEntity.ok(ApiResponse.success(response));
+            return ApiResponse.success(response);
             
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.internalServerError("Registration failed: " + e.getMessage()));
+            return ApiResponse.internalServerError("Registration failed: " + e.getMessage());
         }
     }
 }

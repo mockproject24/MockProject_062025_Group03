@@ -1,22 +1,19 @@
 package com.group3.MockProject.controller;
 
-import com.group3.MockProject.dto.request.CreateInvestigationPlanDto;
-import com.group3.MockProject.dto.response.InvestigationPlanRespone.CreateInvestigationRespone;
-import com.group3.MockProject.dto.response.InvestigationPlanResponseDto;
-import com.group3.MockProject.dto.response.ResponseDto;
+import com.group3.MockProject.dto.request.CreateInvestigationPlanRequest;
+import com.group3.MockProject.dto.response.CreateInvestigationRespone;
+import com.group3.MockProject.dto.response.InvestigationPlanResponse;
 import com.group3.MockProject.service.InvestigationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,16 +28,16 @@ import java.util.Map;
  * Copyright
  * <p>
  * Modification Logs:
- * DATE        AUTHOR        DESCRIPTION
+ * DATE              AUTHOR                DESCRIPTION
  * -------------------------------------------------------------
  * 04/07/2025        Nguyễn Bảo Kha        Create
  */
 
 @RestController
 @RequestMapping("/api/investigations")
+@RequiredArgsConstructor
 public class InvestigationPlanController {
-    @Autowired
-    private InvestigationService investigationService;
+    private final InvestigationService investigationService;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getInvestigations(
@@ -51,7 +48,7 @@ public class InvestigationPlanController {
         String sortField = sortParams[0];
         Sort.Direction direction = (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
-        Page<InvestigationPlanResponseDto> pageResult = investigationService.getInvestigations(pageable);
+        Page<InvestigationPlanResponse> pageResult = investigationService.getInvestigations(pageable);
         Map<String, Object> response = new HashMap<>();
         response.put("code", 200);
         response.put("message", "Success");
@@ -67,7 +64,7 @@ public class InvestigationPlanController {
 
     @PostMapping("/cases/{caseId}/investigations")
     public ResponseEntity<ResponseDto<CreateInvestigationRespone>> createInvestigationPlan(
-            @ModelAttribute CreateInvestigationPlanDto requestDto,
+            @ModelAttribute CreateInvestigationPlanRequest requestDto,
             @PathVariable Long caseId){
 
 

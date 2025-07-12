@@ -8,7 +8,7 @@ import com.group3.MockProject.exception.ResourceNotFoundException;
 import com.group3.MockProject.exception.StorageException;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
-import com.group3.MockProject.service.EvidenceService;
+import com.group3.MockProject.service.IEvidenceService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -51,7 +51,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
-public class EvidenceServiceImpl implements EvidenceService {
+public class EvidenceServiceImpl implements IEvidenceService {
     @Override
     public EvidenceResponse getEvidence(String caseId, String evidenceId) {
         Evidence evidence = evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId(caseId, evidenceId)

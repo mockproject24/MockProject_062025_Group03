@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 import com.group3.MockProject.dto.response.*;
 import com.group3.MockProject.elasticsearch.document.EsCase;
 import com.group3.MockProject.elasticsearch.service.CaseIndexService;
+import com.group3.MockProject.entity.*;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.exception.MockProjectException;
 import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.mapper.EvidentMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,24 +25,13 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.response.CaseDto;
-import com.group3.MockProject.dto.response.CaseListDto;
-import com.group3.MockProject.dto.response.EvidentDto;
-import com.group3.MockProject.dto.response.RecordInfoResponseDto;
+import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
+import com.group3.MockProject.dto.response.CaseResponse;
+import com.group3.MockProject.dto.response.CaseListResponse;
+import com.group3.MockProject.dto.response.EvidentResponse;
+import com.group3.MockProject.dto.response.RecordInfoResponseResponse;
 import com.group3.MockProject.dto.response.UserResponseDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.entity.Evidence;
-import com.group3.MockProject.entity.RecordInfo;
-import com.group3.MockProject.entity.Suspect;
-import com.group3.MockProject.entity.User;
-import com.group3.MockProject.service.CaseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
+import com.group3.MockProject.service.ICaseService;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -61,7 +52,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class CaseServiceImpl implements CaseService {
+public class CaseServiceImpl implements ICaseService {
 
     private final UserRepository userRepository;
     private final RecordInfoRepository recordInfoRepository;
@@ -81,9 +72,9 @@ public class CaseServiceImpl implements CaseService {
      * @throws RuntimeException if case is not found
      */
     @Override
-    public Case getCaseById(String caseId) {
-        return caseRepository.findById(caseId)
-                .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
+    public CaseDetailResponse getCaseById(String caseId) {
+        return convertToCaseDetailResponse(caseRepository.findById(caseId)
+                .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED)));
     }
 
     /**
@@ -94,19 +85,19 @@ public class CaseServiceImpl implements CaseService {
      * @return CaseListDto containing paginated case data
      */
     @Override
-    public CaseListDto getListCase(int page, int pageSize, String search) {
+    public CaseListResponse getListCase(int page, int pageSize, String search) {
         SearchHits<EsCase> searchHits = caseIndexService.searchCases(search, page, pageSize);
 
-        List<CaseDto> caseDtos = searchHits.getSearchHits().stream()
+        List<CaseResponse> caseResponses = searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .map(caseMapper::toDto)
                 .toList();
 
-        return CaseListDto.builder()
+        return CaseListResponse.builder()
                 .page(page + 1)
                 .pageSize(pageSize)
                 .total(searchHits.getTotalHits())
-                .data(caseDtos)
+                .data(caseResponses)
                 .build();
     }
 
@@ -123,33 +114,33 @@ public class CaseServiceImpl implements CaseService {
      * @throws MockProjectException if the case is not found
      */
     @Override
-    public List<EvidentDto<?>> getEvidences(String caseId) {
+    public List<EvidentResponse<?>> getEvidences(String caseId) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new MockProjectException("Case not found", 404));
 
         List<Evidence> evidences = evidentRepository.findByCaseEntity(caseEntity);
 
-        List<EvidentDto<?>> evidentDtos = new ArrayList<>();
+        List<EvidentResponse<?>> evidentResponses = new ArrayList<>();
 
         for (Evidence evidence : evidences) {
-            EvidentDto evidenceDto = mapper.toDto(evidence);
+            EvidentResponse evidenceDto = mapper.toDto(evidence);
             if (evidence.getDigitalInvest() != null) {
-                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<DigitalInvestDto>(
+                evidenceDto.setInvestigationDetail(new InvestigationDetail<DigitalInvestResponse>(
                         "DigitalInvest",
                         mapper.toDto(evidence.getDigitalInvest())
                 ));
             } else if (evidence.getFinancialInvest() != null) {
-                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<>(
+                evidenceDto.setInvestigationDetail(new InvestigationDetail<>(
                         "FinancialInvest",
                         mapper.toDto(evidence.getFinancialInvest())
                 ));
             } else if (evidence.getForensicInvest() != null) {
-                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<>(
+                evidenceDto.setInvestigationDetail(new InvestigationDetail<>(
                         "ForensicInvest",
                         mapper.toDto(evidence.getForensicInvest())
                 ));
             } else if (evidence.getPhysicalInvest() != null) {
-                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<>(
+                evidenceDto.setInvestigationDetail(new InvestigationDetail<>(
                         "PhysicalInvest",
                         mapper.toDto(evidence.getPhysicalInvest())
                 ));
@@ -158,10 +149,10 @@ public class CaseServiceImpl implements CaseService {
             evidenceDto.setRecordInfo(evidence.getRecordInfos().stream().map(mapper::toDto).collect(Collectors.toSet()));
             evidenceDto.setMeasureSurvey(evidence.getMeasureSurveys().stream().map(mapper::toDto).collect(Collectors.toSet()));
 
-            evidentDtos.add(evidenceDto);
+            evidentResponses.add(evidenceDto);
         }
 
-        return evidentDtos;
+        return evidentResponses;
     }
 
     /**
@@ -195,10 +186,10 @@ public class CaseServiceImpl implements CaseService {
      * @return List of OfficerCaseDetailDto containing officer case details
      */
     @Override
-    public List<OfficerCaseDetailDto> getOfficerCaseDetails(String caseId, int page, int pageSize) {
+    public List<OfficerCaseDetailResponse> getOfficerCaseDetails(String caseId, int page, int pageSize) {
         try {
             // Verify case exists
-            Case caseEntity = getCaseById(caseId);
+            CaseDetailResponse caseEntity = getCaseById(caseId);
             
             Pageable pageable = PageRequest.of(page, pageSize);
             Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
@@ -217,8 +208,8 @@ public class CaseServiceImpl implements CaseService {
      * @param caseEntity The case entity
      * @return OfficerCaseDetailDto with officer case details
      */
-    private OfficerCaseDetailDto convertToOfficerCaseDetailDto(User user, Case caseEntity) {
-        return OfficerCaseDetailDto.builder()
+    private OfficerCaseDetailResponse convertToOfficerCaseDetailDto(User user, Case caseEntity) {
+        return OfficerCaseDetailResponse.builder()
                 .officerId(user.getUsername())
                 .fullName(user.getFullName())
                 .presentStatus(user.getStatus() != null ? user.getStatus().getLabel() : "Active")
@@ -240,7 +231,7 @@ public class CaseServiceImpl implements CaseService {
      * @throws RuntimeException if case is not found or creation fails
      */
     @Override
-    public RecordInfoResponseDto createRecord(String caseId, CreateRecordInfoDto requestDto) {
+    public RecordInfoResponseResponse createRecord(String caseId, CreateRecordInfoRequest requestDto) {
         try {
             Case caseEntity = caseRepository.findById(caseId)
                     .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
@@ -266,7 +257,7 @@ public class CaseServiceImpl implements CaseService {
 
             RecordInfo saved = recordInfoRepository.saveAndFlush(record);
 
-            RecordInfoResponseDto responseDto = new RecordInfoResponseDto();
+            RecordInfoResponseResponse responseDto = new RecordInfoResponseResponse();
             responseDto.setRecordInfoId(saved.getRecordInfoId());
             responseDto.setTypeName(saved.getTypeName());
             responseDto.setSource(saved.getSource());
@@ -324,16 +315,19 @@ public class CaseServiceImpl implements CaseService {
      * @param caseEntity The case entity to convert
      * @return CaseDto containing formatted case data
      */
-    private CaseDto convertToCaseDto(Case caseEntity) {
-        return CaseDto.builder()
+    private CaseDetailResponse convertToCaseDetailResponse(Case caseEntity) {
+        return CaseDetailResponse.builder()
                 .caseId(caseEntity.getCaseId())
-                .caseNumber("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
+                .caseName("#" + caseEntity.getCaseId()) // Use caseId since caseNumber doesn't exist
                 .typeCase(caseEntity.getTypeCase().getLabel())
                 .severity(caseEntity.getSeverity().getLabel())
                 .status(caseEntity.getStatus().getLabel())
-                .createdAt(caseEntity.getCreateAt())
-                .receivingUnit("Local PD – Investigation Division") // Default value since field doesn't exist
-                .location("Not specified") // Default value since field doesn't exist
+                .createAt(caseEntity.getCreateAt())
+                .summary(caseEntity.getSummary())
+                .warrants(caseEntity.getWarrants())
+                .evidences(caseEntity.getEvidences())
+                .isDeleted(caseEntity.isDeleted())
+                .suspects(caseEntity.getSuspects())
                 .build();
     }
 }
