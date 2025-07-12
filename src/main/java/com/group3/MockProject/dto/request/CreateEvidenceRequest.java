@@ -41,4 +41,5 @@ public class CreateEvidenceRequest {
     EvidenceType evidenceType;
 
     LocalDateTime collectedAt;
+    String status;
 }

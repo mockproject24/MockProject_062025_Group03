@@ -4,10 +4,13 @@ import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.EvidenceResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
+import com.group3.MockProject.entity.User;
 import com.group3.MockProject.exception.ResourceNotFoundException;
 import com.group3.MockProject.exception.StorageException;
 import com.group3.MockProject.repository.CaseRepository;
-import com.group3.MockProject.repository.EvidenceRepository;
+import com.group3.MockProject.repository.EvidenceReposit
+import com.group3.MockProject.repository.UserRepository;
+import com.group3.MockProject.service.EvidenceService;
 import com.group3.MockProject.service.IEvidenceService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +18,10 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -51,7 +57,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
-public class EvidenceServiceImpl implements IEvidenceService {
+public class EvidenceServiceImpl implements EvidenceService {
+
+    CaseRepository caseRepository;
+    EvidenceRepository evidenceRepository;
+    UserRepository userRepository;
     @Override
     public EvidenceResponse getEvidence(String caseId, String evidenceId) {
         Evidence evidence = evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId(caseId, evidenceId)
@@ -60,10 +70,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
         return toEvidenceResponse(evidence, evidence.getAttachFile());
     }
 
-    CaseRepository caseRepository;
-    EvidenceRepository evidenceRepository;
-
-    @Value("${spring.upload-file.base-uri}")
+    @Value("${file.upload-dir}")
     @NonFinal
     String baseURI;
 
@@ -79,25 +86,29 @@ public class EvidenceServiceImpl implements IEvidenceService {
                 fileUrl = baseURI + storedFileName;
             }
 
-            var evidence = toEvidenceEntity(request, fileUrl, caseEntity);
+            var user = userRepository.findByUsername("sybanh")
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+            var evidence = toEvidenceEntity(request, fileUrl, caseEntity,user);
             evidence = evidenceRepository.save(evidence);
 
             return toEvidenceResponse(evidence, fileUrl);
-        } catch (URISyntaxException | IOException e) {
+        } catch (IOException e) {
             log.error("Error while storing file: {}", e.getMessage(), e);
             throw new StorageException("Failed to upload file");
         }
     }
 
-    private Evidence toEvidenceEntity(CreateEvidenceRequest request, String fileUrl, Case caseEntity) {
+    private Evidence toEvidenceEntity(CreateEvidenceRequest request, String fileUrl, Case caseEntity, User user) {
         return Evidence.builder()
                 .description(request.getDescription())
                 .currentLocation(request.getCurrentLocation())
                 .attachFile(fileUrl)
                 .collectedAt(request.getCollectedAt() != null ? request.getCollectedAt() : LocalDateTime.now())
                 .evidenceType(request.getEvidenceType())
-                .status("ACTIVE")
+                .status(request.getStatus() != null ? request.getStatus() : "Waiting for Test")
                 .caseEntity(caseEntity)
+                .user(user)
                 .isDeleted(false)
                 .build();
     }
@@ -112,29 +123,65 @@ public class EvidenceServiceImpl implements IEvidenceService {
                 .evidenceType(evidence.getEvidenceType())
                 .collectedAt(evidence.getCollectedAt())
                 .uploadedAt(Instant.now())
+                .collector(evidence.getUser().getFullName())
+                .status(evidence.getStatus())
                 .build();
     }
 
-    private String store(MultipartFile file) throws URISyntaxException, IOException {
-        String fileName = System.currentTimeMillis() + "-" + file.getOriginalFilename();
-        List<String> allowedExtensions = Arrays.asList("jpeg", "png", "jpg", "gif", "mp4", "pdf", "doc", "docx", "ppt", "pptx");
 
-        boolean isValid = allowedExtensions.stream()
-                .anyMatch(ext -> fileName.toLowerCase().endsWith(ext));
+    private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(
+            "jpeg", "png", "jpg", "gif", "mp4", "pdf", "doc", "docx", "ppt", "pptx"
+    );
 
-        if (!isValid) {
-            throw new StorageException("Invalid file extension. Allowed: " + allowedExtensions);
+    private String store(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new StorageException("Tập tin trống, không thể lưu.");
         }
 
-        URI uri = new URI(baseURI + fileName);
-        Path path = Paths.get(uri);
+        // Lấy tên file gốc và chuẩn hóa
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+        if (originalFilename.contains("..")) {
+            throw new StorageException("Tên file không hợp lệ: " + originalFilename);
+        }
 
-        try (InputStream is = file.getInputStream()) {
-            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
+        // Lấy phần mở rộng
+        String fileExtension = getFileExtension(originalFilename).toLowerCase();
+        if (!ALLOWED_EXTENSIONS.contains(fileExtension)) {
+            throw new StorageException("Định dạng không hợp lệ. Cho phép: " + ALLOWED_EXTENSIONS);
+        }
+
+        // Tạo tên file duy nhất
+        String fileName = System.currentTimeMillis() + "-" + originalFilename;
+
+        // Tạo đường dẫn đầy đủ
+        Path destinationPath = Paths.get(baseURI).toAbsolutePath().normalize().resolve(fileName);
+
+        // Tạo thư mục nếu chưa có
+        Files.createDirectories(destinationPath.getParent());
+
+        // Ghi file
+        try (InputStream inputStream = file.getInputStream()) {
+            Files.copy(inputStream, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new StorageException("Không thể lưu tập tin: " + fileName);
         }
 
         return fileName;
     }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex >= 0) ? fileName.substring(dotIndex + 1) : "";
+    }
+
+
+    private User getAuthorizedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName(); // từ token
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
 
     @Override
     public EvidenceResponse updateEvidence(String evidenceId, CreateEvidenceRequest request, MultipartFile file) {
@@ -160,7 +207,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
             evidence = evidenceRepository.save(evidence);
 
             return toEvidenceResponse(evidence, fileUrl);
-        } catch (URISyntaxException | IOException e) {
+        } catch (IOException e) {
             log.error("Error while updating evidence file: {}", e.getMessage(), e);
             throw new StorageException("Failed to update evidence");
         }
