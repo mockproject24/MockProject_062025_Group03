@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * -------------------------------------
  * 07/07/2025    Hải Đăng      Create
  */
+
 public enum SeverityType {
     MINOR("Minor"),
     MODERATE("Moderate"),
@@ -29,7 +30,7 @@ public enum SeverityType {
         this.label = label;
     }
 
-    @JsonValue
+//    @JsonValue
     public String getLabel() {
         return label;
     }

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Modification Logs:
  * DATE        AUTHOR        DESCRIPTION
  */
+
 public enum CaseType {
     ROBBERY("Robbery"),
     MURDER("Murder"),
@@ -21,7 +22,7 @@ public enum CaseType {
         this.label = label;
     }
 
-    @JsonValue
+//    @JsonValue
     public String getLabel() {
         return label;
     }
