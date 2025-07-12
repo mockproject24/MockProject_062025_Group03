@@ -7,8 +7,8 @@
         "ngram_tokenizer": {
           "type": "ngram",
           "min_gram": 2,
-          "max_gram": 20,
-          "token_chars": ["letter", "digit", "whitespace"]
+          "max_gram": 10,
+          "token_chars": ["letter", "digit"]
         }
       },
       "analyzer": {

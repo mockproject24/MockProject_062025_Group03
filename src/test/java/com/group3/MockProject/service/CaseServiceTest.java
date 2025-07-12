@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CaseServiceImplTest {
+class CaseServiceTest {
 
     @Mock
     private CaseIndexService caseIndexService;

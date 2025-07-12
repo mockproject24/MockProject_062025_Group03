@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch.core.ExistsRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
@@ -20,8 +21,12 @@ public class EsConfig {
 
     private final ElasticsearchClient elasticsearchClient;
 
+    @Value("${spring.elasticsearch.uris}")
+    private String elasticsearchUri;
+
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
+        log.info("Elasticsearch URI: {}", elasticsearchUri);
         this.createIndexIfNotExists("cases", "es/case-index.json");
     }
 
