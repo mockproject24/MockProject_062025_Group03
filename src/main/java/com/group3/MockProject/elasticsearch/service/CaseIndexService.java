@@ -23,21 +23,18 @@ public class CaseIndexService {
 
     public SearchHits<EsCase> searchCases(String keyword, int page, int size, SeverityType severityType, CaseType caseType, LocalDateTime date) {
         PageRequest pageable = PageRequest.of(page, size);
-
-        NativeQuery query;
-
         BoolQuery.Builder boolQueryBuilder = QueryBuilders.bool();
 
         if (keyword != null && !keyword.isBlank()) {
-            boolQueryBuilder
-                    .should(s -> s.match(m -> m.field("case_id").query(keyword).fuzziness("AUTO")))
-                    .should(s -> s.match(m -> m.field("case_name").query(keyword).fuzziness("AUTO")))
-                    .should(s -> s.match(m -> m.field("severity_label").query(keyword).fuzziness("AUTO")))
-                    .should(s -> s.match(m -> m.field("type_case_label").query(keyword).fuzziness("AUTO")))
-                    .should(s -> s.match(m -> m.field("status_label").query(keyword).fuzziness("AUTO")))
-                    .should(s -> s.match(m -> m.field("reporter_fullname").query(keyword).fuzziness("AUTO")))
-                    .should(s -> s.match(m -> m.field("case_location").query(keyword).fuzziness("AUTO")))
-                    .minimumShouldMatch("1");
+            boolQueryBuilder.should(s -> s.term(t -> t.field("case_id").value(keyword)));
+            boolQueryBuilder.should(s -> s.match(m -> m.field("case_name").query(keyword)));
+            boolQueryBuilder.should(s -> s.match(m -> m.field("severity_label").query(keyword)));
+            boolQueryBuilder.should(s -> s.match(m -> m.field("type_case_label").query(keyword)));
+            boolQueryBuilder.should(s -> s.match(m -> m.field("status_label").query(keyword)));
+            boolQueryBuilder.should(s -> s.match(m -> m.field("reporter_fullname").query(keyword)));
+            boolQueryBuilder.should(s -> s.match(m -> m.field("case_location").query(keyword)));
+
+            boolQueryBuilder.minimumShouldMatch("1");
         } else {
             boolQueryBuilder.must(m -> m.matchAll(ma -> ma));
         }
@@ -65,7 +62,7 @@ public class CaseIndexService {
             );
         }
 
-        query = NativeQuery.builder()
+        NativeQuery query = NativeQuery.builder()
                 .withQuery(q -> q.bool(boolQueryBuilder.build()))
                 .withPageable(pageable)
                 .build();

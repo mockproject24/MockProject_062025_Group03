@@ -23,6 +23,7 @@ public class CaseMapper {
 
         return CaseDto.builder()
                 .caseId(esCase.getCaseId())
+                .caseName(esCase.getCaseName())
                 .typeCase(esCase.getTypeCaseLabel())
                 .typeCaseKey(esCase.getTypeCaseKey())
                 .severity(esCase.getSeverityLabel())

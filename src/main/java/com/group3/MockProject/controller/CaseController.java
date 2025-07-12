@@ -1,25 +1,14 @@
 package com.group3.MockProject.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group3.MockProject.constant.CaseType;
 import com.group3.MockProject.constant.SeverityType;
-import com.group3.MockProject.dto.request.CreateEvidenceRequest;
-import com.group3.MockProject.dto.request.CreateInterviewDto;
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.dto.request.CreateInvestigationRequest;
-import com.group3.MockProject.dto.request.CreateSuspectRequest;
+import com.group3.MockProject.dto.request.*;
 import com.group3.MockProject.dto.response.*;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.mapper.SuspectMapper;
-import com.group3.MockProject.service.CaseService;
-import com.group3.MockProject.service.EvidenceService;
-import com.group3.MockProject.service.InvestigationService;
-import com.group3.MockProject.service.ISuspectService;
-import com.group3.MockProject.service.InterviewService;
+import com.group3.MockProject.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,16 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.group3.MockProject.dto.request.CreateRecordInfoDto;
-import com.group3.MockProject.entity.Case;
-import com.group3.MockProject.mapper.SuspectMapper;
-import com.group3.MockProject.service.CaseService;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
