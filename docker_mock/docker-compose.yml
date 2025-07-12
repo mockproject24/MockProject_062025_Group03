@@ -1,0 +1,60 @@
+
+services:
+#  springboot-app:
+#    build:
+#      context: ../
+#      dockerfile: Dockerfile
+#    container_name: mock_springboot
+#    depends_on:
+#      - elasticsearch
+#    ports:
+#      - "8080:8080"
+#    env_file:
+#      - .env
+#    networks:
+#      - shared-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: mock_es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=mock-cluster
+      - node.name=mock-node
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - shared-net
+    command:
+      - bash
+      - -c
+      - |
+        if [ ! -d "plugins/analysis-icu" ]; then
+          elasticsearch-plugin install --batch analysis-icu;
+        fi
+        exec elasticsearch
+  # Kibana (v8.13.0)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: mock_kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://mock_es:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - shared-net
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  shared-net:
+    driver: bridge
+    external: true

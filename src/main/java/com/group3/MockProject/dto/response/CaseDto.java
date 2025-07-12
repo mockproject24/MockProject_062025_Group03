@@ -1,5 +1,6 @@
 package com.group3.MockProject.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,53 +29,42 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CaseDto {
 
-    /**
-     * Case unique identifier
-     */
     @JsonProperty("case_id")
     private String caseId;
 
-    /**
-     * Case number for display
-     */
     @JsonProperty("case_number")
     private String caseNumber;
 
-    /**
-     * Type of the case
-     */
     @JsonProperty("type_case")
     private String typeCase;
 
-    /**
-     * Severity level of the case
-     */
+    @JsonProperty("type_case_key")
+    private String typeCaseKey;
+
     @JsonProperty("severity")
     private String severity;
 
-    /**
-     * Current status of the case
-     */
+    @JsonProperty("severity_key")
+    private String severityKey;
+
     @JsonProperty("status")
     private String status;
 
-    /**
-     * Case creation timestamp
-     */
+    @JsonProperty("status_key")
+    private String statusKey;
+
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
-    /**
-     * Unit that received the case
-     */
     @JsonProperty("receiving_unit")
     private String receivingUnit;
 
-    /**
-     * Location where the case occurred
-     */
     @JsonProperty("location")
     private String location;
+
+    @JsonProperty("reporter_fullname")
+    private String reporterFullname;
 }

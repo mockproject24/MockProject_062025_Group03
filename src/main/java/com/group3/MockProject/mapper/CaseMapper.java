@@ -2,63 +2,39 @@ package com.group3.MockProject.mapper;
 
 import com.group3.MockProject.dto.response.CaseDto;
 import com.group3.MockProject.dto.response.CaseListDto;
+import com.group3.MockProject.elasticsearch.document.EsCase;
 import com.group3.MockProject.entity.Case;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class CaseMapper {
 
-    /**
-     * Converts a Case entity to a CaseDto.
-     *
-     * @param entity   the Case entity to convert
-     * @param location the location associated with the case
-     * @return the converted CaseDto
-     */
-    public CaseDto toDto(Case entity, String location) {
-        if (entity == null) {
-            return null;
-        }
-        return new CaseDto(
-                entity.getCaseId(),
-                "#" + entity.getCaseId(), // Use caseId since caseNumber doesn't exist
-                entity.getTypeCase().getLabel(),
-                entity.getSeverity().getLabel(),
-                entity.getStatus().getLabel(),
-                entity.getCreateAt(),
-                "Local PD – Investigation Division", // Default receiving unit
-                location
-        );
-    }
 
-    /**
-     * Converts a paginated list of Case entities to a CaseListDto.
-     *
-     * @param casePage the paginated list of Case entities
-     * @return the converted CaseListDto
-     */
-    public CaseListDto toDto(Page<Case> casePage) {
-        if (casePage == null) {
+
+    public CaseDto toDto(EsCase esCase) {
+        if (esCase == null) {
             return null;
         }
 
-        List<CaseDto> caseDtos = casePage.getContent()
-                .stream()
-                .map(item -> item.getReports().isEmpty() ?
-                        toDto(item, null) :
-                        toDto(item, item.getReports().get(0).getCaseLocation()))
-                .collect(Collectors.toList());
-
-        return new CaseListDto(
-                casePage.getNumber() + 1,
-                casePage.getSize(),
-                casePage.getTotalElements(),
-                caseDtos
-        );
+        return CaseDto.builder()
+                .caseId(esCase.getCaseId())
+                .typeCase(esCase.getTypeCaseLabel())
+                .typeCaseKey(esCase.getTypeCaseKey())
+                .severity(esCase.getSeverityLabel())
+                .severityKey(esCase.getSeverityKey())
+                .status(esCase.getStatusLabel())
+                .statusKey(esCase.getStatusKey())
+                .createdAt(esCase.getCreateAt() != null ?
+                        LocalDateTime.parse(esCase.getCreateAt()) : null)
+                .location(esCase.getCaseLocation())
+                .reporterFullname(esCase.getReporterFullname())
+                .build();
     }
+
 
 }
