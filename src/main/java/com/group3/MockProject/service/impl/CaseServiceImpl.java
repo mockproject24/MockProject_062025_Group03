@@ -212,6 +212,51 @@ public class CaseServiceImpl implements CaseService {
     }
 
     /**
+     * Retrieves officer case details for a specific case with pagination
+     * @param caseId The case identifier
+     * @param page Page number (0-based)
+     * @param pageSize Number of items per page
+     * @return List of OfficerCaseDetailDto containing officer case details
+     */
+    @Override
+    public List<OfficerCaseDetailDto> getOfficerCaseDetails(String caseId, int page, int pageSize) {
+        try {
+            // Verify case exists
+            Case caseEntity = getCaseById(caseId);
+            
+            Pageable pageable = PageRequest.of(page, pageSize);
+            Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
+            
+            return users.getContent().stream()
+                    .map(user -> convertToOfficerCaseDetailDto(user, caseEntity))
+                    .toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving officer case details: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Converts User entity to OfficerCaseDetailDto
+     * @param user The user entity
+     * @param caseEntity The case entity
+     * @return OfficerCaseDetailDto with officer case details
+     */
+    private OfficerCaseDetailDto convertToOfficerCaseDetailDto(User user, Case caseEntity) {
+        return OfficerCaseDetailDto.builder()
+                .officerId(user.getUsername())
+                .fullName(user.getFullName())
+                .presentStatus(user.getStatus() != null ? user.getStatus().getLabel() : "Active")
+                .role(user.getRole() != null ? user.getRole().getRoleId() : "Officer")
+                .phoneNumber(user.getPhoneNumber())
+                .zone("Sector 5, District 2") // Default zone - can be customized based on business logic
+                .description("Case assignment for " + caseEntity.getCaseName())
+                .medicalInfo("No medical information reported")
+                .supportDetails("Standard support unit assigned")
+                .assignmentDate(user.getDateAttended() != null ? user.getDateAttended() : caseEntity.getCreateAt())
+                .build();
+    }
+
+    /**
      * Creates a new record for a specific case
      * @param caseId The case identifier
      * @param requestDto The record creation data

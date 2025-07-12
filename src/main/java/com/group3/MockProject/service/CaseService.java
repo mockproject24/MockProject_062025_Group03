@@ -68,6 +68,15 @@ public interface CaseService {
     Page<UserResponseDto> getAssignedOfficers(String caseId, Pageable pageable);
 
     /**
+     * Retrieves officer case details for a specific case with pagination
+     * @param caseId The case identifier
+     * @param page Page number (0-based)
+     * @param pageSize Number of items per page
+     * @return List of OfficerCaseDetailDto containing officer case details
+     */
+    List<OfficerCaseDetailDto> getOfficerCaseDetails(String caseId, int page, int pageSize);
+
+    /**
      * Creates a new record for a specific case
      * @param caseId The case identifier
      * @param requestDto The record creation data
