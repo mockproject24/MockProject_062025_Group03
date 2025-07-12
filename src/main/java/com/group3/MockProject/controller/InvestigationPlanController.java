@@ -1,6 +1,7 @@
 package com.group3.MockProject.controller;
 
 import com.group3.MockProject.dto.request.CreateInvestigationPlanRequest;
+import com.group3.MockProject.dto.response.ApiResponse;
 import com.group3.MockProject.dto.response.CreateInvestigationRespone;
 import com.group3.MockProject.dto.response.InvestigationPlanResponse;
 import com.group3.MockProject.service.InvestigationService;
@@ -40,27 +41,30 @@ public class InvestigationPlanController {
     private final InvestigationService investigationService;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getInvestigations(
+    public ApiResponse<Map<String, Object>> getInvestigations(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sort", defaultValue = "createdAt,desc") String sort) {
+
         String[] sortParams = sort.split(",");
         String sortField = sortParams[0];
-        Sort.Direction direction = (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort.Direction direction = (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc"))
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
         Page<InvestigationPlanResponse> pageResult = investigationService.getInvestigations(pageable);
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "Success");
-        response.put("result", new HashMap<String, Object>() {{
-            put("content", pageResult.getContent());
-            put("totalElements", pageResult.getTotalElements());
-            put("totalPages", pageResult.getTotalPages());
-            put("size", pageResult.getSize());
-            put("number", pageResult.getNumber());
-        }});
-        return ResponseEntity.ok(response);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", pageResult.getContent());
+        result.put("totalElements", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages());
+        result.put("size", pageResult.getSize());
+        result.put("number", pageResult.getNumber());
+
+        return ApiResponse.success("Success", result);
     }
+
 
     @PostMapping("/cases/{caseId}/investigations")
     public ResponseEntity<ResponseDto<CreateInvestigationRespone>> createInvestigationPlan(
