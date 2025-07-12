@@ -5,16 +5,23 @@ import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.EvidenceResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
+import com.group3.MockProject.entity.User;
 import com.group3.MockProject.exception.ResourceNotFoundException;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
+import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.service.impl.EvidenceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -24,10 +31,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class EvidenceServiceImplTest {
 
     @Mock
     private EvidenceRepository evidenceRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @Mock
     private CaseRepository caseRepository;
@@ -39,9 +50,13 @@ class EvidenceServiceImplTest {
     private CreateEvidenceRequest testRequest;
     private MockMultipartFile testFile;
     private Evidence testEvidence;
+    private User testUser;
 
     @BeforeEach
     void setUp() throws Exception {
+        testUser = new User();
+        testUser.setFullName("Test User");
+
         testCase = new Case();
         testCase.setCaseId("case123");
 
@@ -65,12 +80,23 @@ class EvidenceServiceImplTest {
                 .evidenceType(testRequest.getEvidenceType())
                 .attachFile("http://localhost/uploads/evidence.jpg")
                 .caseEntity(testCase)
+                .user(testUser)
                 .build();
 
-        // Gán baseURI qua reflection
         Field baseUriField = EvidenceServiceImpl.class.getDeclaredField("baseURI");
         baseUriField.setAccessible(true);
         baseUriField.set(evidenceService, "http://localhost/uploads/");
+
+        // ✅ Mock SecurityContext để tránh NullPointerException
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("testUser");
+
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+
+        SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(testUser));
+
     }
 
     @Test
@@ -95,6 +121,7 @@ class EvidenceServiceImplTest {
         assertNotNull(response);
         assertEquals("case123", response.getCaseId());
         assertEquals("Test mô tả", response.getDescription());
+        assertEquals("Test User", response.getCollector());
     }
 
     @Test

@@ -38,4 +38,6 @@ public class EvidenceResponse {
     EvidenceType evidenceType;
     LocalDateTime collectedAt;
     Instant uploadedAt;
+    String collector;
+    String status;
 }
