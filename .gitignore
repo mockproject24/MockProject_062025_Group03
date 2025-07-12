@@ -36,3 +36,5 @@ build/
 src/main/resources/application-local.yml
 .env
 src/main/resources/application.yml
+
+src/main/resources/DataInitializer.sql
