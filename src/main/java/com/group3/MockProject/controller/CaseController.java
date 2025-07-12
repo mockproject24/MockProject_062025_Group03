@@ -118,18 +118,15 @@ public class CaseController {
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) String search) {
 
-        try {
-            if (page < 0 || pageSize <= 0) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
-            }
 
-            CaseListDto caseListDtos = caseService.getListCase(page, pageSize, search);
-            return ResponseEntity.ok(ApiResponse.success(caseListDtos));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.internalServerError("Error retrieving cases: " + e.getMessage()));
+        if (page < 0 || pageSize <= 0) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("Page and pageSize must be greater than 0"));
         }
+
+        CaseListDto caseListDtos = caseService.getListCase(page, pageSize, search);
+        return ResponseEntity.ok(ApiResponse.success(caseListDtos));
+
     }
 
     /**
