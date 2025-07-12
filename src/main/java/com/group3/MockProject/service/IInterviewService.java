@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * InterviewService
+ * IInterviewService
  * <p>
  * Interface defining interview service operations
  * <p>
@@ -22,7 +22,7 @@ import java.util.List;
  * 7/4/2025      User      Create
  * 7/10/2025     User      Update to match API spec exactly
  */
-public interface InterviewService {
+public interface IInterviewService {
     /**
      * Create new interview
      * @param caseId Case ID from URL path

@@ -6,7 +6,7 @@ import com.group3.MockProject.dto.response.InterviewResponseDto;
 import com.group3.MockProject.entity.*;
 import com.group3.MockProject.mapper.InterviewMapper;
 import com.group3.MockProject.repository.*;
-import com.group3.MockProject.service.InterviewService;
+import com.group3.MockProject.service.IInterviewService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class InterviewServiceImpl implements InterviewService {
+public class InterviewServiceImpl implements IInterviewService {
     // Repositories for database access
     private final InterviewRepository interviewRepository;
     private final InterviewFileRepository interviewFileRepository;
