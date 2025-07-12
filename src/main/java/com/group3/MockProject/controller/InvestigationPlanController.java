@@ -6,7 +6,6 @@ import com.group3.MockProject.dto.response.CreateInvestigationRespone;
 import com.group3.MockProject.dto.response.InvestigationPlanResponse;
 import com.group3.MockProject.service.InvestigationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,8 +40,7 @@ public class InvestigationPlanController {
     private final InvestigationService investigationService;
 
     @GetMapping
-    public ApiResponse<Map<String, Object>> getInvestigations(
-            @RequestParam(value = "page", defaultValue = "0") int page,
+    public ApiResponse<Map<String, Object>> getInvestigations(@RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sort", defaultValue = "createdAt,desc") String sort) {
 
@@ -67,14 +65,11 @@ public class InvestigationPlanController {
 
 
     @PostMapping("/cases/{caseId}/investigations")
-    public ResponseEntity<ResponseDto<CreateInvestigationRespone>> createInvestigationPlan(
+    public ResponseEntity<ApiResponse<CreateInvestigationRespone>> createInvestigationPlan(
             @ModelAttribute CreateInvestigationPlanRequest requestDto,
             @PathVariable Long caseId){
-
-
-
         CreateInvestigationRespone response = new CreateInvestigationRespone();
-        ResponseDto<CreateInvestigationRespone> CreateInvestigationRespone = null;
-        return ResponseEntity.ok(CreateInvestigationRespone);
+        ApiResponse<CreateInvestigationRespone> createInvestigationResponse = null;
+        return ResponseEntity.ok(createInvestigationResponse);
     }
 }

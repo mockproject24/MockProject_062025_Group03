@@ -5,7 +5,6 @@ import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.EvidenceResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
-import com.group3.MockProject.exception.ResourceNotFoundException;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
 import com.group3.MockProject.service.impl.EvidenceServiceImpl;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 

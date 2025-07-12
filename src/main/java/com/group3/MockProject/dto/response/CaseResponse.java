@@ -38,6 +38,9 @@ public class CaseResponse {
     @JsonProperty("case_number")
     private String caseNumber;
 
+    @JsonProperty("case_name")
+    private String caseName;
+
     @JsonProperty("type_case")
     private String typeCase;
 

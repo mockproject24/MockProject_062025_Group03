@@ -6,8 +6,8 @@ import com.group3.MockProject.dto.response.InvestigationPlanResponse;
 import com.group3.MockProject.dto.response.InvestigationResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.InvestigationPlan;
-import com.group3.MockProject.exception.ResourceNotFoundException;
-import com.group3.MockProject.exception.StorageException;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.InvestigationPlanRepository;
 import com.group3.MockProject.service.InvestigationService;
@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -143,7 +144,7 @@ public class InvestigationServiceImpl implements InvestigationService {
                     
                 } catch (Exception e) {
                     log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
-                    throw new StorageException("Failed to upload file: " + file.getOriginalFilename());
+                    throw new AppException(ErrorCode.FILE_EMPTY);
                 }
             }
         }

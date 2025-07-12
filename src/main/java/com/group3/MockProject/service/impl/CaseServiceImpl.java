@@ -1,12 +1,8 @@
 package com.group3.MockProject.service.impl;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.group3.MockProject.constant.CaseType;
+import com.group3.MockProject.constant.SeverityType;
+import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
 import com.group3.MockProject.dto.response.*;
 import com.group3.MockProject.elasticsearch.document.EsCase;
 import com.group3.MockProject.elasticsearch.service.CaseIndexService;
@@ -18,6 +14,8 @@ import com.group3.MockProject.mapper.CaseMapper;
 import com.group3.MockProject.mapper.EvidentMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
 import com.group3.MockProject.repository.*;
+import com.group3.MockProject.service.ICaseService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,14 +23,13 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
-import com.group3.MockProject.dto.response.CaseResponse;
-import com.group3.MockProject.dto.response.CaseListResponse;
-import com.group3.MockProject.dto.response.EvidentResponse;
-import com.group3.MockProject.dto.response.RecordInfoResponseResponse;
-import com.group3.MockProject.dto.response.UserResponseDto;
-import com.group3.MockProject.service.ICaseService;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * CaseServiceImpl
@@ -79,16 +76,20 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Retrieves paginated list of cases with optional search functionality
-     * @param page Page number (0-based)
-     * @param pageSize Number of items per page
-     * @param search Optional search term
+     *
+     * @param page        Page number (0-based)
+     * @param pageSize    Number of items per page
+     * @param search      Optional search term
+     * @param severitType
+     * @param caseType
+     * @param date
      * @return CaseListDto containing paginated case data
      */
     @Override
-    public CaseListResponse getListCase(int page, int pageSize, String search) {
-        SearchHits<EsCase> searchHits = caseIndexService.searchCases(search, page, pageSize);
+    public CaseListResponse getListCase(int page, int pageSize, String search, SeverityType severitType, CaseType caseType, LocalDateTime date) {
+        SearchHits<EsCase> searchHits = caseIndexService.searchCases(search, page, pageSize, severitType, caseType, date);
 
-        List<CaseResponse> caseResponses = searchHits.getSearchHits().stream()
+        List<CaseResponse> caseDtos = searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .map(caseMapper::toDto)
                 .toList();
@@ -97,7 +98,33 @@ public class CaseServiceImpl implements ICaseService {
                 .page(page + 1)
                 .pageSize(pageSize)
                 .total(searchHits.getTotalHits())
-                .data(caseResponses)
+                .data(caseDtos)
+                .build();
+    }
+
+    @Override
+    /**
+     * Retrieves case metadata including all available case types and severities
+     * @return CaseListMeta containing lists of case types and severities
+     */
+    public CaseListMetaResponse getCaseMeta() {
+        List<MetaDto> caseTypes = Arrays.stream(CaseType.values())
+                .map(caseType -> MetaDto.builder()
+                        .key(caseType.name())
+                        .label(caseType.getLabel())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<MetaDto> severities = Arrays.stream(SeverityType.values())
+                .map(severity -> MetaDto.builder()
+                        .key(severity.name())
+                        .label(severity.getLabel())
+                        .build())
+                .collect(Collectors.toList());
+
+        return CaseListMetaResponse.builder()
+                .caseTypes(caseTypes)
+                .severities(severities)
                 .build();
     }
 
@@ -116,7 +143,7 @@ public class CaseServiceImpl implements ICaseService {
     @Override
     public List<EvidentResponse<?>> getEvidences(String caseId) {
         Case caseEntity = caseRepository.findById(caseId)
-                .orElseThrow(() -> new MockProjectException("Case not found", 404));
+                .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
         List<Evidence> evidences = evidentRepository.findByCaseEntity(caseEntity);
 
@@ -208,7 +235,7 @@ public class CaseServiceImpl implements ICaseService {
      * @param caseEntity The case entity
      * @return OfficerCaseDetailDto with officer case details
      */
-    private OfficerCaseDetailResponse convertToOfficerCaseDetailDto(User user, Case caseEntity) {
+    private OfficerCaseDetailResponse convertToOfficerCaseDetailDto(User user, CaseDetailResponse caseEntity) {
         return OfficerCaseDetailResponse.builder()
                 .officerId(user.getUsername())
                 .fullName(user.getFullName())
@@ -295,6 +322,9 @@ public class CaseServiceImpl implements ICaseService {
                 endOfDay = date.atTime(LocalTime.MAX);
             }
 
+            boolean caseExists = caseRepository.existsById(caseId);
+            if (!caseExists) throw new AppException(ErrorCode.CASE_NOT_EXISTED);
+
             Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
                     caseId, status, date, startOfDay, endOfDay, pageable);
 
@@ -303,7 +333,7 @@ public class CaseServiceImpl implements ICaseService {
                     .pageSize(pageSize)
                     .total(suspectsPage.getTotalElements())
                     .totalPages(suspectsPage.getTotalPages())
-                    .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectDto).toList())
+                    .suspects(suspectsPage.getContent().stream().map(suspectMapper::toSuspectResponse).toList())
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("Error retrieving suspects: " + e.getMessage(), e);

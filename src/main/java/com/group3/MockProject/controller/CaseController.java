@@ -1,21 +1,23 @@
 package com.group3.MockProject.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group3.MockProject.constant.CaseType;
+import com.group3.MockProject.constant.SeverityType;
 import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.request.CreateInterviewRequest;
 import com.group3.MockProject.dto.request.CreateInvestigationRequest;
 import com.group3.MockProject.dto.request.CreateSuspectRequest;
 import com.group3.MockProject.dto.response.*;
-import com.group3.MockProject.service.IEvidenceService;
-import com.group3.MockProject.service.InvestigationService;
-import com.group3.MockProject.service.ISuspectService;
-import com.group3.MockProject.service.InterviewService;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
+import com.group3.MockProject.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.mapper.SuspectMapper;
-import com.group3.MockProject.service.ICaseService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,25 +62,52 @@ public class CaseController {
     private final ICaseService caseService;
     private final SuspectMapper suspectMapper;
     private final IEvidenceService evidenceService;
-    private final InterviewService interviewService;
+    private final IInterviewService interviewService;
     private final InvestigationService investigationService;
     private final ObjectMapper objectMapper;
     private final ISuspectService suspectService;
 
+    /**
+     * Retrieves case metadata including case types and severities
+     * @return ResponseEntity containing case metadata
+     */
+    @GetMapping("/case-meta")
+    public ApiResponse<CaseListMetaResponse> getCaseMeta() {
+        CaseListMetaResponse caseMeta = caseService.getCaseMeta();
+        return ApiResponse.<CaseListMetaResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get meta data successfully")
+                .result(caseMeta)
+                .build();
+    }
 
-    @GetMapping
+    /**
+     * Retrieves paginated list of cases with optional search
+     * @param page Page number (default: 0)
+     * @param pageSize Number of items per page (default: 10)
+     * @param search Optional search term
+     * @return ResponseEntity containing paginated cases data
+     */
+    @GetMapping("")
     public ApiResponse<CaseListResponse> getCaseLists(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String search) {
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) SeverityType severitType,
+            @RequestParam(required = false) CaseType caseType,
+            @RequestParam(required = false) LocalDateTime date) {
 
 
         if (page < 0 || pageSize <= 0) {
-            return ApiResponse.badRequest("Page and pageSize must be greater than 0");
+           throw new AppException(ErrorCode.CASE_PAGE_SIZE);
         }
 
-        CaseListResponse caseListDtos = caseService.getListCase(page, pageSize, search);
-        return ApiResponse.success(caseListDtos);
+        CaseListResponse caseListDtos = caseService.getListCase(page, pageSize, search, severitType, caseType, date);
+        return ApiResponse.<CaseListResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get list data cases successfully")
+                .result(caseListDtos)
+                .build();
 
     }
 
@@ -109,26 +137,17 @@ public class CaseController {
      * @return ApiResponse containing paginated suspects data
      */
     @GetMapping("/{caseId}/suspects")
-    public ApiResponse<> getAllSuspects(
+    public ApiResponse<?> getAllSuspects(
             @PathVariable("caseId") String caseId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "day", required = false) @DateTimeFormat(pattern = "MM/dd/yyyy") LocalDate date) {
-
-        try {
             return ApiResponse.<SuspectsResponseDto>builder()
                     .code(HttpStatus.OK.value())
                     .message("Get suspects succesfully")
                     .result(caseService.getAllSuspectsByCaseId(caseId, page, pageSize, status, date))
                     .build();
-        } catch (Exception e) {
-            return ApiResponse.<Void>builder()
-                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .message("Error retrieving suspects: " + e.getMessage())
-                    .result(null)
-                    .build();
-        }
     }
 
     /**
@@ -226,13 +245,9 @@ public class CaseController {
      */
     @GetMapping("/{caseId}/evidences")
     public ApiResponse<List<EvidentResponse<?>>> getEvidences(@PathVariable String caseId) {
-
         List<EvidentResponse<?>> evidences = caseService.getEvidences(caseId);
-
-        if (evidences.isEmpty()) {
+        if (evidences.isEmpty())
             return ApiResponse.success("No evidences found", evidences);
-        }
-
         return ApiResponse.success(evidences);
 
     }
@@ -273,7 +288,7 @@ public class CaseController {
      * @return ResponseDto containing created interview information
      */
     @PostMapping(value = "/{caseId}/interviews",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<InterviewResponse>> createInterview(
             @PathVariable String caseId,
@@ -286,7 +301,7 @@ public class CaseController {
 
             // STEP 1: Validate caseId
             if (caseId == null || caseId.trim().isEmpty()) {
-                throw new IllegalArgumentException("Case ID is required");
+                throw new AppException(ErrorCode.CASE_NOT_EXISTED);
             }
 
             // STEP 2: Parse JSON string to DTO
@@ -315,29 +330,14 @@ public class CaseController {
 
         } catch (IllegalArgumentException e) {
             log.error("Validation error: {}", e.getMessage());
-            return createErrorResponse(e, HttpStatus.BAD_REQUEST);
-
+            throw new AppException(ErrorCode.INVALID_INTERVIEW_DATA);
         } catch (EntityNotFoundException e) {
             log.error("Entity not found: {}", e.getMessage());
-            return createErrorResponse(e, HttpStatus.NOT_FOUND);
-
+            throw new AppException(ErrorCode.INTERVIEW_NOT_FOUND);
         } catch (Exception e) {
             log.error("Unexpected error occurred while creating interview: {}", e.getMessage(), e);
-            return createErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-    }
-
-    /**
-     * Create error response when exception occurs
-     */
-    private ResponseEntity<ApiResponse<InterviewResponse>> createErrorResponse(Exception e, HttpStatus status) {
-        ApiResponse<InterviewResponse> errorResponse = new ApiResponse<>(
-                status.value(),
-                e.getMessage(),
-                null
-        );
-
-        return ResponseEntity.status(status).body(errorResponse);
     }
 
 
@@ -369,7 +369,7 @@ public class CaseController {
      * @return ApiResponse containing created investigation information
      */
     @PostMapping(value = "/{caseId}/investigations",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<InvestigationResponse>> createInvestigation(
             @PathVariable String caseId,

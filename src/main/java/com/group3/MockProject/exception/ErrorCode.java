@@ -24,15 +24,16 @@ public enum ErrorCode {
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_KEY(9001, "Invalid key provided.", HttpStatus.BAD_REQUEST),
 
-    // ================= CASE (1000 - 1099) =================
+    // ================= CASE (1000 - 1099) ========================
     CASE_NOT_EXISTED(1001, "Case not existed", HttpStatus.NOT_FOUND),
+    CASE_PAGE_SIZE(1002, "Page and pageSize must be greater than 0", HttpStatus.BAD_REQUEST),
 
-    // ================= SUSPECT (1100 - 1199) =================
+    // ================= SUSPECT (1100 - 1199) =====================
     SUSPECT_NOT_EXISTED(1101, "Suspect not existed", HttpStatus.NOT_FOUND),
     SUSPECT_INVALID_NAME(1102, "Suspect full name is required and must not be blank", HttpStatus.BAD_REQUEST),
     SUSPECT_INVALID_ADDRESS(1103, "Suspect address is required and must not be blank", HttpStatus.BAD_REQUEST),
 
-    // ================= USER (1200 - 1299) =================
+    // ================= USER (1200 - 1299) ========================
     USER_NOT_EXISTED(1201, "User not existed", HttpStatus.NOT_FOUND),
     USER_EXISTED(1202, "User existed", HttpStatus.CONFLICT),
     USER_UNAUTHENTICATED(1203, "Unauthenticated", HttpStatus.UNAUTHORIZED),
@@ -41,6 +42,13 @@ public enum ErrorCode {
     FILE_EMPTY(1301, "File is empty. Please upload a file.", HttpStatus.BAD_REQUEST),
     FILE_INVALID_EXTENSION(1302, "Invalid file extension.", HttpStatus.BAD_REQUEST),
     FILE_UPLOAD_FAILED(1303, "File upload failed.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // ================= INTERVIEW (1400 - 1499) ===================
+    INTERVIEW_NOT_FOUND(1401, "Interview not found", HttpStatus.NOT_FOUND),
+    INTERVIEWER_NOT_FOUND(1402, "Interviewer not found", HttpStatus.NOT_FOUND),
+    INTERVIEWEE_NOT_FOUND(1403, "Interviewee not found", HttpStatus.NOT_FOUND),
+    INVALID_INTERVIEW_DATA(1404, "Invalid interview data provided", HttpStatus.BAD_REQUEST),
+    INVALID_INTERVIEWEE_TYPE(1405, "Invalid interviewee type", HttpStatus.BAD_REQUEST),
 
     ;
     ErrorCode(int code, String message, HttpStatus statusCode) {

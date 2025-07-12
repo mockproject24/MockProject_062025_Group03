@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
  * 7/9/2025      NGUYEN NGOC SY      Create
  */
 
-@Service
+//@Service
 public interface IEvidenceService {
     EvidenceResponse createEvidence(String caseId, CreateEvidenceRequest request, MultipartFile file);
     EvidenceResponse getEvidence(String caseId, String evidenceId);

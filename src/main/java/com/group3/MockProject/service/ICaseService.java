@@ -1,15 +1,15 @@
 package com.group3.MockProject.service;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import com.group3.MockProject.constant.CaseType;
+import com.group3.MockProject.constant.SeverityType;
+import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
 import com.group3.MockProject.dto.response.*;
-import com.group3.MockProject.dto.response.CaseDetailResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
-import com.group3.MockProject.entity.Case;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * CaseService
@@ -29,10 +29,6 @@ import com.group3.MockProject.entity.Case;
  */
 
 public interface ICaseService {
-    List<EvidentResponse<?>> getEvidences(String caseId);
-
-    CaseListResponse getListCase(int page, int pageSize, String search);
-
     /**
      * Retrieves a case by its unique identifier
      * @param caseId The unique identifier of the case
@@ -42,13 +38,19 @@ public interface ICaseService {
 
     /**
      * Retrieves paginated list of cases with optional search functionality
-     * @param page Page number (0-based)
-     * @param pageSize Number of items per page
-     * @param search Optional search term
+     *
+     * @param page        Page number (0-based)
+     * @param pageSize    Number of items per page
+     * @param search      Optional search term
+     * @param severitType
+     * @param caseType
+     * @param date
      * @return CaseListDto containing paginated case data
      */
-    CaseListResponse getListCase(int page, int pageSize, String search);
+    CaseListResponse getListCase(int page, int pageSize, String search, SeverityType severitType, CaseType caseType, LocalDateTime date);
 
+
+    CaseListMetaResponse getCaseMeta();
     /**
      * Retrieves all evidences for a specific case
      * @param caseId The case identifier
@@ -91,4 +93,6 @@ public interface ICaseService {
      * @return Page of suspects matching the criteria
      */
     SuspectsResponseDto getAllSuspectsByCaseId(String caseId, int page, int pageSize, String status, LocalDate date);
+
+
 }

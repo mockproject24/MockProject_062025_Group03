@@ -4,8 +4,8 @@ import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.EvidenceResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
-import com.group3.MockProject.exception.ResourceNotFoundException;
-import com.group3.MockProject.exception.StorageException;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
 import com.group3.MockProject.service.IEvidenceService;
@@ -15,6 +15,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -85,7 +86,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
             return toEvidenceResponse(evidence, fileUrl);
         } catch (URISyntaxException | IOException e) {
             log.error("Error while storing file: {}", e.getMessage(), e);
-            throw new StorageException("Failed to upload file");
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -123,7 +124,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
                 .anyMatch(ext -> fileName.toLowerCase().endsWith(ext));
 
         if (!isValid) {
-            throw new StorageException("Invalid file extension. Allowed: " + allowedExtensions);
+            throw new AppException(ErrorCode.FILE_INVALID_EXTENSION);
         }
 
         URI uri = new URI(baseURI + fileName);
@@ -162,7 +163,7 @@ public class EvidenceServiceImpl implements IEvidenceService {
             return toEvidenceResponse(evidence, fileUrl);
         } catch (URISyntaxException | IOException e) {
             log.error("Error while updating evidence file: {}", e.getMessage(), e);
-            throw new StorageException("Failed to update evidence");
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 

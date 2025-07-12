@@ -33,8 +33,7 @@ public class SuspectController {
     private final ISuspectService suspectService;
 
     @PostMapping(value = "/{caseId}/suspects", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ApiResponse<SuspectResponse> createSuspect(
-            @PathVariable String caseId,
+    ApiResponse<SuspectResponse> createSuspect(@PathVariable String caseId,
             @RequestPart(name = "request") @Valid CreateSuspectRequest request,
             @RequestPart(name = "file", required = false) MultipartFile file) {
         return ApiResponse.<SuspectResponse>builder()
