@@ -5,13 +5,22 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.group3.MockProject.dto.response.*;
+import com.group3.MockProject.elasticsearch.document.EsCase;
+import com.group3.MockProject.elasticsearch.service.CaseIndexService;
+import com.group3.MockProject.exception.MockProjectException;
+import com.group3.MockProject.mapper.CaseMapper;
+import com.group3.MockProject.mapper.EvidentMapper;
 import com.group3.MockProject.mapper.SuspectMapper;
+import com.group3.MockProject.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
@@ -25,11 +34,6 @@ import com.group3.MockProject.entity.Evidence;
 import com.group3.MockProject.entity.RecordInfo;
 import com.group3.MockProject.entity.Suspect;
 import com.group3.MockProject.entity.User;
-import com.group3.MockProject.repository.CaseRepository;
-import com.group3.MockProject.repository.EvidenceRepository;
-import com.group3.MockProject.repository.RecordInfoRepository;
-import com.group3.MockProject.repository.SuspectRepository;
-import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.service.CaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +69,11 @@ public class CaseServiceImpl implements CaseService {
     private final EvidenceRepository evidenceRepository;
     private final SuspectRepository suspectRepository;
     private final SuspectMapper suspectMapper;
+
+    private final CaseIndexService caseIndexService;
+    private final CaseMapper caseMapper;
+    private final EvidentRepository evidentRepository;
+    private final EvidentMapper mapper;
     /**
      * Retrieves a case by its unique identifier
      * @param caseId The unique identifier of the case
@@ -86,30 +95,19 @@ public class CaseServiceImpl implements CaseService {
      */
     @Override
     public CaseListDto getListCase(int page, int pageSize, String search) {
-        try {
-            Pageable pageable = PageRequest.of(page, pageSize);
-            Page<Case> casePage;
+        SearchHits<EsCase> searchHits = caseIndexService.searchCases(search, page, pageSize);
 
-            if (search != null && !search.trim().isEmpty()) {
-                // TODO: Implement search functionality when search repository method is available
-                casePage = caseRepository.findAll(pageable);
-            } else {
-                casePage = caseRepository.findAll(pageable);
-            }
+        List<CaseDto> caseDtos = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .map(caseMapper::toDto)
+                .toList();
 
-            List<CaseDto> caseDtos = casePage.getContent().stream()
-                    .map(this::convertToCaseDto)
-                    .toList();
-
-            return CaseListDto.builder()
-                    .page(page + 1) // Convert to 1-based for response
-                    .pageSize(pageSize)
-                    .total(casePage.getTotalElements())
-                    .data(caseDtos)
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Error retrieving cases: " + e.getMessage(), e);
-        }
+        return CaseListDto.builder()
+                .page(page + 1)
+                .pageSize(pageSize)
+                .total(searchHits.getTotalHits())
+                .data(caseDtos)
+                .build();
     }
 
     /**
@@ -117,14 +115,53 @@ public class CaseServiceImpl implements CaseService {
      * @param caseId The case identifier
      * @return List of evidence DTOs
      */
+    /**
+     * Retrieves a list of evidences associated with a specific case.
+     *
+     * @param caseId the unique identifier of the case
+     * @return a list of EvidentDto objects containing evidence details
+     * @throws MockProjectException if the case is not found
+     */
     @Override
     public List<EvidentDto<?>> getEvidences(String caseId) {
-        try {
-            // TODO: Implement evidence retrieval when evidence repository methods are available
-            return new ArrayList<>();
-        } catch (Exception e) {
-            throw new RuntimeException("Error retrieving evidences: " + e.getMessage(), e);
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new MockProjectException("Case not found", 404));
+
+        List<Evidence> evidences = evidentRepository.findByCaseEntity(caseEntity);
+
+        List<EvidentDto<?>> evidentDtos = new ArrayList<>();
+
+        for (Evidence evidence : evidences) {
+            EvidentDto evidenceDto = mapper.toDto(evidence);
+            if (evidence.getDigitalInvest() != null) {
+                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<DigitalInvestDto>(
+                        "DigitalInvest",
+                        mapper.toDto(evidence.getDigitalInvest())
+                ));
+            } else if (evidence.getFinancialInvest() != null) {
+                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<>(
+                        "FinancialInvest",
+                        mapper.toDto(evidence.getFinancialInvest())
+                ));
+            } else if (evidence.getForensicInvest() != null) {
+                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<>(
+                        "ForensicInvest",
+                        mapper.toDto(evidence.getForensicInvest())
+                ));
+            } else if (evidence.getPhysicalInvest() != null) {
+                evidenceDto.setInvestigationDetail(new InvestigationDetailDto<>(
+                        "PhysicalInvest",
+                        mapper.toDto(evidence.getPhysicalInvest())
+                ));
+            }
+
+            evidenceDto.setRecordInfo(evidence.getRecordInfos().stream().map(mapper::toDto).collect(Collectors.toSet()));
+            evidenceDto.setMeasureSurvey(evidence.getMeasureSurveys().stream().map(mapper::toDto).collect(Collectors.toSet()));
+
+            evidentDtos.add(evidenceDto);
         }
+
+        return evidentDtos;
     }
 
     /**
