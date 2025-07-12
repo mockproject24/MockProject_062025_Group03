@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,14 +24,16 @@ import java.util.Map;
  * <p>
  * Version 1.0
  * <p>
- * Date: 04/07/2025
+ * Date: 08-07-2025
  * <p>
  * Copyright
  * <p>
  * Modification Logs:
- * DATE              AUTHOR                DESCRIPTION
+ * DATE               AUTHOR           DESCRIPTION
  * -------------------------------------------------------------
  * 04/07/2025        Nguyễn Bảo Kha        Create
+ *   08/07/2025         Ngoc Nghia       update
+
  */
 
 @RestController
@@ -39,6 +42,13 @@ import java.util.Map;
 public class InvestigationPlanController {
     private final InvestigationService investigationService;
 
+    /**
+     * Retrieves paginated list of investigation plans with sorting
+     * @param page Page number (default: 0)
+     * @param size Number of items per page (default: 10)
+     * @param sort Sort criteria (default: createdAt,desc)
+     * @return ApiResponse containing paginated investigation plans data
+     */
     @GetMapping
     public ApiResponse<Map<String, Object>> getInvestigations(@RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
@@ -60,16 +70,29 @@ public class InvestigationPlanController {
         result.put("size", pageResult.getSize());
         result.put("number", pageResult.getNumber());
 
-        return ApiResponse.success("Success", result);
+        return ApiResponse.<Map<String, Object>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Success")
+                .result(result)
+                .build();
     }
 
 
+    /**
+     * Creates a new investigation plan for a specific case
+     * @param requestDto The investigation plan creation request data
+     * @param caseId The unique identifier of the case
+     * @return ApiResponse containing the created investigation plan response
+     */
     @PostMapping("/cases/{caseId}/investigations")
-    public ResponseEntity<ApiResponse<CreateInvestigationRespone>> createInvestigationPlan(
+    public ApiResponse<CreateInvestigationRespone> createInvestigationPlan(
             @ModelAttribute CreateInvestigationPlanRequest requestDto,
             @PathVariable Long caseId){
         CreateInvestigationRespone response = new CreateInvestigationRespone();
-        ApiResponse<CreateInvestigationRespone> createInvestigationResponse = null;
-        return ResponseEntity.ok(createInvestigationResponse);
+        return ApiResponse.<CreateInvestigationRespone>builder()
+                .code(HttpStatus.OK.value())
+                .message("Investigation plan created successfully")
+                .result(response)
+                .build();
     }
 }

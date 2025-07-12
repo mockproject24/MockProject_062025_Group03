@@ -4,10 +4,12 @@ import com.group3.MockProject.dto.request.CreateInterviewRequest;
 import com.group3.MockProject.dto.request.QuestionRequest;
 import com.group3.MockProject.dto.response.InterviewResponse;
 import com.group3.MockProject.entity.*;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.mapper.InterviewMapper;
 import com.group3.MockProject.repository.*;
 import com.group3.MockProject.service.IInterviewService;
-import jakarta.persistence.EntityNotFoundException;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -113,7 +115,7 @@ public class InterviewServiceImpl implements IInterviewService {
         log.debug("Validating interview data");
 
         if (dto == null) {
-            throw new IllegalArgumentException("Interview data is required");
+            throw new AppException(ErrorCode.INVALID_INTERVIEW_DATA);
         }
 
         // Validate time fields
@@ -131,15 +133,15 @@ public class InterviewServiceImpl implements IInterviewService {
      */
     private void validateTimeFields(CreateInterviewRequest dto) {
         if (dto.getStartTime() == null) {
-            throw new IllegalArgumentException("Start time is required");
+            throw new AppException(ErrorCode.INVALID_PARAMETERS, "Start time is required");
         }
 
         if (dto.getEndTime() == null) {
-            throw new IllegalArgumentException("End time is required");
+            throw new AppException(ErrorCode.INVALID_PARAMETERS, "End time is required");
         }
 
         if (dto.getEndTime().isBefore(dto.getStartTime())) {
-            throw new IllegalArgumentException("End time must be after start time");
+            throw new AppException(ErrorCode.INVALID_TIME_RANGE);
         }
     }
 
@@ -148,27 +150,27 @@ public class InterviewServiceImpl implements IInterviewService {
      */
     private void validateRequiredFields(CreateInterviewRequest dto) {
         if (isStringEmpty(dto.getLocation())) {
-            throw new IllegalArgumentException("Location is required");
+            throw new AppException(ErrorCode.INVALID_LOCATION);
         }
 
         if (isStringEmpty(dto.getInterviewerId())) {
-            throw new IllegalArgumentException("Interviewer ID is required");
+            throw new AppException(ErrorCode.INTERVIEWER_NOT_FOUND);
         }
 
         if (isStringEmpty(dto.getIntervieweeType())) {
-            throw new IllegalArgumentException("Interviewee type is required");
+            throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
         }
 
         if (!isValidIntervieweeType(dto.getIntervieweeType())) {
-            throw new IllegalArgumentException("Interviewee type must be SUSPECT, VICTIM, or WITNESS");
+            throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
         }
 
         if (isStringEmpty(dto.getIntervieweeIdCard())) {
-            throw new IllegalArgumentException("Interviewee ID card is required");
+            throw new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND);
         }
 
         if (!isValidIdCardFormat(dto.getIntervieweeIdCard())) {
-            throw new IllegalArgumentException("Interviewee ID card must be 9-12 digits");
+            throw new AppException(ErrorCode.INVALID_PARAMETERS, "Interviewee ID card must be 9-12 digits");
         }
     }
 
@@ -177,7 +179,7 @@ public class InterviewServiceImpl implements IInterviewService {
      */
     private void validateQuestionsList(List<QuestionRequest> questions) {
         if (questions == null || questions.isEmpty()) {
-            throw new IllegalArgumentException("At least one question is required");
+            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "At least one question is required");
         }
 
         // Validate each question
@@ -191,19 +193,19 @@ public class InterviewServiceImpl implements IInterviewService {
      */
     private void validateSingleQuestion(QuestionRequest question, int questionNumber) {
         if (question == null) {
-            throw new IllegalArgumentException("Question " + questionNumber + " cannot be null");
+            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "Question " + questionNumber + " cannot be null");
         }
 
         if (isStringEmpty(question.getQuestion())) {
-            throw new IllegalArgumentException("Question " + questionNumber + ": Question text is required");
+            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "Question " + questionNumber + ": Question text is required");
         }
 
         if (isStringEmpty(question.getAnswer())) {
-            throw new IllegalArgumentException("Question " + questionNumber + ": Answer is required");
+            throw new AppException(ErrorCode.INVALID_QUESTION_DATA, "Question " + questionNumber + ": Answer is required");
         }
 
         if (!isValidLevelOfTrust(question.getLevelOfTrust())) {
-            throw new IllegalArgumentException("Question " + questionNumber + ": Level of trust must be 'a', 'b', or 'c'");
+            throw new AppException(ErrorCode.INVALID_LEVEL_OF_TRUST, "Question " + questionNumber + ": Level of trust must be 'a', 'b', or 'c'");
         }
     }
 
@@ -234,8 +236,7 @@ public class InterviewServiceImpl implements IInterviewService {
      */
     private User findInterviewerById(String interviewerId) {
         return userRepository.findById(interviewerId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Interviewer not found with ID: " + interviewerId));
+                .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWER_NOT_FOUND));
     }
 
     // ================================
@@ -264,7 +265,7 @@ public class InterviewServiceImpl implements IInterviewService {
                     log.info("File uploaded successfully: {}", savedFileName);
                 } catch (Exception e) {
                     log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
-                    throw new RuntimeException("Failed to upload file: " + file.getOriginalFilename());
+                    throw new AppException(ErrorCode.FILE_UPLOAD_FAILED, "Failed to upload file: " + file.getOriginalFilename(), e);
                 }
             }
         }
@@ -307,21 +308,18 @@ public class InterviewServiceImpl implements IInterviewService {
         String originalFileName = file.getOriginalFilename();
 
         if (originalFileName == null || originalFileName.isEmpty()) {
-            throw new IllegalArgumentException("File name cannot be empty");
+            throw new AppException(ErrorCode.INVALID_FILE_NAME);
         }
 
         // Check file extension
         String fileExtension = getFileExtension(originalFileName);
         if (!ALLOWED_FILE_TYPES.contains(fileExtension.toLowerCase())) {
-            throw new IllegalArgumentException(
-                    "File type not allowed: " + fileExtension +
-                            ". Allowed types: " + ALLOWED_FILE_TYPES
-            );
+            throw new AppException(ErrorCode.FILE_INVALID_EXTENSION);
         }
 
         // Check file size
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File size too large. Maximum allowed: 50MB");
+            throw new AppException(ErrorCode.FILE_TOO_LARGE);
         }
     }
 
@@ -390,7 +388,7 @@ public class InterviewServiceImpl implements IInterviewService {
                 setWitnessAsInterviewee(interview, idCardNumber);
                 break;
             default:
-                throw new IllegalArgumentException("Invalid interviewee type: " + intervieweeType);
+                throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
         }
     }
 
@@ -411,7 +409,7 @@ public class InterviewServiceImpl implements IInterviewService {
         }
 
         if (foundSuspect == null) {
-            throw new EntityNotFoundException("Suspect not found with ID card: " + idCard);
+            throw new AppException(ErrorCode.SUSPECT_NOT_EXISTED);
         }
 
         interview.setSuspectInterviewee(foundSuspect);
@@ -433,7 +431,7 @@ public class InterviewServiceImpl implements IInterviewService {
         }
 
         if (foundVictim == null) {
-            throw new EntityNotFoundException("Victim not found with ID card: " + idCard);
+            throw new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND);
         }
 
         interview.setVictimInterviewee(foundVictim);
@@ -457,7 +455,7 @@ public class InterviewServiceImpl implements IInterviewService {
         }
 
         if (foundWitness == null) {
-            throw new EntityNotFoundException("Witness not found with ID card: " + idCard);
+            throw new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND);
         }
 
         interview.setWitnessInterviewee(foundWitness);
