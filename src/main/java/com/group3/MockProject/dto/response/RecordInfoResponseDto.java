@@ -1,5 +1,6 @@
 package com.group3.MockProject.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
  */
 
 @Data
+@Builder
 public class RecordInfoResponseDto {
     private String recordInfoId;
     private String typeName;

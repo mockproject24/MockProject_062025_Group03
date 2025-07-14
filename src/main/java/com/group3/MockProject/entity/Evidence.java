@@ -22,6 +22,7 @@ import java.util.Set;
         "recordInfos", "caseEntity", "user", "report", "warrant",
         "casesEvidences", "evidencesSuspects", "measureSurveys"
 })
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Evidence {
     @Id

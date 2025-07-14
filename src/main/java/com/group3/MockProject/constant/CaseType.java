@@ -4,18 +4,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * CaseType
- * <p>
- * Provides business logic for managing employment details.
- * <p>
  * Version 1.0
  * Date: 08/07/2025
- * <p>
  * Copyright
- * <p>
  * Modification Logs:
- * DATE         AUTHOR       DESCRIPTION
- * -------------------------------------
- * 08/07/2025      ASUS      Create
+ * DATE        AUTHOR        DESCRIPTION
  */
 public enum CaseType {
     ROBBERY("Robbery"),
@@ -32,5 +25,4 @@ public enum CaseType {
     public String getLabel() {
         return label;
     }
-
 }

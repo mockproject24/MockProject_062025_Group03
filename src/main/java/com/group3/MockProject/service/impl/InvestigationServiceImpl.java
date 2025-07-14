@@ -39,10 +39,17 @@ public class InvestigationServiceImpl implements InvestigationService {
     @Override
     public Page<InvestigationPlanResponseDto> getInvestigations(Pageable pageable) {
         Page<InvestigationPlan> plansPage = investigationPlanRepository.findAllActivePlans(pageable);
+
         return plansPage.map(plan -> {
             // Fetch related Case
             Case caseEntity = caseRepository.findById(plan.getCaseEntity().getCaseId())
-                    .orElseThrow(() -> new RuntimeException("Case not found for plan: " + plan.getInvestigationPlanId()));
+                    .orElseThrow(() ->
+                            new RuntimeException("Case not found for plan: " + plan.getInvestigationPlanId()));
+
+            String officerUsername = null;
+            if (plan.getCreatedOfficer() != null) {
+                officerUsername = plan.getCreatedOfficer().getUsername();
+            }
 
             return new InvestigationPlanResponseDto(
                     plan.getInvestigationPlanId(),
@@ -53,8 +60,10 @@ public class InvestigationServiceImpl implements InvestigationService {
                     plan.getStatus(),
                     plan.getCreatedAt(),
                     plan.getPlanContent(),
-                    plan.isDeleted()
+                    plan.isDeleted(),
+                    officerUsername
             );
         });
     }
+
 }

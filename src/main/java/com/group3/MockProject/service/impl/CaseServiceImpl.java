@@ -15,6 +15,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoDto;
+import com.group3.MockProject.dto.response.CaseDto;
+import com.group3.MockProject.dto.response.CaseListDto;
+import com.group3.MockProject.dto.response.EvidentDto;
+import com.group3.MockProject.dto.response.RecordInfoResponseDto;
+import com.group3.MockProject.dto.response.UserResponseDto;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
 import com.group3.MockProject.entity.RecordInfo;
@@ -27,6 +32,7 @@ import com.group3.MockProject.repository.SuspectRepository;
 import com.group3.MockProject.repository.UserRepository;
 import com.group3.MockProject.service.CaseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -135,7 +141,7 @@ public class CaseServiceImpl implements CaseService {
                     user.getUsername(),
                     user.getFullName(),
                     user.getAvatarUrl(),
-                    null, // email removed from User entity
+//                    null, // email removed from User entity
                     user.getPhoneNumber(),
                     user.getRole() != null ? user.getRole().getRoleId() : null
             ));
@@ -157,6 +163,16 @@ public class CaseServiceImpl implements CaseService {
             Case caseEntity = caseRepository.findById(caseId)
                     .orElseThrow(() -> new RuntimeException("Case not found: " + caseId));
 
+            Evidence evidence;
+            if (requestDto.getEvidenceId() != null) {
+                evidence = evidenceRepository.findById(requestDto.getEvidenceId())
+                        .orElseThrow(() -> new RuntimeException("Evidence not found: " + requestDto.getEvidenceId()));
+            } else {
+                evidence = new Evidence();
+                evidence.setCaseEntity(caseEntity);
+                evidence = evidenceRepository.save(evidence);
+            }
+
             RecordInfo record = new RecordInfo();
             record.setTypeName(requestDto.getTypeName());
             record.setSource(requestDto.getSource());
@@ -164,24 +180,24 @@ public class CaseServiceImpl implements CaseService {
                     requestDto.getDateCollected() : LocalDateTime.now());
             record.setSummary(requestDto.getSummary());
             record.setDeleted(requestDto.getIsDeleted() != null ? requestDto.getIsDeleted() : false);
-            record.setEvidence(null); // Set to null as evidence handling is not implemented
+            record.setEvidence(evidence);
 
             RecordInfo saved = recordInfoRepository.saveAndFlush(record);
 
-            RecordInfoResponseDto responseDto = new RecordInfoResponseDto();
-            responseDto.setRecordInfoId(saved.getRecordInfoId());
-            responseDto.setTypeName(saved.getTypeName());
-            responseDto.setSource(saved.getSource());
-            responseDto.setDateCollected(saved.getDateCollected());
-            responseDto.setSummary(saved.getSummary());
-            responseDto.setIsDeleted(saved.isDeleted());
-            responseDto.setEvidenceId(null);
-            return responseDto;
+            return RecordInfoResponseDto.builder()
+                    .recordInfoId(saved.getRecordInfoId())
+                    .typeName(saved.getTypeName())
+                    .source(saved.getSource())
+                    .dateCollected(saved.getDateCollected())
+                    .summary(saved.getSummary())
+                    .isDeleted(saved.isDeleted())
+                    .evidenceId(evidence.getEvidenceId())
+                    .build();
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new RuntimeException("Error creating record: " + ex.getMessage(), ex);
         }
     }
-
 
     /**
      * Retrieves suspects for a specific case with filtering options

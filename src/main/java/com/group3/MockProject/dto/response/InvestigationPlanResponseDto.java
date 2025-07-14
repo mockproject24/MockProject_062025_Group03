@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InvestigationPlanResponseDto {
     private String investigationPlanId;
-//    private String createdOfficerId;
     private String caseId;
     private String severity;
     private LocalDateTime deadlineDate;
@@ -20,4 +19,5 @@ public class InvestigationPlanResponseDto {
     private LocalDateTime createAt;
     private String planContent;
     private Boolean isDeleted;
+    private String createdOfficerUsername;
 } 

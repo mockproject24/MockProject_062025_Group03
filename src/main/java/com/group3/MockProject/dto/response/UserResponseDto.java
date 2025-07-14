@@ -13,7 +13,7 @@ public class UserResponseDto {
     private String username;
     private String fullname;
     private String avatarUrl;
-    private String email;
+//    private String email;
     private String phoneNumber;
     private String role;
 } 

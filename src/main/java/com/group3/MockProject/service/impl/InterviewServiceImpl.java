@@ -102,9 +102,9 @@ public class InterviewServiceImpl implements InterviewService {
 
         // Find interview in DB by interview full name (throw exception if not found)
         User interviewer = userRepository
-                .findByFullname(createInterviewDto.getInterviewer())
+                .findByFullName(createInterviewDto.getInterviewer())
                 .orElseThrow(() -> new EntityNotFoundException("Interviewer not found with " + createInterviewDto.getInterviewer()));
-        interview.setInterviewer(interviewer);
+//        interview.setInterviewId(interviewer);
         interview.setTypeInterviewee(createInterviewDto.getIntervieweeType());
 
         //Todo Case 1: Interview witness
