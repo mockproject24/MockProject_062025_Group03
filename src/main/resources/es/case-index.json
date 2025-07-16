@@ -1,0 +1,77 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "index.max_ngram_diff": 18,
+    "analysis": {
+      "tokenizer": {
+        "ngram_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": ["letter", "digit"]
+        }
+      },
+      "analyzer": {
+        "ngram_analyzer": {
+          "type": "custom",
+          "tokenizer": "ngram_tokenizer",
+          "filter": ["lowercase"]
+        },
+        "ngram_search_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "case_id": {
+        "type": "keyword"
+      },
+      "case_name": {
+        "type": "text",
+        "analyzer": "ngram_analyzer",
+        "search_analyzer": "ngram_search_analyzer"
+      },
+      "severity_key": {
+        "type": "keyword"
+      },
+      "severity_label": {
+        "type": "text",
+        "analyzer": "ngram_analyzer",
+        "search_analyzer": "ngram_search_analyzer"
+      },
+      "type_case_key": {
+        "type": "keyword"
+      },
+      "type_case_label": {
+        "type": "text",
+        "analyzer": "ngram_analyzer",
+        "search_analyzer": "ngram_search_analyzer"
+      },
+      "status_key": {
+        "type": "keyword"
+      },
+      "status_label": {
+        "type": "text",
+        "analyzer": "ngram_analyzer",
+        "search_analyzer": "ngram_search_analyzer"
+      },
+      "create_at": {
+        "type": "date"
+      },
+      "reporter_fullname": {
+        "type": "text",
+        "analyzer": "ngram_analyzer",
+        "search_analyzer": "ngram_search_analyzer"
+      },
+      "case_location": {
+        "type": "text",
+        "analyzer": "ngram_analyzer",
+        "search_analyzer": "ngram_search_analyzer"
+      }
+    }
+  }
+}

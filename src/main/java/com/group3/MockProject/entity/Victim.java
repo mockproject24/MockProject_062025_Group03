@@ -27,6 +27,9 @@ public class Victim {
     @Column(name = "fullname")
     String fullname;
 
+    @Column(name = "victim_id_card", nullable = false, unique = true)
+    Long victimIdCard; // add unique column for victim
+
     @Column(name = "contact")
     String contact;
 

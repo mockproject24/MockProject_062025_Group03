@@ -4,17 +4,18 @@ import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.EvidenceResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
-import com.group3.MockProject.exception.ResourceNotFoundException;
-import com.group3.MockProject.exception.StorageException;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
-import com.group3.MockProject.service.EvidenceService;
+import com.group3.MockProject.service.IEvidenceService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,11 +52,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
-public class EvidenceServiceImpl implements EvidenceService {
+public class EvidenceServiceImpl implements IEvidenceService {
     @Override
     public EvidenceResponse getEvidence(String caseId, String evidenceId) {
         Evidence evidence = evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId(caseId, evidenceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evidence not found with ID: " + evidenceId));
+                .orElseThrow(() -> new AppException(ErrorCode.EVIDENCE_NOT_FOUND));
 
         return toEvidenceResponse(evidence, evidence.getAttachFile());
     }
@@ -71,7 +72,7 @@ public class EvidenceServiceImpl implements EvidenceService {
     public EvidenceResponse createEvidence(String caseId, CreateEvidenceRequest request, MultipartFile file) {
         try {
             var caseEntity = caseRepository.findById(caseId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Case not found with ID: " + caseId));
+                    .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
             String fileUrl = null;
             if (file != null && !file.isEmpty()) {
@@ -85,7 +86,7 @@ public class EvidenceServiceImpl implements EvidenceService {
             return toEvidenceResponse(evidence, fileUrl);
         } catch (URISyntaxException | IOException e) {
             log.error("Error while storing file: {}", e.getMessage(), e);
-            throw new StorageException("Failed to upload file");
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -123,7 +124,7 @@ public class EvidenceServiceImpl implements EvidenceService {
                 .anyMatch(ext -> fileName.toLowerCase().endsWith(ext));
 
         if (!isValid) {
-            throw new StorageException("Invalid file extension. Allowed: " + allowedExtensions);
+            throw new AppException(ErrorCode.FILE_INVALID_EXTENSION);
         }
 
         URI uri = new URI(baseURI + fileName);
@@ -135,4 +136,36 @@ public class EvidenceServiceImpl implements EvidenceService {
 
         return fileName;
     }
+
+    @Override
+    public EvidenceResponse updateEvidence(String evidenceId, CreateEvidenceRequest request, MultipartFile file) {
+        try {
+            // Tìm evidence theo evidenceId
+            var evidence = evidenceRepository.findById(evidenceId)
+                    .orElseThrow(() -> new AppException(ErrorCode.EVIDENCE_NOT_FOUND));
+
+            // Nếu có file mới, thực hiện lưu file và cập nhật đường dẫn
+            String fileUrl = evidence.getAttachFile();
+            if (file != null && !file.isEmpty()) {
+                String storedFileName = store(file);
+                fileUrl = baseURI + storedFileName;
+            }
+
+            // Cập nhật các trường thông tin
+            evidence.setDescription(request.getDescription());
+            evidence.setCurrentLocation(request.getCurrentLocation());
+            evidence.setEvidenceType(request.getEvidenceType());
+            evidence.setCollectedAt(request.getCollectedAt() != null ? request.getCollectedAt() : evidence.getCollectedAt());
+            evidence.setAttachFile(fileUrl);
+
+            evidence = evidenceRepository.save(evidence);
+
+            return toEvidenceResponse(evidence, fileUrl);
+        } catch (URISyntaxException | IOException e) {
+            log.error("Error while updating evidence file: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
+
 }

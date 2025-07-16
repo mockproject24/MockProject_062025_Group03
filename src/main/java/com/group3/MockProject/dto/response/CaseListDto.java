@@ -28,22 +28,22 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CaseListDto {
-    
+
     /**
      * Current page number
      */
     private Integer page;
-    
+
     /**
      * Number of items per page
      */
     private Integer pageSize;
-    
+
     /**
      * Total number of cases
      */
     private Long total;
-    
+
     /**
      * List of cases data
      */

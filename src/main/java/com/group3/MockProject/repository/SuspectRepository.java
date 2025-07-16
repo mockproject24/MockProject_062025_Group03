@@ -10,11 +10,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * SuspectRepository
  *
- * Provides data access layer for Suspect entity operations.
+ * Repository for Suspect entity operations.
+ * Provides data access methods for suspect management and filtering.
  *
  * Version 1.0
  *
@@ -26,6 +28,7 @@ import java.time.LocalDateTime;
  * DATE                 AUTHOR          DESCRIPTION
  * -----------------------------------------------------------------------
  * 08-07-2025         Group3            Create
+ * 12-07-2025         FongFox           Update
  */
 @Repository
 public interface SuspectRepository extends JpaRepository<Suspect, String> {
@@ -42,8 +45,8 @@ public interface SuspectRepository extends JpaRepository<Suspect, String> {
     @Query("SELECT s FROM Suspect s WHERE " +
            "(:caseId IS NULL OR s.caseEntity.caseId = :caseId) AND " +
            "(:status IS NULL OR s.status = :status) AND " +
-           "(:startOfDay IS NULL OR s.catchTime >= :startOfDay) AND " +
-           "(:endOfDay IS NULL OR s.catchTime <= :endOfDay)" +
+           "(:startOfDay IS NULL OR s.uploadedAt >= :startOfDay) AND " +
+           "(:endOfDay IS NULL OR s.uploadedAt <= :endOfDay)" +
             "AND s.isDeleted = false ")
     Page<Suspect> findByCaseIdAndStatusAndCatchTime(
             @Param("caseId") String caseId,
@@ -52,4 +55,10 @@ public interface SuspectRepository extends JpaRepository<Suspect, String> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay,
             Pageable pageable);
+
+    /**
+     * Finds suspect by ID card number
+     * Used for interview participant verification
+     */
+    Optional<Suspect> findBySuspectIdCard(Long suspectIdCard);
 }

@@ -1,183 +1,200 @@
 package com.group3.MockProject.service.impl;
 
-import com.group3.MockProject.dto.request.CreateInterviewDto;
-import com.group3.MockProject.dto.request.QuestionDto;
+import com.group3.MockProject.dto.request.CreateInterviewRequest;
+import com.group3.MockProject.dto.request.QuestionRequest;
+import com.group3.MockProject.dto.response.InterviewResponse;
 import com.group3.MockProject.entity.*;
-import com.group3.MockProject.repository.InterviewRepository;
-import com.group3.MockProject.repository.UserRepository;
-import com.group3.MockProject.repository.VictimRepository;
-import com.group3.MockProject.repository.WitnessRepository;
-// TODO: Uncomment when VictimInterview entity is properly implemented
-// import com.group3.MockProject.repository.VictimInterviewRepository;
-// TODO: Uncomment when WitnessInterview entity is properly implemented
-// import com.group3.MockProject.repository.WitnessInterviewRepository;
-import com.group3.MockProject.service.InterviewService;
-import jakarta.persistence.EntityNotFoundException;
-import org.apache.coyote.BadRequestException;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
+import com.group3.MockProject.mapper.InterviewMapper;
+import com.group3.MockProject.repository.*;
+import com.group3.MockProject.service.IInterviewService;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
  * InterviewServiceImpl
+ *
+ * Service implementation for managing interview operations.
+ *
  * <p>
- * Provides business logic for managing employment details.
+ * Main Features:
+ * - Creates interviews for suspects, victims, or witnesses
+ * - Validates interview data and checks for scheduling conflicts
+ * - Manages question and answer records with trust levels
+ * - Handles file uploads for interview recordings/documents
+ * - Converts trust levels from letters (a,b,c) to numeric values (1.0, 0.7, 0.4)
+ * Business Rules:
+ * - Start time must be before end time
+ * - Interviewer cannot have overlapping interview schedules
+ * - Interviewee must exist in the system (by ID card number)
+ * - Files are stored with UUID naming to prevent conflicts
+ * - Trust levels: 'a' = 1.0 (high), 'b' = 0.7 (medium), 'c' = 0.4 (low)
  * <p>
+ *
  * Version 1.0
  * Date: 7/4/2025
+ *
  * <p>
  * Copyright
  * <p>
+ *
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
  * 7/4/2025      User      Create
+ * 7/10/2025     User      Update to match API spec exactly
  */
 @Service
-public class InterviewServiceImpl implements InterviewService {
+@Slf4j
+@RequiredArgsConstructor
+public class InterviewServiceImpl implements IInterviewService {
     private final InterviewRepository interviewRepository;
+    private final QuestionRepository questionRepository;
+    private final InterviewFileRepository interviewFileRepository;
     private final UserRepository userRepository;
+    private final SuspectRepository suspectRepository;
     private final VictimRepository victimRepository;
     private final WitnessRepository witnessRepository;
-    // TODO: Uncomment when VictimInterview entity is properly implemented
-    // private final VictimInterviewRepository victimInterviewRepository;
-    // TODO: Uncomment when WitnessInterview entity is properly implemented
-    // private final WitnessInterviewRepository witnessInterviewRepository;
-    private final Path uploadRoot = Paths.get("uploads");
+    private final CaseRepository caseRepository;
+    private final InterviewMapper interviewMapper;
 
-    public InterviewServiceImpl(
-            InterviewRepository interviewRepository,
-            UserRepository userRepository,
-            VictimRepository victimRepository,
-            WitnessRepository witnessRepository) {
-            // TODO: Add VictimInterviewRepository and WitnessInterviewRepository parameters when entities are available
-        this.interviewRepository = interviewRepository;
-        this.userRepository = userRepository;
-        this.victimRepository = victimRepository;
-        this.witnessRepository = witnessRepository;
-        // TODO: Uncomment when VictimInterview entity is properly implemented
-        // this.victimInterviewRepository = victimInterviewRepository;
-        // TODO: Uncomment when WitnessInterview entity is properly implemented
-        // this.witnessInterviewRepository = witnessInterviewRepository;
-    }
+    @Value("${spring.upload-file.base-uri}")
+    private String uploadBasePath;
 
     @Override
-    public void createInterview(
-            String caseId,
-            String suspectId,
-            CreateInterviewDto createInterviewDto,
-            List<MultipartFile> files) throws BadRequestException {
-        if (createInterviewDto.getEndTime().isBefore(createInterviewDto.getStartTime())) {
-            throw new BadRequestException("endTime must be after startTime");
-        }
+    @Transactional
+    public InterviewResponse createInterview(String caseId, CreateInterviewRequest request, List<MultipartFile> files) {
+        log.info("Creating interview for case: {}", caseId);
 
-        if (createInterviewDto.getQuesAndAns() == null || createInterviewDto.getQuesAndAns().isEmpty()) {
-            throw new BadRequestException("Must have at least one question");
-        }
+        // Step 1: Validate basic interview data
+        validateInterviewData(request);
 
-        Interview interview = new Interview();
-        interview.setInterviewId(UUID.randomUUID().toString());
-        interview.setStartTime(LocalDateTime.from(createInterviewDto.getStartTime()));
-        interview.setEndTime(LocalDateTime.from(createInterviewDto.getEndTime()));
-        interview.setLocation(createInterviewDto.getLocation());
+        // Step 2: Check if case exists
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
-        // Map & set questions
-        List<Question> questionList = new ArrayList<>();
-        for (QuestionDto questionDto : createInterviewDto.getQuesAndAns()) {
-            Question question = getQuestion(questionDto);
-            questionList.add(question);
-        }
-        interview.setQuestions(questionList);
-        for (Question question : questionList) {
-            question.setInterview(interview);
-        }
+        // Step 3: Find interviewer user
+        User interviewer = userRepository.findById(request.getInterviewerId())
+                .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWER_NOT_FOUND));
 
-        // Find interview in DB by interview full name (throw exception if not found)
-        User interviewer = userRepository
-                .findByFullName(createInterviewDto.getInterviewer())
-                .orElseThrow(() -> new EntityNotFoundException("Interviewer not found with " + createInterviewDto.getInterviewer()));
-//        interview.setInterviewId(interviewer);
-        interview.setTypeInterviewee(createInterviewDto.getIntervieweeType());
+        // Step 4: Check for time conflicts with existing interviews
+        LocalDateTime startTime = request.getStartTime().atOffset(ZoneOffset.UTC).toLocalDateTime();
+        LocalDateTime endTime = request.getEndTime().atOffset(ZoneOffset.UTC).toLocalDateTime();
+        checkTimeConflict(request.getInterviewerId(), startTime, endTime);
 
-        //Todo Case 1: Interview witness
-        if (createInterviewDto.getIntervieweeType().equalsIgnoreCase("witness")) {
-//            Witness witness = witnessRepository
-//                    .findWitnessByFullname(createInterviewDto.getInterviewee())
-//                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
-//
-//            if (witnessInterviewRepository.existsByInterviewAndWitness(interview, witness)) {
-//                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
-//            }
-//
-//            WitnessInterview witnessInterview = new WitnessInterview();
-//            witnessInterview.setInterview(interview);
-//            witnessInterview.setWitness(witness);
-//
-//            if(interview.getWitnessesInterviews() == null) {
-//                interview.setWitnessesInterviews(new ArrayList<>());
-//            }
-//            interview.getWitnessesInterviews().add(witnessInterview);
-            // TODO: Implement witness interview when WitnessInterview entity is available
-        }
+        // Step 5: Find interviewee based on type and ID card
+        Object interviewee = findInterviewee(request.getIntervieweeType(), request.getIntervieweeIdCard());
 
-        //Todo case 2: Interview victim
-        if (createInterviewDto.getIntervieweeType().equalsIgnoreCase("victim")) {
-//            Victim victim = victimRepository
-//                    .findVictimByFullname(createInterviewDto.getInterviewee())
-//                    .orElseThrow(() -> new EntityNotFoundException("Interviewee not found!"));
-//
-//            if (victimInterviewRepository.existsByInterviewAndVictim(interview, victim)) {
-//                throw new DataIntegrityViolationException("Relationship between interview and witness already existed!");
-//            }
-//
-//            VictimInterview victimInterview= new VictimInterview();
-//            victimInterview.setInterview(interview);
-//            victimInterview.setVictim(victim);
-//
-//            if(interview.getVictimsInterviews() == null) {
-//                interview.setVictimsInterviews(new ArrayList<>());
-//            }
-//            interview.getVictimsInterviews().add(victimInterview);
-            // TODO: Implement victim interview when VictimInterview entity is available
-        }
+        // Step 6: Create interview entity using mapper
+        Interview interview = interviewMapper.createInterviewEntity(request, caseEntity, interviewer, interviewee);
+        Interview savedInterview = interviewRepository.save(interview);
 
-        //Todo case 3: Interview suspect (optional)
-        //Todo handle save file
+        // Step 7: Create questions using mapper
+        List<Question> questions = interviewMapper.createQuestions(request.getQuesAndAns(), savedInterview, interviewer);
+        questionRepository.saveAll(questions);
 
-        interviewRepository.save(interview);
+        // Step 8: Upload files if provided
+        List<String> uploadedFileNames = uploadFiles(files, savedInterview);
+
+        // Step 9: Build response using mapper
+        return interviewMapper.buildInterviewResponse(savedInterview, interviewer, interviewee, questions.size(), uploadedFileNames);
     }
 
-    //Mapper to entity (for case 1)
-//    private Interview toEntity(
-//            CreateInterviewDto createInterviewDto,
-//            List<String> filePaths,
-//            User interviewer,
-//            Witness witness) {
-//        return new Interview();
-//    }
+    // Validates interview request data
+    private void validateInterviewData(CreateInterviewRequest request) {
+        // Check time range: start time must be before end time
+        if (request.getStartTime().isAfter(request.getEndTime())) {
+            throw new AppException(ErrorCode.INVALID_TIME_RANGE);
+        }
+    }
 
-    private Question getQuestion(QuestionDto questionDto) {
-        Question question = new Question();
-        question.setContent(questionDto.getQuestion());
-        question.setAnswer(questionDto.getAnswer());
+    // Checks for interviewer schedule conflicts
+    private void checkTimeConflict(String interviewerId, LocalDateTime startTime, LocalDateTime endTime) {
+        // Query for interviews with overlapping time slots for same interviewer
+        List<Interview> conflictInterviews = interviewRepository.findConflictingInterviews(
+                interviewerId, startTime, endTime);
 
-        // Consider reliability question and convert into float value
-        if (questionDto.getLevelOfTrust().equalsIgnoreCase("a")) {
-            question.setReliability(1.0f);
-        } else if (questionDto.getLevelOfTrust().equalsIgnoreCase("b")) {
-            question.setReliability(0.7f);
-        } else {
-            question.setReliability(0.4f);
+        if (!conflictInterviews.isEmpty()) {
+            throw new AppException(ErrorCode.INTERVIEW_SCHEDULING_CONFLICT);
+        }
+    }
+
+    // Finds interviewee entity based on type and ID card number
+    private Object findInterviewee(String intervieweeType, String intervieweeIdCard) {
+        Long idCard = Long.parseLong(intervieweeIdCard);
+
+        return switch (intervieweeType.toUpperCase()) {
+            case "SUSPECT" -> suspectRepository.findBySuspectIdCard(idCard)
+                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
+            case "VICTIM" -> victimRepository.findByVictimIdCard(idCard)
+                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
+            case "WITNESS" -> witnessRepository.findByWitnessIdCard(idCard)
+                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
+            default -> throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
+        };
+    }
+
+    // Uploads files and saves file information to database
+    private List<String> uploadFiles(List<MultipartFile> files, Interview interview) {
+        List<String> uploadedFileNames = new ArrayList<>();
+
+        if (files == null || files.isEmpty()) {
+            return uploadedFileNames;
         }
 
-        return question;
+        // Create upload directory if not exists
+        Path uploadDir = Paths.get(uploadBasePath.replace("file:", ""));
+        try {
+            Files.createDirectories(uploadDir);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+
+            try {
+                // Generate unique filename: UUID + original extension
+                String originalFileName = file.getOriginalFilename();
+                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String uniqueFileName = UUID.randomUUID().toString() + extension;
+
+                // Save file to disk
+                Path filePath = uploadDir.resolve(uniqueFileName);
+                Files.copy(file.getInputStream(), filePath);
+
+                // Save file information to database
+                InterviewFile interviewFile = new InterviewFile();
+                interviewFile.setAttachedFile(uniqueFileName);
+                interviewFile.setInterview(interview);
+                interviewFileRepository.save(interviewFile);
+
+                uploadedFileNames.add(originalFileName); // Return original name for response
+
+            } catch (IOException e) {
+                log.error("File upload error: {}", e.getMessage());
+                throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+            }
+        }
+
+        return uploadedFileNames;
     }
 }
