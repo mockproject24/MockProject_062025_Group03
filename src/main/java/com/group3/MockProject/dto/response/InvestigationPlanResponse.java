@@ -11,13 +11,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InvestigationPlanResponse {
     private String investigationPlanId;
-//    private String createdOfficerId;
     private String caseId;
-    private String severity;
-    private LocalDateTime deadlineDate;
-    private String result;
+    private String typeOfCrime;
+    private String levelSeverity;
+    private LocalDateTime date;
+    private String reporter;
+    private String location;
     private String status;
-    private LocalDateTime createAt;
-    private String planContent;
-    private Boolean isDeleted;
 } 

@@ -37,8 +37,8 @@ import java.util.Map;
  */
 
 @RestController
-@RequestMapping("/api/investigations")
 @RequiredArgsConstructor
+@RequestMapping("/api/investigations")
 public class InvestigationPlanController {
     private final InvestigationService investigationService;
 
@@ -46,21 +46,14 @@ public class InvestigationPlanController {
      * Retrieves paginated list of investigation plans with sorting
      * @param page Page number (default: 0)
      * @param size Number of items per page (default: 10)
-     * @param sort Sort criteria (default: createdAt,desc)
      * @return ApiResponse containing paginated investigation plans data
      */
     @GetMapping
-    public ApiResponse<Map<String, Object>> getInvestigations(@RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "sort", defaultValue = "createdAt,desc") String sort) {
+    public ApiResponse<Map<String, Object>> getInvestigations(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
 
-        String[] sortParams = sort.split(",");
-        String sortField = sortParams[0];
-        Sort.Direction direction = (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc"))
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Pageable pageable = PageRequest.of(page, size);
         Page<InvestigationPlanResponse> pageResult = investigationService.getInvestigations(pageable);
 
         Map<String, Object> result = new HashMap<>();

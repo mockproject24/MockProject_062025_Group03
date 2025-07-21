@@ -54,6 +54,7 @@ public class User {
     String phoneNumber;
 
     @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
     GenderType gender;
 
     @Column(name = "dob")
@@ -91,7 +92,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     List<ProsecutionsUser> prosecutionsUsers;
 
-    @ManyToOne(fetch =  FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     Role role;
 
