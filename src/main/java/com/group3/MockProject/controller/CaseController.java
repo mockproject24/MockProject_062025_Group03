@@ -18,8 +18,6 @@ import com.group3.MockProject.dto.response.*;
 import com.group3.MockProject.exception.AppException;
 import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.service.*;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,11 +25,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
-import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.mapper.SuspectMapper;
 
 import lombok.RequiredArgsConstructor;

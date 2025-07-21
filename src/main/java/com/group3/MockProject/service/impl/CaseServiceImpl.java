@@ -4,8 +4,6 @@ import com.group3.MockProject.constant.CaseType;
 import com.group3.MockProject.constant.SeverityType;
 import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
 import com.group3.MockProject.dto.response.*;
-import com.group3.MockProject.elasticsearch.document.EsCase;
-import com.group3.MockProject.elasticsearch.service.CaseIndexService;
 import com.group3.MockProject.entity.*;
 import com.group3.MockProject.exception.AppException;
 import com.group3.MockProject.exception.ErrorCode;
@@ -18,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -57,7 +53,6 @@ public class CaseServiceImpl implements ICaseService {
     private final SuspectRepository suspectRepository;
     private final SuspectMapper suspectMapper;
 
-    private final CaseIndexService caseIndexService;
     private final CaseMapper caseMapper;
     private final EvidentRepository evidentRepository;
     private final EvidentMapper mapper;
@@ -76,31 +71,63 @@ public class CaseServiceImpl implements ICaseService {
     }
 
     /**
-     * Retrieves paginated list of cases with optional search functionality
+     * Retrieves paginated list of cases with optional search and filtering functionality
      *
-     * @param page        Page number (0-based)
-     * @param pageSize    Number of items per page
-     * @param search      Optional search term
-     * @param severitType
-     * @param caseType
-     * @param date
-     * @return CaseListDto containing paginated case data
+     * @param page         Page number (0-based)
+     * @param pageSize     Number of items per page
+     * @param search       Optional search term for case name and summary
+     * @param severityType Optional filter by case severity (LOW, MEDIUM, HIGH, CRITICAL)
+     * @param caseType     Optional filter by case type (ROBBERY, MURDER, RAPE)
+     * @param date         Optional filter by case creation date
+     * @return CaseListResponse containing paginated case data with metadata
      */
     @Override
-    public CaseListResponse getListCase(int page, int pageSize, String search, SeverityType severitType, CaseType caseType, LocalDateTime date) {
-        SearchHits<EsCase> searchHits = caseIndexService.searchCases(search, page, pageSize, severitType, caseType, date);
+    public CaseListResponse getListCase(int page, int pageSize, String search, SeverityType severityType, CaseType caseType, LocalDateTime date) {
+        try {
+            Pageable pageable = PageRequest.of(page, pageSize);
+            Page<Case> casePage;
 
-        List<CaseResponse> caseDtos = searchHits.getSearchHits().stream()
-                .map(SearchHit::getContent)
-                .map(caseMapper::toDto)
-                .toList();
+            if (search != null && !search.trim().isEmpty()) {
+                // Tìm kiếm theo tên case
+                casePage = caseRepository.findByCaseNameContainingIgnoreCaseAndIsDeletedFalse(search.trim(), pageable);
+            } else {
+                // Lấy tất cả cases
+                casePage = caseRepository.findByIsDeletedFalse(pageable);
+            }
 
-        return CaseListResponse.builder()
-                .page(page + 1)
-                .pageSize(pageSize)
-                .total(searchHits.getTotalHits())
-                .data(caseDtos)
-                .build();
+            // Áp dụng filter cho severity, caseType, date nếu cần
+            List<CaseResponse> caseResponses = casePage.getContent().stream()
+                    .filter(caseEntity -> {
+                        // Filter by severity
+                        if (severityType != null && !caseEntity.getSeverity().equals(severityType)) {
+                            return false;
+                        }
+                        // Filter by case type
+                        if (caseType != null && !caseEntity.getTypeCase().equals(caseType)) {
+                            return false;
+                        }
+                        // Filter by date
+                        if (date != null) {
+                            LocalDate caseDate = caseEntity.getCreateAt().toLocalDate();
+                            if (!caseDate.equals(date.toLocalDate())) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    })
+                    .map(caseMapper::convertToCaseResponse)
+                    .collect(Collectors.toList());
+
+            return CaseListResponse.builder()
+                    .page(page + 1)
+                    .pageSize(pageSize)
+                    .total((long) caseResponses.size())
+                    .data(caseResponses)
+                    .build();
+
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.DATABASE_ERROR, "Error retrieving cases: " + e.getMessage(), e);
+        }
     }
 
     /**
