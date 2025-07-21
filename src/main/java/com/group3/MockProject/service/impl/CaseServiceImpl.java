@@ -32,15 +32,15 @@ import java.util.stream.Collectors;
 
 /**
  * CaseServiceImpl
- *
+ * <p>
  * Provides business logic implementation for case management operations.
- *
+ * <p>
  * Version 1.0
- *
+ * <p>
  * Date: 08-07-2025
- *
+ * <p>
  * Copyright
- *
+ * <p>
  * Modification Logs:
  * DATE        AUTHOR        DESCRIPTION
  * -------------------------------------------------------------
@@ -61,8 +61,10 @@ public class CaseServiceImpl implements ICaseService {
     private final CaseMapper caseMapper;
     private final EvidentRepository evidentRepository;
     private final EvidentMapper mapper;
+
     /**
      * Retrieves a case by its unique identifier
+     *
      * @param caseId The unique identifier of the case
      * @return Case entity
      * @throws RuntimeException if case is not found
@@ -103,6 +105,7 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Retrieves case metadata including all available case types and severities
+     *
      * @return CaseListMeta containing lists of case types and severities
      */
     @Override
@@ -137,7 +140,7 @@ public class CaseServiceImpl implements ICaseService {
      *
      * @param caseId the unique identifier of the case
      * @return a list of EvidentDto objects containing evidence details
-     * @throws MockProjectException if the case is not found
+     * @throws if the case is not found
      */
     @Override
     public List<EvidentResponse<?>> getEvidences(String caseId) {
@@ -183,7 +186,8 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Retrieves assigned officers for a specific case with pagination
-     * @param caseId The case identifier
+     *
+     * @param caseId   The case identifier
      * @param pageable Pagination information
      * @return Page of UserResponseDto containing officer data
      */
@@ -195,7 +199,7 @@ public class CaseServiceImpl implements ICaseService {
                     user.getUsername(),
                     user.getFullName(),
                     user.getAvatarUrl(),
-                    null, // email removed from User entity
+//                    null, // email removed from User entity
                     user.getPhoneNumber(),
                     user.getRole() != null ? user.getRole().getRoleId() : null
             ));
@@ -206,8 +210,9 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Retrieves officer case details for a specific case with pagination
-     * @param caseId The case identifier
-     * @param page Page number (0-based)
+     *
+     * @param caseId   The case identifier
+     * @param page     Page number (0-based)
      * @param pageSize Number of items per page
      * @return List of OfficerCaseDetailDto containing officer case details
      */
@@ -216,10 +221,10 @@ public class CaseServiceImpl implements ICaseService {
         try {
             // Verify case exists
             CaseDetailResponse caseEntity = getCaseById(caseId);
-            
+
             Pageable pageable = PageRequest.of(page, pageSize);
             Page<User> users = userRepository.findOfficersByCaseId(caseId, pageable);
-            
+
             return users.getContent().stream()
                     .map(user -> convertToOfficerCaseDetailDto(user, caseEntity))
                     .toList();
@@ -230,7 +235,8 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Converts User entity to OfficerCaseDetailDto
-     * @param user The user entity
+     *
+     * @param user       The user entity
      * @param caseEntity The case entity
      * @return OfficerCaseDetailDto with officer case details
      */
@@ -251,7 +257,8 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Creates a new record for a specific case
-     * @param caseId The case identifier
+     *
+     * @param caseId     The case identifier
      * @param requestDto The record creation data
      * @return RecordInfoResponseDto containing created record data
      * @throws RuntimeException if case is not found or creation fails
@@ -262,37 +269,39 @@ public class CaseServiceImpl implements ICaseService {
             Case caseEntity = caseRepository.findById(caseId)
                     .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
 
-            Evidence evidence = null;
-//            if (requestDto.getEvidenceId() != null) {
-//                evidence = evidenceRepository.findById(requestDto.getEvidenceId())
-//                        .orElseThrow(() -> new RuntimeException("Evidence not found: " + requestDto.getEvidenceId()));
-//            }else{
-//                 evidence = new Evidence();
-//                 evidence.setCaseEntity(caseEntity);
-//                 evidenceRepository.save(evidence);
-//            }
+            Evidence evidence;
+            if (requestDto.getEvidenceId() != null) {
+                evidence = evidenceRepository.findById(requestDto.getEvidenceId())
+                        .orElseThrow(() -> new RuntimeException("Evidence not found: " + requestDto.getEvidenceId()));
+            } else {
+                evidence = new Evidence();
+                evidence.setCaseEntity(caseEntity);
+                evidence = evidenceRepository.save(evidence);
+            }
 
             RecordInfo record = new RecordInfo();
             record.setTypeName(requestDto.getTypeName());
             record.setSource(requestDto.getSource());
-            record.setDateCollected(requestDto.getDateCollected() != null ?
-                    requestDto.getDateCollected() : LocalDateTime.now());
+            record.setDateCollected(requestDto.getDateCollected() != null
+                    ? requestDto.getDateCollected().atStartOfDay()
+                    : LocalDateTime.now());
             record.setSummary(requestDto.getSummary());
             record.setDeleted(requestDto.getIsDeleted() != null ? requestDto.getIsDeleted() : false);
-            record.setEvidence(null); // Set to null as evidence handling is not implemented
+            record.setEvidence(evidence);
 
             RecordInfo saved = recordInfoRepository.saveAndFlush(record);
 
-            RecordInfoResponseResponse responseDto = new RecordInfoResponseResponse();
-            responseDto.setRecordInfoId(saved.getRecordInfoId());
-            responseDto.setTypeName(saved.getTypeName());
-            responseDto.setSource(saved.getSource());
-            responseDto.setDateCollected(saved.getDateCollected());
-            responseDto.setSummary(saved.getSummary());
-            responseDto.setIsDeleted(saved.isDeleted());
-            responseDto.setEvidenceId(null);
-
-            return responseDto;
+            return RecordInfoResponseResponse.builder()
+                    .recordInfoId(saved.getRecordInfoId())
+                    .typeName(saved.getTypeName())
+                    .source(saved.getSource())
+                    .dateCollected(saved.getDateCollected())
+                    .summary(saved.getSummary())
+                    .isDeleted(saved.isDeleted())
+                    .evidenceId(evidence.getEvidenceId())
+                    .evidenceDescription(evidence.getDescription()) // Add this line
+                    .createdAt(saved.getDateCollected()) // Optional: add createdAt
+                    .build();
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new AppException(ErrorCode.DATABASE_ERROR, "Error creating record: " + ex.getMessage(), ex);
@@ -302,15 +311,16 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Retrieves suspects for a specific case with filtering options
-     * @param caseId The case identifier
-     * @param page the page to get
+     *
+     * @param caseId   The case identifier
+     * @param page     the page to get
      * @param pageSize number of elements in a page
-     * @param status Optional status filter
-     * @param date Optional date filter
+     * @param status   Optional status filter
+     * @param date     Optional date filter
      * @return Page of suspects matching the criteria
      */
     @Override
-    public SuspectsResponseDto getAllSuspectsByCaseId(String caseId,int page, int pageSize, String status, LocalDate date) {
+    public SuspectsResponseDto getAllSuspectsByCaseId(String caseId, int page, int pageSize, String status, LocalDate date) {
         try {
             Pageable pageable = PageRequest.of(page - 1, pageSize);
             LocalDateTime startOfDay = null;
@@ -324,7 +334,7 @@ public class CaseServiceImpl implements ICaseService {
             boolean caseExists = caseRepository.existsById(caseId);
             if (!caseExists) throw new AppException(ErrorCode.CASE_NOT_EXISTED);
 
-            Page<Suspect> suspectsPage =  suspectRepository.findByCaseIdAndStatusAndCatchTime(
+            Page<Suspect> suspectsPage = suspectRepository.findByCaseIdAndStatusAndCatchTime(
                     caseId, status, date, startOfDay, endOfDay, pageable);
 
             return SuspectsResponseDto.builder()
@@ -341,6 +351,7 @@ public class CaseServiceImpl implements ICaseService {
 
     /**
      * Converts Case entity to CaseDto for API response
+     *
      * @param caseEntity The case entity to convert
      * @return CaseDto containing formatted case data
      */

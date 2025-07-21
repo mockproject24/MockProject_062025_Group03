@@ -173,19 +173,10 @@ public class CaseController {
                 .build();
     }
 
-    /**
-     * Retrieves paginated list of cases with optional search
-     * @param page Page number (default: 0)
-     * @param pageSize Number of items per page (default: 10)
-     * @param search Optional search term
-     * @return ResponseEntity containing paginated cases data
-     */
-
 
     /**
      * Creates a new record for a specific case
-     *
-     * @param caseId     The case identifier
+     * @param caseId The case identifier
      * @param requestDto The record creation data
      * @return ResponseEntity containing the created record data
      */

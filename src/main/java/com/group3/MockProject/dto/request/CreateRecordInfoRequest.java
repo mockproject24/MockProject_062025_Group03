@@ -2,6 +2,7 @@ package com.group3.MockProject.dto.request;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -25,7 +26,7 @@ import java.time.LocalDateTime;
 public class CreateRecordInfoRequest {
     private String typeName;
     private String source;
-    private LocalDateTime dateCollected;
+    private LocalDate dateCollected;
     private String summary;
     private Boolean isDeleted = false;
     private String evidenceId;
