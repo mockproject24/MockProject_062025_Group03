@@ -1,3 +1,4 @@
+// ===== EvidenceServiceImplTest.java (updated) =====
 package com.group3.MockProject.service;
 
 import com.group3.MockProject.constant.EvidenceType;
@@ -5,6 +6,8 @@ import com.group3.MockProject.dto.request.CreateEvidenceRequest;
 import com.group3.MockProject.dto.response.EvidenceResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
 import com.group3.MockProject.service.impl.EvidenceServiceImpl;
@@ -12,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -46,8 +48,8 @@ class EvidenceServiceImplTest {
         testCase.setCaseId("case123");
 
         testRequest = CreateEvidenceRequest.builder()
-                .description("Test mô tả")
-                .currentLocation("Phòng A1")
+                .description("Test description")
+                .currentLocation("Room A1")
                 .collectedAt(LocalDateTime.of(2025, 7, 9, 10, 0))
                 .evidenceType(EvidenceType.PHYSICAL_EVIDENCE)
                 .build();
@@ -67,7 +69,7 @@ class EvidenceServiceImplTest {
                 .caseEntity(testCase)
                 .build();
 
-        // Gán baseURI qua reflection
+        // Set baseURI via reflection
         Field baseUriField = EvidenceServiceImpl.class.getDeclaredField("baseURI");
         baseUriField.setAccessible(true);
         baseUriField.set(evidenceService, "http://localhost/uploads/");
@@ -82,7 +84,7 @@ class EvidenceServiceImplTest {
 
         assertNotNull(response);
         assertEquals("case123", response.getCaseId());
-        assertEquals("Test mô tả", response.getDescription());
+        assertEquals("Test description", response.getDescription());
     }
 
     @Test
@@ -94,7 +96,7 @@ class EvidenceServiceImplTest {
 
         assertNotNull(response);
         assertEquals("case123", response.getCaseId());
-        assertEquals("Test mô tả", response.getDescription());
+        assertEquals("Test description", response.getDescription());
     }
 
     @Test
@@ -102,7 +104,7 @@ class EvidenceServiceImplTest {
         when(evidenceRepository.findByCaseEntity_CaseIdAndEvidenceId("case123", "notFound"))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(AppException.class,
                 () -> evidenceService.getEvidence("case123", "notFound"));
     }
 
@@ -110,7 +112,7 @@ class EvidenceServiceImplTest {
     void testCreateEvidence_InvalidCaseId() {
         when(caseRepository.findById("invalidCase")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(AppException.class,
                 () -> evidenceService.createEvidence("invalidCase", testRequest, null));
     }
 
@@ -141,7 +143,7 @@ class EvidenceServiceImplTest {
                 .description("desc").currentLocation("loc")
                 .evidenceType(EvidenceType.PHYSICAL_EVIDENCE).build();
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(AppException.class,
                 () -> evidenceService.updateEvidence("notFound", request, null));
     }
 }

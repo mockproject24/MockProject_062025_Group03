@@ -1,11 +1,14 @@
+// ===== CaseControllerTest.java (updated) =====
 package com.group3.MockProject.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.group3.MockProject.dto.request.CreateRecordInfoRequest;
 import com.group3.MockProject.dto.response.ApiResponse;
-import com.group3.MockProject.dto.response.RecordInfoResponse;
+import com.group3.MockProject.dto.response.RecordInfoResponseResponse;
 import com.group3.MockProject.dto.response.UserResponseDto;
+import com.group3.MockProject.exception.AppException;
+import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.service.ICaseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -52,16 +54,22 @@ class CaseControllerTest {
 
     @RestControllerAdvice
     static class GlobalExceptionHandler {
-        @ExceptionHandler(ResourceNotFoundException.class)
+        @ExceptionHandler(AppException.class)
         @ResponseStatus(HttpStatus.NOT_FOUND)
-        public ApiResponse handleNotFound(ResourceNotFoundException ex) {
-            return new ApiResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage(), null);
+        public ApiResponse handleAppException(AppException ex) {
+            return new ApiResponse(ex.getErrorCode().getCode(), ex.getMessage(), null);
         }
 
         @ExceptionHandler(MethodArgumentNotValidException.class)
         @ResponseStatus(HttpStatus.BAD_REQUEST)
         public ApiResponse handleValidation(MethodArgumentNotValidException ex) {
             return new ApiResponse(HttpStatus.BAD_REQUEST.value(), "Invalid request body", null);
+        }
+
+        @ExceptionHandler(IllegalArgumentException.class)
+        @ResponseStatus(HttpStatus.BAD_REQUEST)
+        public ApiResponse handleIllegalArgument(IllegalArgumentException ex) {
+            return new ApiResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
         }
 
         @ExceptionHandler(Exception.class)
@@ -139,14 +147,14 @@ class CaseControllerTest {
         String caseId = "INVALID_CASE";
 
         when(caseService.getAssignedOfficers(eq(caseId), any(PageRequest.class)))
-                .thenThrow(new ResourceNotFoundException("Case not found"));
+                .thenThrow(new AppException(ErrorCode.CASE_NOT_EXISTED));
 
         var result = mockMvc.perform(get("/api/cases/{caseId}/assigned-officers?page=0&pageSize=10", caseId)
                 .contentType(MediaType.APPLICATION_JSON));
 
         result.andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(HttpStatus.NOT_FOUND.value()))
-                .andExpect(jsonPath("$.message").value("Case not found"));
+                .andExpect(jsonPath("$.code").value(ErrorCode.CASE_NOT_EXISTED.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.CASE_NOT_EXISTED.getMessage()));
     }
 
     @Test
@@ -174,52 +182,39 @@ class CaseControllerTest {
     }
 
     @Test
-    void getAssignedOfficers_internalServerError() throws Exception {
-        String caseId = "CASE001";
+    void createRecord_success() throws Exception {
+        String caseId = "550e8400-e29b-41d4-a716-446655440000";
+        CreateRecordInfoRequest requestDto = buildValidRecordDto();
 
-        when(caseService.getAssignedOfficers(eq(caseId), any(PageRequest.class)))
-                .thenThrow(new RuntimeException("Unexpected error"));
+        RecordInfoResponseResponse responseDto = RecordInfoResponseResponse.builder()
+                .recordInfoId("record-001")
+                .typeName(requestDto.getTypeName())
+                .source(requestDto.getSource())
+                .dateCollected(requestDto.getDateCollected().atStartOfDay())
+                .summary(requestDto.getSummary())
+                .isDeleted(false)
+                .evidenceId("evidence-001")
+                .evidenceDescription("Test evidence")
+                .createdAt(LocalDateTime.now())
+                .build();
 
-        var result = mockMvc.perform(get("/api/cases/{caseId}/assigned | officers?page=0&pageSize=10", caseId)
-                .contentType(MediaType.APPLICATION_JSON));
+        when(caseService.createRecord(eq(caseId), any(CreateRecordInfoRequest.class)))
+                .thenReturn(responseDto);
 
-        result.andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.code").value(HttpStatus.INTERNAL_SERVER_ERROR.value()))
-                .andExpect(jsonPath("$.message").value("Error retrieving assigned officers: Unexpected error"));
+        var result = mockMvc.perform(post("/api/cases/{caseId}/records", caseId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)));
+
+        result.andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value(HttpStatus.CREATED.value()))
+                .andExpect(jsonPath("$.message").value("Record created successfully"))
+                .andExpect(jsonPath("$.result.recordInfoId").value("record-001"))
+                .andExpect(jsonPath("$.result.typeName").value("Interview"))
+                .andExpect(jsonPath("$.result.source").value("Witness Statement"))
+                .andExpect(jsonPath("$.result.summary").value("Initial witness interview"))
+                .andExpect(jsonPath("$.result.isDeleted").value(false))
+                .andExpect(jsonPath("$.result.evidenceId").value("evidence-001"));
     }
-
-    // createRecord Tests
-//    @Test
-//    void createRecord_success() throws Exception {
-//        String caseId = "550e8400-e29b-41d4-a716-446655440000";
-//        CreateRecordInfoRequest requestDto = buildValidRecordDto();
-//
-//        RecordInfoResponse responseDto = new RecordInfoResponse();
-//        responseDto.setRecordInfoId("record-001");
-//        responseDto.setTypeName(requestDto.getTypeName());
-//        responseDto.setSource(requestDto.getSource());
-//        responseDto.setDateCollected(requestDto.getDateCollected());
-//        responseDto.setSummary(requestDto.getSummary());
-////        responseDto.setIsDele(requestDto.getIsDeleted());
-////        responseDto.setEvidenceId(null);
-//
-//        when(caseService.createRecord(eq(caseId), any(CreateRecordInfoRequest.class)))
-//                .thenReturn(responseDto);
-//
-//        var result = mockMvc.perform(post("/api/cases/{caseId}/records", caseId)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(requestDto)));
-//
-//        result.andExpect(status().isCreated())
-//                .andExpect(jsonPath("$.code").value(HttpStatus.CREATED.value()))
-//                .andExpect(jsonPath("$.message").value("Record created successfully"))
-//                .andExpect(jsonPath("$.result.recordInfoId").value("record-001"))
-//                .andExpect(jsonPath("$.result.typeName").value("Interview"))
-//                .andExpect(jsonPath("$.result.source").value("Witness Statement"))
-//                .andExpect(jsonPath("$.result.summary").value("Initial witness interview"))
-//                .andExpect(jsonPath("$.result.isDeleted").value(false))
-//                .andExpect(jsonPath("$.result.evidenceId").value("null"));
-//    }
 
     @Test
     void createRecord_invalidRequestBody() throws Exception {
@@ -241,15 +236,15 @@ class CaseControllerTest {
         CreateRecordInfoRequest requestDto = buildValidRecordDto();
 
         when(caseService.createRecord(eq(caseId), any(CreateRecordInfoRequest.class)))
-                .thenThrow(new ResourceNotFoundException("Case not found"));
+                .thenThrow(new AppException(ErrorCode.CASE_NOT_EXISTED));
 
         var result = mockMvc.perform(post("/api/cases/{caseId}/records", caseId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)));
 
         result.andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(HttpStatus.NOT_FOUND.value()))
-                .andExpect(jsonPath("$.message").value("Case not found"));
+                .andExpect(jsonPath("$.code").value(ErrorCode.CASE_NOT_EXISTED.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.CASE_NOT_EXISTED.getMessage()));
     }
 
     @Test
@@ -284,14 +279,14 @@ class CaseControllerTest {
 
         result.andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value(HttpStatus.INTERNAL_SERVER_ERROR.value()))
-                .andExpect(jsonPath("$.message").value("Error creating record: Unexpected error"));
+                .andExpect(jsonPath("$.message").value("Unexpected error"));
     }
 
     private CreateRecordInfoRequest buildValidRecordDto() {
         CreateRecordInfoRequest dto = new CreateRecordInfoRequest();
         dto.setTypeName("Interview");
         dto.setSource("Witness Statement");
-        dto.setDateCollected(LocalDate.of(2025,12,12));
+        dto.setDateCollected(LocalDate.of(2025, 12, 12));
         dto.setSummary("Initial witness interview");
         dto.setIsDeleted(false);
         return dto;

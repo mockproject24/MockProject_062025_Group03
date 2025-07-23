@@ -1,9 +1,12 @@
 package com.group3.MockProject.repository;
 
+import com.group3.MockProject.constant.CaseSeverity;
+import com.group3.MockProject.constant.CaseType;
 import com.group3.MockProject.entity.Case;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -36,4 +39,18 @@ public interface CaseRepository extends JpaRepository<Case, String> {
     List<Case> findAllActiveCases();
 
     Page<Case> findByCaseNameContains(String search, Pageable pageable);
+
+    Page<Case> findByIsDeletedFalse(Pageable pageable);
+
+    Page<Case> findByCaseNameContainingIgnoreCaseAndIsDeletedFalse(String caseName, Pageable pageable);
+
+    @Query("SELECT c FROM Case c WHERE c.isDeleted = false AND " +
+            "(:search IS NULL OR LOWER(c.caseName) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+            "(:severityType IS NULL OR c.severity = :severityType) AND " +
+            "(:caseType IS NULL OR c.typeCase = :caseType)")
+    Page<Case> findCasesWithFilters(@Param("search") String search,
+                                    @Param("severityType") CaseSeverity severityType,
+                                    @Param("caseType") CaseType caseType,
+                                    Pageable pageable);
+
 }

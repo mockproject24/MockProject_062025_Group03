@@ -40,3 +40,4 @@ src/main/resources/application.yml
 src/main/resources/DataInitializer.sql
 
 uploads/
+note.txt
