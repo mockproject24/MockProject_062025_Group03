@@ -114,7 +114,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/interviews/**").permitAll() // Allow public access to interviews for now
                                 .requestMatchers("/api/investigation-plans/**").permitAll() // Allow public access to investigation plans for now
                                 .requestMatchers("/**").permitAll()
-                                .anyRequest().authenticated() // Require authentication for other endpoints
+                                //.anyRequest().authenticated() // Require authentication for other endpoints
                 );
 
         // Set authentication provider

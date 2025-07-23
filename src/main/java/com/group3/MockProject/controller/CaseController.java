@@ -51,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
  * 4/7/2025          FongFox            Create
  * 10/7/2025         FongFox            Fix URL path and response format to match API spec
  * 12/7/2025         FongFox            Fix URL path and response format to match API spec
+ * 23/7/2025         FongFox            Develop Get statement detail API.
  */
 @RestController
 @RequiredArgsConstructor
@@ -58,12 +59,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/cases")
 public class CaseController {
     private final ICaseService caseService;
-    private final SuspectMapper suspectMapper;
     private final IEvidenceService evidenceService;
     private final IInterviewService interviewService;
     private final InvestigationService investigationService;
-    private final ObjectMapper objectMapper;
+    private final IStatementService statementService;
     private final ISuspectService suspectService;
+
+    private final SuspectMapper suspectMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * Retrieves case metadata including case types and severities
@@ -394,6 +397,44 @@ public class CaseController {
         } catch (Exception e) {
             log.error("Unexpected error occurred while creating investigation: {}", e.getMessage(), e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION, "Error creating investigation: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Retrieves a statement by case ID and statement ID
+     * <p>
+     * This endpoint retrieves detailed information about a specific statement
+     * including person information and evidence links.
+     * </p>
+     *
+     * @param caseId The unique identifier of the case
+     * @param statementId The unique identifier of the statement
+     * @return ApiResponse containing statement details
+     *
+     * @throws AppException if case or statement not found
+     */
+    @GetMapping("/{caseId}/statements/{statementId}")
+    public ApiResponse<StatementResponse> getStatement(
+            @PathVariable String caseId,
+            @PathVariable String statementId) {
+
+        log.info("GET /api/cases/{}/statements/{} - Request received", caseId, statementId);
+
+        try {
+            StatementResponse statementResponse = statementService.getStatementByCaseIdAndStatementId(caseId, statementId);
+
+            log.info("GET /api/cases/{}/statements/{} - Request completed successfully", caseId, statementId);
+
+            return ApiResponse.<StatementResponse>builder()
+                    .code(HttpStatus.OK.value())
+                    .message("Statement retrieved successfully")
+                    .result(statementResponse)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("GET /api/cases/{}/statements/{} - Request failed: {}", caseId, statementId, e.getMessage());
+            // Exception will be handled by GlobalExceptionHandler
+            throw e;
         }
     }
 }

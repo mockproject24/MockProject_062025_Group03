@@ -61,4 +61,7 @@ public class Victim {
 
     @OneToMany(mappedBy = "victim")
     List<ReportsVictims> reportsVictims;
+
+    @OneToMany(mappedBy = "victim")
+    List<Statement> statements;
 }
