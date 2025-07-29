@@ -50,4 +50,7 @@ public class Witness {
 
     @OneToMany(mappedBy = "witness")
     List<ReportsWitnesses> reportsWitnesses;
+
+    @OneToMany(mappedBy = "witness")
+    List<Statement> statements;
 }

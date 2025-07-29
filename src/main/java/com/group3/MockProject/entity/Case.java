@@ -88,4 +88,7 @@ public class Case {
 
     @OneToMany(mappedBy = "caseInterview")
     List<Interview> interviews;
+
+    @OneToMany(mappedBy = "caseEntity")
+    List<Statement> statements;
 }

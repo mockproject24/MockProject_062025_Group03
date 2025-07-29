@@ -90,4 +90,7 @@ public class Suspect {
 
     @OneToMany(mappedBy = "suspectInterviewee")
     List<Interview> suspectInterviews;
+
+    @OneToMany(mappedBy = "suspect")
+    List<Statement> statements;
 }
