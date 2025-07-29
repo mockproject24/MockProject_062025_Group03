@@ -24,5 +24,13 @@ import java.util.List;
  * 12/7/2025     FongFox      Update service
  */
 public interface IInterviewService {
+    /**
+     * Creates a new interview for a specific case
+     *
+     * @param caseId The case identifier
+     * @param request The interview creation request
+     * @param files Optional list of attached files
+     * @return InterviewResponse containing created interview details
+     */
     public InterviewResponse createInterview(String caseId, CreateInterviewRequest request, List<MultipartFile> files);
 }

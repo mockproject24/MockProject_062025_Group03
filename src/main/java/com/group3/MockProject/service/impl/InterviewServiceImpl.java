@@ -10,6 +10,8 @@ import com.group3.MockProject.mapper.InterviewMapper;
 import com.group3.MockProject.repository.*;
 import com.group3.MockProject.service.IInterviewService;
 
+import com.group3.MockProject.util.FileUploadUtil;
+import com.group3.MockProject.validator.InterviewValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,127 +61,97 @@ import java.util.UUID;
  * Modification Logs:
  * DATE         AUTHOR       DESCRIPTION
  * -------------------------------------
- * 7/4/2025      User      Create
- * 7/10/2025     User      Update to match API spec exactly
+ * 7/4/2025      FongFox      Create
+ * 7/10/2025     FongFox      Update to match API spec exactly
+ * 7/28/2025     FongFox      Refactor: extract validation and file upload logic
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class InterviewServiceImpl implements IInterviewService {
+    // Repositories
     private final InterviewRepository interviewRepository;
     private final QuestionRepository questionRepository;
     private final InterviewFileRepository interviewFileRepository;
-    private final UserRepository userRepository;
-    private final SuspectRepository suspectRepository;
-    private final VictimRepository victimRepository;
-    private final WitnessRepository witnessRepository;
-    private final CaseRepository caseRepository;
-    private final InterviewMapper interviewMapper;
 
-    @Value("${spring.upload-file.base-uri}")
-    private String uploadBasePath;
+    // Validation and utilities
+    private final InterviewValidator interviewValidator;
+    private final FileUploadUtil fileUploadUtil;
+
+    // Mappers
+    private final InterviewMapper interviewMapper;
 
     @Override
     @Transactional
     public InterviewResponse createInterview(String caseId, CreateInterviewRequest request, List<MultipartFile> files) {
         log.info("Creating interview for case: {}", caseId);
 
-        // Step 1: Validate basic interview data
-        validateInterviewData(request);
-
-        // Step 2: Check if case exists
-        Case caseEntity = caseRepository.findById(caseId)
-                .orElseThrow(() -> new AppException(ErrorCode.CASE_NOT_EXISTED));
-
-        // Step 3: Find interviewer user
-        User interviewer = userRepository.findById(request.getInterviewerId())
-                .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWER_NOT_FOUND));
-
-        // Step 4: Check for time conflicts with existing interviews
-        LocalDateTime startTime = request.getStartTime().atOffset(ZoneOffset.UTC).toLocalDateTime();
-        LocalDateTime endTime = request.getEndTime().atOffset(ZoneOffset.UTC).toLocalDateTime();
-        checkTimeConflict(request.getInterviewerId(), startTime, endTime);
-
-        // Step 5: Find interviewee based on type and ID card
-        Object interviewee = findInterviewee(request.getIntervieweeType(), request.getIntervieweeIdCard());
-
-        // Step 6: Create interview entity using mapper
-        Interview interview = interviewMapper.createInterviewEntity(request, caseEntity, interviewer, interviewee);
-        Interview savedInterview = interviewRepository.save(interview);
-
-        // Step 7: Create questions using mapper
-        List<Question> questions = interviewMapper.createQuestions(request.getQuesAndAns(), savedInterview, interviewer);
-        questionRepository.saveAll(questions);
-
-        // Step 8: Upload files if provided
-        List<String> uploadedFileNames = uploadFiles(files, savedInterview);
-
-        // Step 9: Build response using mapper
-        return interviewMapper.buildInterviewResponse(savedInterview, interviewer, interviewee, questions.size(), uploadedFileNames);
-    }
-
-    // Validates interview request data
-    private void validateInterviewData(CreateInterviewRequest request) {
-        // Check time range: start time must be before end time
-        if (request.getStartTime().isAfter(request.getEndTime())) {
-            throw new AppException(ErrorCode.INVALID_TIME_RANGE);
-        }
-    }
-
-    // Checks for interviewer schedule conflicts
-    private void checkTimeConflict(String interviewerId, LocalDateTime startTime, LocalDateTime endTime) {
-        // Query for interviews with overlapping time slots for same interviewer
-        List<Interview> conflictInterviews = interviewRepository.findConflictingInterviews(
-                interviewerId, startTime, endTime);
-
-        if (!conflictInterviews.isEmpty()) {
-            throw new AppException(ErrorCode.INTERVIEW_SCHEDULING_CONFLICT);
-        }
-    }
-
-    // Finds interviewee entity based on type and ID card number
-    private Object findInterviewee(String intervieweeType, String intervieweeIdCard) {
-        Long idCard = Long.parseLong(intervieweeIdCard);
-
-        return switch (intervieweeType.toUpperCase()) {
-            case "SUSPECT" -> suspectRepository.findBySuspectIdCard(idCard)
-                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
-            case "VICTIM" -> victimRepository.findByVictimIdCard(idCard)
-                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
-            case "WITNESS" -> witnessRepository.findByWitnessIdCard(idCard)
-                    .orElseThrow(() -> new AppException(ErrorCode.INTERVIEWEE_NOT_FOUND));
-            default -> throw new AppException(ErrorCode.INVALID_INTERVIEWEE_TYPE);
-        };
-    }
-
-    // Uploads files and saves file information to database
-    private List<String> uploadFiles(List<MultipartFile> files, Interview interview) {
-        List<String> uploadedFileNames = new ArrayList<>();
-
-        if (files == null || files.isEmpty()) {
-            return uploadedFileNames;
-        }
-
-        // Create upload directory if not exists
-        Path uploadDir = Paths.get(uploadBasePath.replace("file:", ""));
         try {
-            Files.createDirectories(uploadDir);
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+            // Step 1: Comprehensive validation using validator
+            interviewValidator.validateCreateInterviewRequest(caseId, request, files);
+
+            // Step 2: Get validated entities
+            Case caseEntity = interviewValidator.getValidatedCase(caseId);
+            User interviewer = interviewValidator.getValidatedInterviewer(request.getInterviewerId());
+            Object interviewee = interviewValidator.getValidatedInterviewee(
+                    request.getIntervieweeType(),
+                    request.getIntervieweeIdCard()
+            );
+
+            // Step 3: Create interview entity using mapper
+            Interview interview = interviewMapper.createInterviewEntity(request, caseEntity, interviewer, interviewee);
+            Interview savedInterview = interviewRepository.save(interview);
+            log.debug("Interview entity saved with ID: {}", savedInterview.getInterviewId());
+
+            // Step 4: Create questions using mapper
+            List<Question> questions = interviewMapper.createQuestions(request.getQuesAndAns(), savedInterview, interviewer);
+            questionRepository.saveAll(questions);
+            log.debug("Saved {} questions for interview", questions.size());
+
+            // Step 5: Handle file uploads using utility
+            List<String> uploadedFileNames = handleFileUploads(files, savedInterview);
+
+            // Step 6: Build response using mapper
+            InterviewResponse response = interviewMapper.buildInterviewResponse(
+                    savedInterview, interviewer, interviewee, questions.size(), uploadedFileNames
+            );
+
+            log.info("Interview created successfully for case: {} with ID: {}", caseId, savedInterview.getInterviewId());
+            return response;
+
+        } catch (Exception e) {
+            log.error("Failed to create interview for case: {}", caseId, e);
+            throw e; // Re-throw to be handled by GlobalExceptionHandler
         }
+    }
+
+    /**
+     * Handles file uploads for interview
+     * Uses FileUploadUtil and saves file information to database
+     *
+     * @param files List of files to upload
+     * @param interview The interview entity to associate files with
+     * @return List of original filenames that were uploaded
+     */
+    private List<String> handleFileUploads(List<MultipartFile> files, Interview interview) {
+        if (files == null || files.isEmpty()) {
+            log.debug("No files to upload for interview: {}", interview.getInterviewId());
+            return new ArrayList<>();
+        }
+
+        log.info("Processing {} files for interview: {}", files.size(), interview.getInterviewId());
+
+        List<String> originalFileNames = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
+            if (file.isEmpty()) {
+                log.debug("Skipping empty file");
+                continue;
+            }
 
             try {
-                // Generate unique filename: UUID + original extension
-                String originalFileName = file.getOriginalFilename();
-                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-                String uniqueFileName = UUID.randomUUID().toString() + extension;
-
-                // Save file to disk
-                Path filePath = uploadDir.resolve(uniqueFileName);
-                Files.copy(file.getInputStream(), filePath);
+                // Upload file using utility
+                String uniqueFileName = fileUploadUtil.uploadSingleFile(file);
 
                 // Save file information to database
                 InterviewFile interviewFile = new InterviewFile();
@@ -187,14 +159,19 @@ public class InterviewServiceImpl implements IInterviewService {
                 interviewFile.setInterview(interview);
                 interviewFileRepository.save(interviewFile);
 
-                uploadedFileNames.add(originalFileName); // Return original name for response
+                // Keep track of original filename for response
+                originalFileNames.add(file.getOriginalFilename());
 
-            } catch (IOException e) {
-                log.error("File upload error: {}", e.getMessage());
-                throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+                log.debug("File processed successfully: {} -> {}", file.getOriginalFilename(), uniqueFileName);
+
+            } catch (Exception e) {
+                log.error("Failed to process file: {}", file.getOriginalFilename(), e);
+                // Continue processing other files, but re-throw the exception
+                throw e;
             }
         }
 
-        return uploadedFileNames;
+        log.info("Successfully processed {} files for interview: {}", originalFileNames.size(), interview.getInterviewId());
+        return originalFileNames;
     }
 }

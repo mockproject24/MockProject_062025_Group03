@@ -7,7 +7,6 @@ import com.group3.MockProject.dto.response.EvidenceResponse;
 import com.group3.MockProject.entity.Case;
 import com.group3.MockProject.entity.Evidence;
 import com.group3.MockProject.exception.AppException;
-import com.group3.MockProject.exception.ErrorCode;
 import com.group3.MockProject.repository.CaseRepository;
 import com.group3.MockProject.repository.EvidenceRepository;
 import com.group3.MockProject.service.impl.EvidenceServiceImpl;
